@@ -1,0 +1,37 @@
+# ReVanced APK Patcher - Git Ignore File
+
+# APK Files (base and patched)
+*.apk
+
+# JAR Files (ReVanced CLI)
+*.jar
+
+# Patch Bundles
+*.rvp
+
+# Keystore Files
+*.keystore
+
+# Temporary Build Directories
+*-temporary-files/
+*-revanced-temporary-files/
+
+# Windows System Files
+Thumbs.db
+desktop.ini
+
+# macOS System Files
+.DS_Store
+
+# IDE Files
+.vscode/
+.idea/
+*.iml
+
+# Log Files
+*.log
+
+# Backup Files
+*.bak
+*.backup
+*~

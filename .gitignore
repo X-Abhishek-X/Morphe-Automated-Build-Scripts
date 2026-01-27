@@ -35,3 +35,7 @@ desktop.ini
 *.bak
 *.backup
 *~
+
+# Python
+__pycache__/
+*.pyc

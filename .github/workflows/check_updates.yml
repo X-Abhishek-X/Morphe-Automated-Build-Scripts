@@ -29,10 +29,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r scripts/requirements.txt
+          pip install -r .github/scripts/requirements.txt
 
       - name: Run update script
-        run: python scripts/check_updates.py
+        run: python .github/scripts/check_updates.py
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
@@ -42,6 +42,6 @@ jobs:
           body: |
             This PR updates the ReVanced CLI, Patches, and/or YouTube APK versions.
 
-            Automated update by `scripts/check_updates.py`.
+            Automated update by `.github/scripts/check_updates.py`.
           branch: update-revanced-versions
           delete-branch: true

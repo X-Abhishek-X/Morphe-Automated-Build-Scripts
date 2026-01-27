@@ -1,0 +1,47 @@
+name: Check for ReVanced Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      - name: Run update script
+        run: python scripts/check_updates.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update ReVanced versions"
+          title: "chore: update ReVanced versions"
+          body: |
+            This PR updates the ReVanced CLI, Patches, and/or YouTube APK versions.
+
+            Automated update by `scripts/check_updates.py`.
+          branch: update-revanced-versions
+          delete-branch: true

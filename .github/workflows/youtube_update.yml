@@ -80,12 +80,22 @@ jobs:
             echo "Detected Split APK bundle ($APK_FILE). Extracting..."
             unzip -o "$APK_FILE" -d extracted_apk
             
-            # Find the base APK (usually base.apk or the largest APK file)
-            # We'll use the largest APK file as it's almost certainly the base APK with code
-            BASE_APK=$(find extracted_apk -name "*.apk" -type f -printf "%s\t%p\n" | sort -n | tail -1 | cut -f2-)
+            # Find the base APK
+            # 1. Look for the main package APK (com.google.android.youtube.apk)
+            BASE_APK=$(find extracted_apk -name "com.google.android.youtube.apk" -type f | head -n 1)
+            
+            # 2. If not found, look for "base.apk"
+            if [ -z "$BASE_APK" ]; then
+              BASE_APK=$(find extracted_apk -name "base.apk" -type f | head -n 1)
+            fi
+            
+            # 3. Fallback: use largest APK but exclude config.* (which are splits)
+            if [ -z "$BASE_APK" ]; then
+               BASE_APK=$(find extracted_apk -name "*.apk" ! -name "config.*" -type f -printf "%s\t%p\n" | sort -n | tail -1 | cut -f2-)
+            fi
             
             if [ -z "$BASE_APK" ]; then
-              echo "Error: No APK files found inside XAPK/APKS bundle."
+              echo "Error: No suitable base APK found in bundle."
               exit 1
             fi
             

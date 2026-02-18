@@ -20,8 +20,8 @@ if not exist "patches-5.50.2.rvp" (
     exit /b 1
 )
 
-if not exist "google-photos-7.55.0.apk" (
-    echo ERROR: google-photos-7.55.0.apk not found!
+if not exist "google-photos-latest.apk" (
+    echo ERROR: google-photos-latest.apk not found!
     pause
     exit /b 1
 )
@@ -39,7 +39,7 @@ java -jar revanced-cli-5.0.1-all.jar patch ^
     -e "Enable DCIM folders backup control" ^
     -e "GmsCore support" ^
     -o google-photos-revanced.apk ^
-    google-photos-7.55.0.apk
+    google-photos-latest.apk
 
 if %ERRORLEVEL% EQU 0 (
     echo.

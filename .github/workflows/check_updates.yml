@@ -107,15 +107,15 @@ jobs:
             -e "Enable DCIM folders backup control" \
             -e "GmsCore support" \
             -e "Change package name" \
-            -o google-photos-revanced.apk \
+            -o google-photos-revanced-v${{ steps.check.outputs.photos_version }}.apk \
             "$APK_FILE"
 
       - name: Upload Patched APK
         if: steps.check.outputs.photos_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: google-photos-revanced
-          path: google-photos-revanced.apk
+          name: google-photos-revanced-v${{ steps.check.outputs.photos_version }}
+          path: google-photos-revanced-v${{ steps.check.outputs.photos_version }}.apk
           retention-days: 90
 
       - name: Create Release
@@ -130,7 +130,7 @@ jobs:
             **Version:** ${{ steps.check.outputs.photos_version }}
 
             *Signed by Google (verified).*
-          files: google-photos-revanced.apk
+          files: google-photos-revanced-v${{ steps.check.outputs.photos_version }}.apk
           draft: false
           prerelease: false
 

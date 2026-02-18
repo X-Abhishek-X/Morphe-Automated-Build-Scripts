@@ -58,6 +58,29 @@ jobs:
           echo "Downloading Google Photos v${{ steps.check.outputs.photos_version }}..."
           apkeep -a com.google.android.apps.photos -v "${{ steps.check.outputs.photos_version }}" -d .
 
+      - name: Verify APK Signature
+        if: steps.check.outputs.photos_version != ''
+        run: |
+          echo "Verifying APK signature..."
+          APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
+
+          # Extract SHA-256 fingerprint
+          FINGERPRINT=$(keytool -printcert -jarfile "$APK_FILE" | grep "SHA256:" | head -n 1 | awk '{print $2}')
+          echo "APK Fingerprint: $FINGERPRINT"
+
+          # Known Google Photos Release Certificate Fingerprint (SHA-256)
+          # Source: Google Inc. (matches Play Store versions)
+          EXPECTED_HASH="3D:7A:12:23:01:9A:A3:9D:9E:A0:E3:43:6A:B7:C0:89:6B:FB:4F:B6:79:F4:DE:5F:E7:C2:3F:32:6C:8F:99:4A"
+
+          if [ "$FINGERPRINT" != "$EXPECTED_HASH" ]; then
+             echo "ERROR: Signature verification failed!"
+             echo "Expected: $EXPECTED_HASH"
+             echo "Found:    $FINGERPRINT"
+             echo "This APK might be modified or signed with a different key. Aborting."
+             exit 1
+          fi
+          echo "Signature verified! This APK is genuine and signed by Google."
+
       - name: Patch Google Photos
         if: steps.check.outputs.photos_version != ''
         run: |

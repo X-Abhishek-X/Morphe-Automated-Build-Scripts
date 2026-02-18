@@ -115,6 +115,23 @@ jobs:
           path: google-photos-revanced.apk
           retention-days: 90
 
+      - name: Create Release
+        if: steps.check.outputs.photos_version != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: google-photos-v${{ steps.check.outputs.photos_version }}
+          name: Google Photos v${{ steps.check.outputs.photos_version }}
+          body: |
+            Automated build of Google Photos ReVanced.
+
+            **Version:** ${{ steps.check.outputs.photos_version }}
+            **Patches:** Spoof features, Enable DCIM folders backup control, GmsCore support
+
+            *Signed by Google (verified).*
+          files: google-photos-revanced.apk
+          draft: false
+          prerelease: false
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:

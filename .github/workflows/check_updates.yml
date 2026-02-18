@@ -109,28 +109,76 @@ jobs:
             -o google-photos-revanced.apk \
             "$APK_FILE"
 
-      - name: Upload Patched APK
-        if: steps.check.outputs.photos_version != ''
+      - name: Download YouTube APK
+        if: steps.check.outputs.youtube_version != ''
+        run: |
+          VERSION="${{ steps.check.outputs.youtube_version }}"
+          echo "Expected version: $VERSION"
+          if [ "$VERSION" = "latest" ]; then
+            echo "Downloading latest version..."
+            apkeep -a com.google.android.youtube .
+          else
+            echo "Downloading version $VERSION..."
+            apkeep -a com.google.android.youtube -v "$VERSION" .
+          fi
+
+      - name: Patch YouTube
+        if: steps.check.outputs.youtube_version != ''
+        run: |
+          # Find the downloaded APK
+          APK_FILE=$(find . -name "com.google.android.youtube*.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+             echo "APK not found!"
+             exit 1
+          fi
+
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+
+          echo "Patching $APK_FILE..."
+
+          java -jar "$CLI_JAR" patch \
+            --exclusive \
+            --keystore "google-photos-revanced.keystore" \
+            -p "$PATCHES_RVP" \
+            -e "Video ads" \
+            -e "SponsorBlock" \
+            -e "Remove background playback restrictions" \
+            -e "Return YouTube Dislike" \
+            -e "Swipe controls" \
+            -e "Seekbar" \
+            -e "Theme" \
+            -e "Video quality" \
+            -e "Playback speed" \
+            -e "Hide layout components" \
+            -e "GmsCore support" \
+            -o youtube-revanced.apk \
+            "$APK_FILE"
+
+      - name: Upload Patched APKs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: google-photos-revanced-v${{ steps.check.outputs.photos_version }}
-          path: google-photos-revanced.apk
+          name: patched-apks
+          path: |
+            google-photos-revanced.apk
+            youtube-revanced.apk
           retention-days: 90
 
       - name: Create Release
-        if: steps.check.outputs.photos_version != ''
+        if: steps.check.outputs.photos_version != '' || steps.check.outputs.youtube_version != ''
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: google-photos-v${{ steps.check.outputs.photos_version }}
-          name: Google Photos v${{ steps.check.outputs.photos_version }}
+          tag_name: revanced-${{ github.run_number }}
+          name: ReVanced Update ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           body: |
-            Automated build of Google Photos ReVanced.
-
-            **Version:** ${{ steps.check.outputs.photos_version }}
-            **Patches:** Spoof features, Enable DCIM folders backup control, GmsCore support
-
-            *Signed by Google (verified).*
-          files: google-photos-revanced.apk
+            Automated build of ReVanced APKs.
+            
+            **Google Photos Version:** ${{ steps.check.outputs.photos_version }}
+            **YouTube Version:** ${{ steps.check.outputs.youtube_version }}
+            
+            *Signed by Google (Photos only verified currently).*
+          files: *-revanced.apk
           draft: false
           prerelease: false
 

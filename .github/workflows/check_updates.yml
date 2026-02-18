@@ -136,22 +136,63 @@ jobs:
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
 
           echo "Patching $APK_FILE..."
-
+          
           java -jar "$CLI_JAR" patch \
             --exclusive \
             --keystore "google-photos-revanced.keystore" \
             -p "$PATCHES_RVP" \
-            -e "Video ads" \
-            -e "SponsorBlock" \
-            -e "Remove background playback restrictions" \
-            -e "Return YouTube Dislike" \
-            -e "Swipe controls" \
-            -e "Seekbar" \
-            -e "Theme" \
-            -e "Video quality" \
-            -e "Playback speed" \
-            -e "Hide layout components" \
-            -e "GmsCore support" \
+            -i "Bypass URL redirects" \
+            -i "Bypass image region restrictions" \
+            -i "Change form factor" \
+            -i "Check watch history domain name resolution" \
+            -i "Copy video URL" \
+            -i "Custom player overlay opacity" \
+            -i "Disable auto captions" \
+            -i "Disable double tap actions" \
+            -i "Disable fullscreen ambient mode" \
+            -i "Disable haptic feedback" \
+            -i "Disable player popup panels" \
+            -i "Disable resuming Shorts on startup" \
+            -i "Disable rolling number animations" \
+            -i "Disable sign in to TV popup" \
+            -i "Disable video codecs" \
+            -i "Downloads" \
+            -i "Exit fullscreen mode" \
+            -i "Force original audio" \
+            -i "GmsCore support" \
+            -i "Hide Shorts components" \
+            -i "Hide ads" \
+            -i "Hide end screen cards" \
+            -i "Hide end screen suggested video" \
+            -i "Hide info cards" \
+            -i "Hide layout components" \
+            -i "Hide player flyout menu items" \
+            -i "Hide player overlay buttons" \
+            -i "Hide related video overlay" \
+            -i "Hide timestamp" \
+            -i "Hide video action buttons" \
+            -i "Loop video" \
+            -i "Miniplayer" \
+            -i "Navigation buttons" \
+            -i "Open Shorts in regular player" \
+            -i "Open links externally" \
+            -i "Open videos fullscreen" \
+            -i "Playback speed" \
+            -i "Remove background playback restrictions" \
+            -i "Remove viewer discretion dialog" \
+            -i "Return YouTube Dislike" \
+            -i "Sanitize sharing links" \
+            -i "Seekbar" \
+            -i "Shorts autoplay" \
+            -i "SponsorBlock" \
+            -i "Spoof app version" \
+            -i "Spoof device dimensions" \
+            -i "Spoof video streams" \
+            -i "Swipe controls" \
+            -i "Theme" \
+            -i "Video ads" \
+            -i "Video quality" \
+            -i "Wide search bar" \
             -o youtube-revanced.apk \
             "$APK_FILE"
 

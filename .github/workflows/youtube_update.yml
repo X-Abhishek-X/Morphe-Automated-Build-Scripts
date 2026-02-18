@@ -1,0 +1,161 @@
+name: Check for ReVanced Updates (YouTube)
+
+on:
+  schedule:
+    - cron: "0 1 * * *" # Run daily at 1 AM (separate from Photos)
+  workflow_dispatch:
+
+jobs:
+  check-youtube:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      - name: Install apkeep (via eget)
+        env:
+          EGET_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p $HOME/.local/bin
+          curl https://zyedidia.github.io/eget.sh | sh
+          ./eget EFForg/apkeep --asset apkeep-x86_64-unknown-linux-gnu --to /usr/local/bin/apkeep
+          apkeep --version
+
+      - name: Run update script (Check versions)
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/check_updates.py
+
+      - name: Download YouTube APK
+        if: steps.check.outputs.youtube_version != ''
+        run: |
+          VERSION="${{ steps.check.outputs.youtube_version }}"
+          echo "Expected version: $VERSION"
+          if [ "$VERSION" = "latest" ]; then
+            echo "Downloading latest version..."
+            apkeep -a com.google.android.youtube .
+          else
+            echo "Downloading version $VERSION..."
+            apkeep -a com.google.android.youtube -v "$VERSION" .
+          fi
+
+      - name: Patch YouTube
+        if: steps.check.outputs.youtube_version != ''
+        run: |
+          # Find the downloaded APK
+          APK_FILE=$(find . -name "com.google.android.youtube*.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+             echo "APK not found!"
+             exit 1
+          fi
+
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+
+          echo "Patching $APK_FILE..."
+
+          # Use --exclusive with -i to include only specific patches
+          java -jar "$CLI_JAR" patch \
+            --exclusive \
+            --keystore "google-photos-revanced.keystore" \
+            -p "$PATCHES_RVP" \
+            -i "Bypass URL redirects" \
+            -i "Bypass image region restrictions" \
+            -i "Change form factor" \
+            -i "Check watch history domain name resolution" \
+            -i "Copy video URL" \
+            -i "Custom player overlay opacity" \
+            -i "Disable auto captions" \
+            -i "Disable double tap actions" \
+            -i "Disable fullscreen ambient mode" \
+            -i "Disable haptic feedback" \
+            -i "Disable player popup panels" \
+            -i "Disable resuming Shorts on startup" \
+            -i "Disable rolling number animations" \
+            -i "Disable sign in to TV popup" \
+            -i "Disable video codecs" \
+            -i "Downloads" \
+            -i "Exit fullscreen mode" \
+            -i "Force original audio" \
+            -i "GmsCore support" \
+            -i "Hide Shorts components" \
+            -i "Hide ads" \
+            -i "Hide end screen cards" \
+            -i "Hide end screen suggested video" \
+            -i "Hide info cards" \
+            -i "Hide layout components" \
+            -i "Hide player flyout menu items" \
+            -i "Hide player overlay buttons" \
+            -i "Hide related video overlay" \
+            -i "Hide timestamp" \
+            -i "Hide video action buttons" \
+            -i "Loop video" \
+            -i "Miniplayer" \
+            -i "Navigation buttons" \
+            -i "Open Shorts in regular player" \
+            -i "Open links externally" \
+            -i "Open videos fullscreen" \
+            -i "Playback speed" \
+            -i "Remove background playback restrictions" \
+            -i "Remove viewer discretion dialog" \
+            -i "Return YouTube Dislike" \
+            -i "Sanitize sharing links" \
+            -i "Seekbar" \
+            -i "Shorts autoplay" \
+            -i "SponsorBlock" \
+            -i "Spoof app version" \
+            -i "Spoof device dimensions" \
+            -i "Spoof video streams" \
+            -i "Swipe controls" \
+            -i "Theme" \
+            -i "Video ads" \
+            -i "Video quality" \
+            -i "Wide search bar" \
+            -o youtube-revanced.apk \
+            "$APK_FILE"
+
+      - name: Upload YouTube ReVanced
+        if: steps.check.outputs.youtube_version != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-revanced
+          path: youtube-revanced.apk
+          retention-days: 90
+
+      - name: Create Release
+        if: steps.check.outputs.youtube_version != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: youtube-revanced-v${{ steps.check.outputs.youtube_version }}
+          name: YouTube ReVanced v${{ steps.check.outputs.youtube_version }}
+          body: |
+            Automated build of YouTube ReVanced.
+
+            **Version:** ${{ steps.check.outputs.youtube_version }}
+
+            *Signed by Google (verified).*
+          files: youtube-revanced.apk
+          draft: false
+          prerelease: false
+
+      # Note: We do NOT commit changes here to avoid conflicts with the Photos workflow.
+      # The check_updates.yml workflow handles updating the repo files (README, bat).

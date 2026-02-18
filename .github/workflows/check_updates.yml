@@ -106,6 +106,7 @@ jobs:
             -e "Spoof features" \
             -e "Enable DCIM folders backup control" \
             -e "GmsCore support" \
+            -e "Change package name" \
             -o google-photos-revanced.apk \
             "$APK_FILE"
 

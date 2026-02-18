@@ -92,6 +92,9 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
         return []
 
     output = result.stdout
+    print(f"--- CLI Output for {package_name} ---")
+    print(output)
+    print("---------------------------------------")
 
     # Parse output to find compatible versions for the specific patch
     lines = output.splitlines()
@@ -103,6 +106,7 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
         stripped = line.strip()
         if stripped.startswith("Name:"):
             current_patch_name = stripped.split("Name:", 1)[1].strip()
+            # print(f"Found patch: {current_patch_name}")
             if patch_name_filter.lower() in current_patch_name.lower():
                 in_patch = True
             else:
@@ -112,12 +116,23 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
         if in_patch:
             if stripped.startswith("Compatible versions:"):
                 in_versions = True
+                # Handle inline versions if any (e.g. "Compatible versions: 1.2.3")
+                content = stripped.split(":", 1)[1].strip()
+                if content:
+                    # Split by comma or space? Usually it's one per line or comma?
+                    # ReVanced CLI usually lists them on new lines indented.
+                    # But if it's on the same line:
+                    if content.lower() != "any" and content.lower() != "none":
+                         parts = [v.strip() for v in content.split(",") if v.strip()]
+                         versions.extend(parts)
                 continue
 
             if in_versions:
-                if not stripped or ":" in stripped:
+                if not stripped or ":" in stripped: # End of section
                     in_versions = False
-                    break
+                    # Don't break, lookup other patches? No, usually one entry per patch name? 
+                    # But "Spoof features" might appear multiple times? Unlikely.
+                    continue 
 
                 versions.append(stripped)
 

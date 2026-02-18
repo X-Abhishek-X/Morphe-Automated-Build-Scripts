@@ -31,19 +31,11 @@ jobs:
         run: |
           pip install -r scripts/requirements.txt
 
-      - name: Install apkeep (manual)
+      - name: Install apkeep (python script)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Downloading apkeep (musl)..."
-          # Try v0.15.0 which should have musl build
-          curl -L -o apkeep https://github.com/EFForg/apkeep/releases/download/v0.15.0/apkeep-x86_64-unknown-linux-musl
-
-          # Check if download was successful (not a text file/404)
-          file apkeep
-          if grep -q "Not Found" apkeep; then
-            echo "Error: Download failed (404 Not Found)"
-            exit 1
-          fi
-
+          python scripts/install_apkeep.py
           chmod +x apkeep
           sudo mv apkeep /usr/local/bin/
           apkeep --version

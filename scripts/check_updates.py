@@ -101,14 +101,15 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
     versions = []
     in_patch = False
     in_versions = False
+    found_target_patch = False
 
     for line in lines:
         stripped = line.strip()
         if stripped.startswith("Name:"):
             current_patch_name = stripped.split("Name:", 1)[1].strip()
-            # print(f"Found patch: {current_patch_name}")
             if patch_name_filter.lower() in current_patch_name.lower():
                 in_patch = True
+                found_target_patch = True
             else:
                 in_patch = False
             in_versions = False
@@ -119,22 +120,22 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
                 # Handle inline versions if any (e.g. "Compatible versions: 1.2.3")
                 content = stripped.split(":", 1)[1].strip()
                 if content:
-                    # Split by comma or space? Usually it's one per line or comma?
-                    # ReVanced CLI usually lists them on new lines indented.
-                    # But if it's on the same line:
                     if content.lower() != "any" and content.lower() != "none":
                          parts = [v.strip() for v in content.split(",") if v.strip()]
                          versions.extend(parts)
                 continue
 
             if in_versions:
-                if not stripped or ":" in stripped: # End of section
+                if not stripped or ":" in stripped:
                     in_versions = False
-                    # Don't break, lookup other patches? No, usually one entry per patch name? 
-                    # But "Spoof features" might appear multiple times? Unlikely.
                     continue 
 
                 versions.append(stripped)
+    
+    # Fallback: If we found the patch but no specific versions, assumes it's compatible with everything (or latest)
+    if found_target_patch and not versions:
+        print(f"Patch '{patch_name_filter}' found but no specific compatible versions listed. Assuming 'latest'.")
+        return ["latest"]
 
     return versions
 
@@ -202,11 +203,16 @@ def main():
         # 4. Get Google Photos compatible version
         photos_versions = get_compatible_versions(cli_filename, patches_filename, "com.google.android.apps.photos", "Spoof features")
         latest_photos_version = None
+
         if not photos_versions:
             print("Could not find compatible versions for Google Photos Spoof features patch.")
         else:
-            photos_versions.sort(key=version_key)
-            latest_photos_version = photos_versions[-1]
+            if "latest" in photos_versions:
+                latest_photos_version = "latest"
+            else:
+                photos_versions.sort(key=version_key)
+                latest_photos_version = photos_versions[-1]
+            
             print(f"Latest supported Google Photos version: {latest_photos_version}")
             if os.getenv("GITHUB_OUTPUT"):
                 with open(os.getenv("GITHUB_OUTPUT"), "a") as gh_out:

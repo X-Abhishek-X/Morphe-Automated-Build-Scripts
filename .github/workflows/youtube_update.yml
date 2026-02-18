@@ -30,13 +30,12 @@ jobs:
         run: |
           pip install -r scripts/requirements.txt
 
-      - name: Install apkeep (via eget)
-        env:
-          EGET_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install apkeep (manual)
         run: |
-          mkdir -p $HOME/.local/bin
-          curl https://zyedidia.github.io/eget.sh | sh
-          ./eget EFForg/apkeep --asset apkeep-x86_64-unknown-linux-gnu --to /usr/local/bin/apkeep
+          echo "Downloading apkeep..."
+          curl -L -o apkeep https://github.com/EFForg/apkeep/releases/download/0.15.0/apkeep-x86_64-unknown-linux-gnu
+          chmod +x apkeep
+          sudo mv apkeep /usr/local/bin/
           apkeep --version
 
       - name: Run update script (Check versions)

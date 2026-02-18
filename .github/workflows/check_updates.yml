@@ -49,7 +49,10 @@ jobs:
 
       - name: Download Google Photos APK
         if: steps.check.outputs.photos_version != ''
+        id: download
         run: |
+          sudo apt-get update && sudo apt-get install -y aapt
+
           VERSION="${{ steps.check.outputs.photos_version }}"
           echo "Expected version: $VERSION"
           if [ "$VERSION" = "latest" ]; then
@@ -59,6 +62,19 @@ jobs:
             echo "Downloading version $VERSION..."
             apkeep -a com.google.android.apps.photos@$VERSION .
           fi
+
+          # Find the APK
+          APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
+
+          # Extract real version using aapt
+          REAL_VERSION=$(aapt dump badging "$APK_FILE" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
+          echo "Detected Real Version: $REAL_VERSION"
+
+          # Update the step output to use the real version instead of 'latest'
+          echo "photos_version=$REAL_VERSION" >> $GITHUB_OUTPUT
+
+          # Rename the file to include version if it doesn't already
+          mv "$APK_FILE" "com.google.android.apps.photos-$REAL_VERSION.apk"
 
       - name: Verify APK Signature
         if: steps.check.outputs.photos_version != ''
@@ -107,30 +123,30 @@ jobs:
             -e "Enable DCIM folders backup control" \
             -e "GmsCore support" \
             -e "Change package name" \
-            -o google-photos-revanced-v${{ steps.check.outputs.photos_version }}.apk \
+            -o google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk \
             "$APK_FILE"
 
       - name: Upload Patched APK
         if: steps.check.outputs.photos_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: google-photos-revanced-v${{ steps.check.outputs.photos_version }}
-          path: google-photos-revanced-v${{ steps.check.outputs.photos_version }}.apk
+          name: google-photos-revanced-v${{ steps.download.outputs.photos_version }}
+          path: google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk
           retention-days: 90
 
       - name: Create Release
         if: steps.check.outputs.photos_version != ''
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: google-photos-v${{ steps.check.outputs.photos_version }}
-          name: Google Photos v${{ steps.check.outputs.photos_version }}
+          tag_name: google-photos-v${{ steps.download.outputs.photos_version }}
+          name: Google Photos v${{ steps.download.outputs.photos_version }}
           body: |
             Automated build of Google Photos ReVanced.
 
-            **Version:** ${{ steps.check.outputs.photos_version }}
+            **Version:** ${{ steps.download.outputs.photos_version }}
 
             *Signed by Google (verified).*
-          files: google-photos-revanced-v${{ steps.check.outputs.photos_version }}.apk
+          files: google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk
           draft: false
           prerelease: false
 

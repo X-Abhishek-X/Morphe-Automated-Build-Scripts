@@ -34,7 +34,16 @@ jobs:
       - name: Install apkeep (manual)
         run: |
           echo "Downloading apkeep (musl)..."
-          curl -L -o apkeep https://github.com/EFForg/apkeep/releases/download/0.15.0/apkeep-x86_64-unknown-linux-musl
+          # Try v0.15.0 which should have musl build
+          curl -L -o apkeep https://github.com/EFForg/apkeep/releases/download/v0.15.0/apkeep-x86_64-unknown-linux-musl
+
+          # Check if download was successful (not a text file/404)
+          file apkeep
+          if grep -q "Not Found" apkeep; then
+            echo "Error: Download failed (404 Not Found)"
+            exit 1
+          fi
+
           chmod +x apkeep
           sudo mv apkeep /usr/local/bin/
           apkeep --version

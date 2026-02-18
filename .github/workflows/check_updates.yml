@@ -33,8 +33,8 @@ jobs:
 
       - name: Install apkeep (manual)
         run: |
-          echo "Downloading apkeep..."
-          curl -L -o apkeep https://github.com/EFForg/apkeep/releases/download/0.15.0/apkeep-x86_64-unknown-linux-gnu
+          echo "Downloading apkeep (musl)..."
+          curl -L -o apkeep https://github.com/EFForg/apkeep/releases/download/0.15.0/apkeep-x86_64-unknown-linux-musl
           chmod +x apkeep
           sudo mv apkeep /usr/local/bin/
           apkeep --version

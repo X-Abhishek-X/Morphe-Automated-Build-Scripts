@@ -127,14 +127,9 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+      - name: Commit and Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit-message: "chore: update ReVanced versions"
-          title: "chore: update ReVanced versions"
-          body: |
-            This PR updates the ReVanced CLI, Patches, and/or YouTube APK versions.
-
-            Automated update by `scripts/check_updates.py`.
-          branch: update-revanced-versions
-          delete-branch: true
+          commit_message: "chore: update ReVanced versions [skip ci]"
+          branch: master
+          file_pattern: "README.md *.bat *.ps1"

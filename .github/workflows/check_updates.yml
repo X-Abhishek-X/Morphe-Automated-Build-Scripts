@@ -54,10 +54,10 @@ jobs:
           echo "Expected version: $VERSION"
           if [ "$VERSION" = "latest" ]; then
             echo "Downloading latest version..."
-            apkeep -a com.google.android.apps.photos -d .
+            apkeep -a com.google.android.apps.photos .
           else
             echo "Downloading version $VERSION..."
-            apkeep -a com.google.android.apps.photos -v "$VERSION" -d .
+            apkeep -a com.google.android.apps.photos -v "$VERSION" .
           fi
 
       - name: Verify APK Signature

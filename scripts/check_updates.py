@@ -17,8 +17,20 @@ FILES_TO_UPDATE = [
 def get_latest_release(repo):
     url = f"https://api.github.com/repos/{repo}/releases/latest"
     print(f"Fetching latest release for {repo}...")
-    resp = requests.get(url)
-    resp.raise_for_status()
+    headers = {
+        "Accept": "application/vnd.github.v3+json"
+    }
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"token {token}"
+    
+    resp = requests.get(url, headers=headers)
+    try:
+        resp.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP Error retrieving {repo}: {e}")
+        print(f"Response: {resp.text}")
+        raise
     return resp.json()
 
 def download_file(url, filename):
@@ -60,6 +72,9 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
     # Run command and capture output
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    except FileNotFoundError:
+        print("Error: Java executable not found. Please ensure Java is installed and in your PATH.")
+        return []
     except subprocess.CalledProcessError as e:
         print(f"Error running CLI: {e.stderr}")
         return []

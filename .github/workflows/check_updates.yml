@@ -50,8 +50,15 @@ jobs:
       - name: Download Google Photos APK
         if: steps.check.outputs.photos_version != ''
         run: |
-          echo "Downloading Google Photos v${{ steps.check.outputs.photos_version }}..."
-          apkeep -a com.google.android.apps.photos -v "${{ steps.check.outputs.photos_version }}" -d .
+          VERSION="${{ steps.check.outputs.photos_version }}"
+          echo "Expected version: $VERSION"
+          if [ "$VERSION" = "latest" ]; then
+            echo "Downloading latest version..."
+            apkeep -a com.google.android.apps.photos -d .
+          else
+            echo "Downloading version $VERSION..."
+            apkeep -a com.google.android.apps.photos -v "$VERSION" -d .
+          fi
 
       - name: Verify APK Signature
         if: steps.check.outputs.photos_version != ''

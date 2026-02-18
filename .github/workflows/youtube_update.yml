@@ -43,6 +43,7 @@ jobs:
         id: check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKIP_CLEANUP: "true"
         run: python scripts/check_updates.py
 
       - name: Download YouTube APK

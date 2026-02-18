@@ -59,6 +59,18 @@ def get_patches_artifact(release):
         raise Exception(f"No patches RVP found in release {tag}")
     return tag, asset["name"], asset["browser_download_url"]
 
+def version_key(v):
+    parts = []
+    try:
+        for x in v.split('.'):
+            if x.isdigit():
+                parts.append(int(x))
+            else:
+                parts.append(0)
+    except:
+        return [0]
+    return parts
+
 def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filter):
     print(f"Checking compatible versions for {package_name}...")
     cmd = [
@@ -164,20 +176,28 @@ def main():
         if not yt_versions:
             print("Could not find compatible versions for YouTube Video ads patch. Skipping YouTube version update.")
         else:
-            def version_key(v):
-                parts = []
-                for x in v.split('.'):
-                    if x.isdigit():
-                        parts.append(int(x))
-                    else:
-                        parts.append(0)
-                return parts
 
             yt_versions.sort(key=version_key)
             latest_yt_version = yt_versions[-1]
             print(f"Latest supported YouTube version: {latest_yt_version}")
+            if os.getenv("GITHUB_OUTPUT"):
+                with open(os.getenv("GITHUB_OUTPUT"), "a") as gh_out:
+                    gh_out.write(f"youtube_version={latest_yt_version}\n")
 
-        # 4. Prepare replacements
+        # 4. Get Google Photos compatible version
+        photos_versions = get_compatible_versions(cli_filename, patches_filename, "com.google.android.apps.photos", "Spoof features")
+        latest_photos_version = None
+        if not photos_versions:
+            print("Could not find compatible versions for Google Photos Spoof features patch.")
+        else:
+            photos_versions.sort(key=version_key)
+            latest_photos_version = photos_versions[-1]
+            print(f"Latest supported Google Photos version: {latest_photos_version}")
+            if os.getenv("GITHUB_OUTPUT"):
+                with open(os.getenv("GITHUB_OUTPUT"), "a") as gh_out:
+                    gh_out.write(f"photos_version={latest_photos_version}\n")
+
+        # 5. Prepare replacements
         replacements = []
 
         # Use regex that matches the versioning scheme (X.X.X, possibly with extra suffix if needed, but standard is numbers)
@@ -188,18 +208,25 @@ def main():
             new_yt_apk = f"youtube-{latest_yt_version}.apk"
             replacements.append((r"youtube-\d+\.\d+\.\d+\.apk", new_yt_apk))
 
-        # 5. Update files
+        if latest_photos_version:
+            new_photos_apk = f"google-photos-{latest_photos_version}.apk"
+            replacements.append((r"google-photos-\d+\.\d+\.\d+\.apk", new_photos_apk))
+
+        # 6. Update files
         any_updated = False
         for filepath in FILES_TO_UPDATE:
             if update_file(filepath, replacements):
                 any_updated = True
 
-        # 6. Cleanup
-        print("Cleaning up...")
-        if os.path.exists(cli_filename):
-            os.remove(cli_filename)
-        if os.path.exists(patches_filename):
-            os.remove(patches_filename)
+        # 7. Cleanup
+        if not os.getenv("SKIP_CLEANUP"):
+            print("Cleaning up...")
+            if os.path.exists(cli_filename):
+                os.remove(cli_filename)
+            if os.path.exists(patches_filename):
+                os.remove(patches_filename)
+        else:
+            print("Skipping cleanup (SKIP_CLEANUP is set).")
 
         if any_updated:
             print("Updates applied.")

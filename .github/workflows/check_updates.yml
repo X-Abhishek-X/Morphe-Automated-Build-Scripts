@@ -31,19 +31,12 @@ jobs:
         run: |
           pip install -r scripts/requirements.txt
 
-      - name: Cache Cargo
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-
-      - name: Install apkeep
+      - name: Install apkeep (binary)
         run: |
-          if ! command -v apkeep &> /dev/null; then
-            cargo install apkeep
-          fi
+          wget https://github.com/EFForg/apkeep/releases/download/v0.15.0/apkeep-x86_64-unknown-linux-gnu -O apkeep
+          chmod +x apkeep
+          sudo mv apkeep /usr/local/bin/apkeep
+          apkeep --version
 
       - name: Run update script
         id: check

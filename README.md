@@ -54,7 +54,7 @@ This repository **does NOT include** the following files due to size and licensi
 
 - **File**: `patches-X.X.X.rvp`
 - **Download**: [ReVanced Patches Releases](https://github.com/ReVanced/revanced-patches/releases)
-- **Rename to**: `patches-5.48.0.rvp` (or update script filenames)
+- **Rename to**: `patches-5.50.2.rvp` (or update script filenames)
 
 #### 3. Base APK Files
 
@@ -84,7 +84,7 @@ This repository **does NOT include** the following files due to size and licensi
    ```
    📁 Revanced apk maker/
    ├── 📄 revanced-cli-5.0.1-all.jar
-   ├── 📄 patches-5.48.0.rvp
+   ├── 📄 patches-5.50.2.rvp
    ├── 📄 youtube-20.14.43.apk
    ├── 📄 google-photos-7.55.0.apk
    ├── 📜 patch-youtube.bat

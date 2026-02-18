@@ -2,7 +2,7 @@
 
 > **Fully automated GitHub Actions workflows to build and release ReVanced-patched apps (YouTube & Google Photos).**
 
-![GitHub License](https://img.shields.io/github/license/X-Abhishek-X/revanced-apk-patcher-scripts)
+![GitHub License](https://img.shields.io/github/license/X-Abhishek-X/ReVanced-Automated-Build-Scripts)
 ![ReVanced](https://img.shields.io/badge/ReVanced-Community-blue)
 ![Automated](https://img.shields.io/badge/Build-Automated-green)
 

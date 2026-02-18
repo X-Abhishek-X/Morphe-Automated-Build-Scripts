@@ -66,7 +66,7 @@ This repository **does NOT include** the following files due to size and licensi
 
 **Google Photos**:
 
-- **File**: `google-photos-7.55.0.apk`
+- **File**: `google-photos-latest.apk`
 - **Download**: [APKMirror - Google Photos](https://www.apkmirror.com/apk/google-inc/photos/)
 - **Version**: 7.55.0 (or check ReVanced compatibility)
 
@@ -86,7 +86,7 @@ This repository **does NOT include** the following files due to size and licensi
    ├── 📄 revanced-cli-5.0.1-all.jar
    ├── 📄 patches-5.50.2.rvp
    ├── 📄 youtube-20.14.43.apk
-   ├── 📄 google-photos-7.55.0.apk
+   ├── 📄 google-photos-latest.apk
    ├── 📜 patch-youtube.bat
    ├── 📜 patch-youtube-custom.ps1
    └── 📜 patch-google-photos.bat

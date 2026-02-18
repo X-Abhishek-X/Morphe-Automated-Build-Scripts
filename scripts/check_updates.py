@@ -8,10 +8,7 @@ import sys
 REPO_CLI = "ReVanced/revanced-cli"
 REPO_PATCHES = "ReVanced/revanced-patches"
 FILES_TO_UPDATE = [
-    "README.md",
-    "patch-youtube.bat",
-    "patch-youtube-custom.ps1",
-    "patch-google-photos.bat"
+    "README.md"
 ]
 
 def get_latest_release(repo):

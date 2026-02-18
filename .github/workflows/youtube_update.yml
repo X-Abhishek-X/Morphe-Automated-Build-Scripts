@@ -55,7 +55,7 @@ jobs:
             apkeep -a com.google.android.youtube .
           else
             echo "Downloading version $VERSION..."
-            apkeep -a com.google.android.youtube -v "$VERSION" .
+            apkeep -a com.google.android.youtube@$VERSION .
           fi
 
       - name: Patch YouTube

@@ -57,7 +57,7 @@ jobs:
             apkeep -a com.google.android.apps.photos .
           else
             echo "Downloading version $VERSION..."
-            apkeep -a com.google.android.apps.photos -v "$VERSION" .
+            apkeep -a com.google.android.apps.photos@$VERSION .
           fi
 
       - name: Verify APK Signature

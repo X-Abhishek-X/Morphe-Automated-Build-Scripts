@@ -31,10 +31,66 @@ jobs:
         run: |
           pip install -r scripts/requirements.txt
 
+      - name: Cache Cargo
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install apkeep
+        run: |
+          if ! command -v apkeep &> /dev/null; then
+            cargo install apkeep
+          fi
+
       - name: Run update script
+        id: check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKIP_CLEANUP: "true"
         run: python scripts/check_updates.py
+
+      - name: Download Google Photos APK
+        if: steps.check.outputs.photos_version != ''
+        run: |
+          echo "Downloading Google Photos v${{ steps.check.outputs.photos_version }}..."
+          apkeep -a com.google.android.apps.photos -v "${{ steps.check.outputs.photos_version }}" -d .
+
+      - name: Patch Google Photos
+        if: steps.check.outputs.photos_version != ''
+        run: |
+          # Find the downloaded APK (apkeep naming might vary)
+          APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+             echo "APK not found!"
+             exit 1
+          fi
+
+          # Find CLI and Patches (should be left by script if SKIP_CLEANUP is set)
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+
+          echo "Patching $APK_FILE with $CLI_JAR and $PATCHES_RVP..."
+
+          java -jar "$CLI_JAR" patch \
+            --exclusive \
+            --keystore "google-photos-revanced.keystore" \
+            -p "$PATCHES_RVP" \
+            -e "Spoof features" \
+            -e "Enable DCIM folders backup control" \
+            -e "GmsCore support" \
+            -o google-photos-revanced.apk \
+            "$APK_FILE"
+
+      - name: Upload Patched APK
+        if: steps.check.outputs.photos_version != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-photos-revanced-v${{ steps.check.outputs.photos_version }}
+          path: google-photos-revanced.apk
+          retention-days: 90
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6

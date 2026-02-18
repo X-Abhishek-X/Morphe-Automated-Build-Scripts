@@ -159,15 +159,15 @@ jobs:
             -e "Video ads" \
             -e "Video quality" \
             -e "Wide search bar" \
-            -o youtube-revanced.apk \
+            -o youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk \
             "$APK_FILE"
 
       - name: Upload YouTube ReVanced
         if: steps.check.outputs.youtube_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: youtube-revanced
-          path: youtube-revanced.apk
+          name: youtube-revanced-v${{ steps.check.outputs.youtube_version }}
+          path: youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk
           retention-days: 90
 
       - name: Create Release
@@ -182,6 +182,6 @@ jobs:
             **Version:** ${{ steps.check.outputs.youtube_version }}
 
             *Signed by Google (verified).*
-          files: youtube-revanced.apk
+          files: youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk
           draft: false
           prerelease: false

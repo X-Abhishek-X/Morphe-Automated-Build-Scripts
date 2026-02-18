@@ -13,8 +13,8 @@ if (-not (Test-Path "revanced-cli-5.0.1-all.jar")) {
     exit 1
 }
 
-if (-not (Test-Path "patches-5.48.0.rvp")) {
-    Write-Host "ERROR: patches-5.48.0.rvp not found!" -ForegroundColor Red
+if (-not (Test-Path "patches-5.50.2.rvp")) {
+    Write-Host "ERROR: patches-5.50.2.rvp not found!" -ForegroundColor Red
     Read-Host "Press Enter to exit"
     exit 1
 }
@@ -67,7 +67,7 @@ Write-Host "Selected $($patches.Count) patches" -ForegroundColor Green
 Write-Host "Patching... (5-10 minutes)" -ForegroundColor Cyan
 Write-Host ""
 
-$cmd = "java -jar revanced-cli-5.0.1-all.jar patch --exclusive -p patches-5.48.0.rvp"
+$cmd = "java -jar revanced-cli-5.0.1-all.jar patch --exclusive -p patches-5.50.2.rvp"
 foreach ($p in $patches) { $cmd += " -e `"$p`"" }
 $cmd += " -o youtube-revanced-custom.apk youtube-20.14.43.apk"
 

@@ -14,8 +14,8 @@ if not exist "revanced-cli-5.0.1-all.jar" (
     exit /b 1
 )
 
-if not exist "patches-5.48.0.rvp" (
-    echo ERROR: patches-5.48.0.rvp not found!
+if not exist "patches-5.50.2.rvp" (
+    echo ERROR: patches-5.50.2.rvp not found!
     pause
     exit /b 1
 )
@@ -34,7 +34,7 @@ echo.
 
 java -jar revanced-cli-5.0.1-all.jar patch ^
     --exclusive ^
-    -p patches-5.48.0.rvp ^
+    -p patches-5.50.2.rvp ^
     -e "Spoof features" ^
     -e "Enable DCIM folders backup control" ^
     -e "GmsCore support" ^

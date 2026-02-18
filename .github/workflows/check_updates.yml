@@ -138,4 +138,4 @@ jobs:
         with:
           commit_message: "chore: update ReVanced versions [skip ci]"
           branch: master
-          file_pattern: "README.md *.bat *.ps1"
+          file_pattern: "README.md"

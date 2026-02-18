@@ -61,12 +61,18 @@ jobs:
       - name: Patch YouTube
         if: steps.check.outputs.youtube_version != ''
         run: |
-          # Find the downloaded APK
-          APK_FILE=$(find . -name "com.google.android.youtube*.apk" | head -n 1)
+          echo "Current directory contents:"
+          ls -R
+
+          # Find the downloaded APK (broad matching)
+          APK_FILE=$(find . -maxdepth 1 -name "com.google.android.youtube*" | head -n 1)
+
           if [ -z "$APK_FILE" ]; then
-             echo "APK not found!"
+             echo "APK not found! Search failed."
              exit 1
           fi
+
+          echo "Found APK file/bundle: $APK_FILE"
 
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)

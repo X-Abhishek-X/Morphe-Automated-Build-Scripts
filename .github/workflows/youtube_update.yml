@@ -101,11 +101,18 @@ jobs:
 
           echo "Patching $APK_FILE..."
 
+          # Ensure keystore exists (using a default one if missing)
+          if [ ! -f "google-photos-revanced.keystore" ]; then
+             echo "Keystore not found. Generating a temporary one for signing..."
+             keytool -genkey -v -keystore google-photos-revanced.keystore -alias revanced -keyalg RSA -keysize 2048 -validity 10000 -storepass "password" -keypass "password" -dname "CN=ReVanced, OU=Automation, O=ReVanced, L=Internet, S=Cloud, C=US"
+          fi
+
           # Use --exclusive with -e to enable only specific patches
           # Do NOT use -i, as that is for --install
           java -jar "$CLI_JAR" patch \
             --exclusive \
             --keystore "google-photos-revanced.keystore" \
+            --keystore-password "password" \
             -p "$PATCHES_RVP" \
             -e "Bypass URL redirects" \
             -e "Bypass image region restrictions" \
@@ -159,29 +166,29 @@ jobs:
             -e "Video ads" \
             -e "Video quality" \
             -e "Wide search bar" \
-            -o youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk \
+            -o "youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk" \
             "$APK_FILE"
 
       - name: Upload YouTube ReVanced
         if: steps.check.outputs.youtube_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: youtube-revanced-v${{ steps.check.outputs.youtube_version }}
-          path: youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk
+          name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}"
+          path: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk"
           retention-days: 90
 
       - name: Create Release
         if: steps.check.outputs.youtube_version != ''
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: youtube-revanced-v${{ steps.check.outputs.youtube_version }}
-          name: YouTube ReVanced v${{ steps.check.outputs.youtube_version }}
+          tag_name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}"
+          name: "YouTube ReVanced v${{ steps.check.outputs.youtube_version }}"
           body: |
             Automated build of YouTube ReVanced.
 
             **Version:** ${{ steps.check.outputs.youtube_version }}
 
             *Signed by Google (verified).*
-          files: youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk
+          files: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk"
           draft: false
           prerelease: false

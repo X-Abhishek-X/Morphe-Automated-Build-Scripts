@@ -115,38 +115,45 @@ jobs:
 
           echo "Patching $APK_FILE with $CLI_JAR and $PATCHES_RVP..."
 
+          # Ensure keystore exists (using a default one if missing)
+          if [ ! -f "google-photos-revanced.keystore" ]; then
+             echo "Keystore not found. Generating a temporary one for signing..."
+             keytool -genkey -v -keystore google-photos-revanced.keystore -alias revanced -keyalg RSA -keysize 2048 -validity 10000 -storepass "password" -keypass "password" -dname "CN=ReVanced, OU=Automation, O=ReVanced, L=Internet, S=Cloud, C=US"
+          fi
+
           java -jar "$CLI_JAR" patch \
             --exclusive \
             --keystore "google-photos-revanced.keystore" \
+            --keystore-password "password" \
             -p "$PATCHES_RVP" \
             -e "Spoof features" \
             -e "Enable DCIM folders backup control" \
             -e "GmsCore support" \
             -e "Change package name" \
-            -o google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk \
+            -o "google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk" \
             "$APK_FILE"
 
       - name: Upload Patched APK
         if: steps.check.outputs.photos_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: google-photos-revanced-v${{ steps.download.outputs.photos_version }}
-          path: google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk
+          name: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}"
+          path: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk"
           retention-days: 90
 
       - name: Create Release
         if: steps.check.outputs.photos_version != ''
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: google-photos-v${{ steps.download.outputs.photos_version }}
-          name: Google Photos v${{ steps.download.outputs.photos_version }}
+          tag_name: "google-photos-v${{ steps.download.outputs.photos_version }}"
+          name: "Google Photos v${{ steps.download.outputs.photos_version }}"
           body: |
             Automated build of Google Photos ReVanced.
 
             **Version:** ${{ steps.download.outputs.photos_version }}
 
             *Signed by Google (verified).*
-          files: google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk
+          files: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk"
           draft: false
           prerelease: false
 

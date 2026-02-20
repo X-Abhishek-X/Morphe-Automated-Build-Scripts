@@ -37,8 +37,8 @@ You don't need to run any code. Just download the latest build:
 1.  Go to the **[Releases](../../releases)** page of this repository.
 2.  Expand the latest **Assets** section.
 3.  Download the APK you need:
-    - `youtube-revanced.apk`
-    - `google-photos-revanced.apk`
+    - `youtube-revanced-v20.14.43.apk`
+    - `google-photos-revanced-vlatest.apk`
 
 ### Installation Instructions
 
@@ -46,11 +46,11 @@ You don't need to run any code. Just download the latest build:
 
 1.  **Install GmsCore (MicroG)** first. This is required to log in.
     - [Download GmsCore here](https://github.com/ReVanced/GmsCore/releases).
-2.  Install the `youtube-revanced.apk` you downloaded.
+2.  Install the `youtube-revanced-v20.14.43.apk` you downloaded.
 
 #### For Google Photos ReVanced:
 
-1.  Install `google-photos-revanced.apk`.
+1.  Install `google-photos-revanced-vlatest.apk`.
 2.  It will install as a separate app (thanks to the package rename patch). You can keep the original app if you wish.
 
 ---

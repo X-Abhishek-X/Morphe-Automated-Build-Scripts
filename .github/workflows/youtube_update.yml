@@ -56,42 +56,44 @@ jobs:
             apkeep -a com.google.android.youtube .
           else
             echo "Downloading version $VERSION..."
-            apkeep -a com.google.android.youtube@$VERSION .
+            apkeep -a "com.google.android.youtube@${VERSION}" .
           fi
 
       - name: Patch YouTube
         if: steps.check.outputs.youtube_version != ''
         run: |
           echo "Current directory contents:"
-          ls -R
+          ls -la
 
-          # Find the downloaded APK (broad matching)
-          APK_FILE=$(find . -maxdepth 1 -name "com.google.android.youtube*" | head -n 1)
+          # Find the downloaded file (could be .apk, .xapk, or .apks)
+          APK_FILE=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
 
           if [ -z "$APK_FILE" ]; then
-             echo "APK not found! Search failed."
+             echo "APK not found! Listing files:"
+             ls -la
              exit 1
           fi
 
-          echo "Found APK file/bundle: $APK_FILE"
+          echo "Found file: $APK_FILE"
 
           # Handle XAPK/APKS (Split APKs) which apkeep downloads from Play Store
           if [[ "$APK_FILE" == *.xapk ]] || [[ "$APK_FILE" == *.apks ]]; then
-            echo "Detected Split APK bundle ($APK_FILE). Extracting and Merging..."
+            echo "Detected Split APK bundle. Extracting and Merging..."
             unzip -o "$APK_FILE" -d extracted_apk
-            
+
             # Download APKEditor to merge splits
-            echo "Downloading APKEditor to merge split APKs..."
-            curl -L -o APKEditor.jar https://github.com/REAndroid/APKEditor/releases/download/V1.4.3/APKEditor-1.4.3.jar
-            
+            echo "Downloading APKEditor..."
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+
             # Merge the split APKs into a single APK
             java -jar APKEditor.jar m -i extracted_apk -o merged.apk
-            
+
             if [ ! -f "merged.apk" ]; then
               echo "Error: Failed to merge APKs."
               exit 1
             fi
-            
+
             echo "Successfully merged APKs into merged.apk"
             APK_FILE="merged.apk"
           fi
@@ -99,20 +101,13 @@ jobs:
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
 
+          echo "CLI JAR: $CLI_JAR"
+          echo "Patches RVP: $PATCHES_RVP"
           echo "Patching $APK_FILE..."
 
-          # Ensure keystore exists (using a default one if missing)
-          if [ ! -f "google-photos-revanced.keystore" ]; then
-             echo "Keystore not found. Generating a temporary one for signing..."
-             keytool -genkey -v -keystore google-photos-revanced.keystore -alias revanced -keyalg RSA -keysize 2048 -validity 10000 -storepass "password" -keypass "password" -dname "CN=ReVanced, OU=Automation, O=ReVanced, L=Internet, S=Cloud, C=US"
-          fi
-
-          # Use --exclusive with -e to enable only specific patches
-          # Do NOT use -i, as that is for --install
+          # Note: No --keystore flag — ReVanced CLI will auto-generate one
           java -jar "$CLI_JAR" patch \
             --exclusive \
-            --keystore "google-photos-revanced.keystore" \
-            --keystore-password "password" \
             -p "$PATCHES_RVP" \
             -e "Bypass URL redirects" \
             -e "Bypass image region restrictions" \

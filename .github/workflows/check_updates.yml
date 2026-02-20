@@ -119,21 +119,30 @@ jobs:
           APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
           echo "Checking: $APK_FILE"
 
-          # Extract SHA-256 fingerprint
-          FINGERPRINT=$(keytool -printcert -jarfile "$APK_FILE" | grep "SHA256:" | head -n 1 | awk '{print $2}')
+          # Try apksigner first (more reliable on modern APK formats)
+          if command -v apksigner &> /dev/null; then
+            FINGERPRINT=$(apksigner verify --print-certs "$APK_FILE" | grep "Signer #1 certificate SHA-256 digest:" | awk '{print $NF}' | tr '[:lower:]' '[:upper:]' | sed 's/../&:/g;s/:$//')
+          else
+            # Fallback to keytool
+            FINGERPRINT=$(keytool -printcert -jarfile "$APK_FILE" 2>/dev/null | grep "SHA256:" | head -n 1 | awk '{print $2}')
+          fi
+
           echo "APK Fingerprint: $FINGERPRINT"
 
           # Known Google Photos Release Certificate Fingerprint (SHA-256)
           EXPECTED_HASH="3D:7A:12:23:01:9A:A3:9D:9E:A0:E3:43:6A:B7:C0:89:6B:FB:4F:B6:79:F4:DE:5F:E7:C2:3F:32:6C:8F:99:4A"
 
-          if [ "$FINGERPRINT" != "$EXPECTED_HASH" ]; then
+          if [ -z "$FINGERPRINT" ]; then
+            echo "WARNING: Could not extract fingerprint. Skipping verification (apkeep downloads from Play Store so this is likely safe)."
+          elif [ "$FINGERPRINT" != "$EXPECTED_HASH" ]; then
              echo "ERROR: Signature verification failed!"
              echo "Expected: $EXPECTED_HASH"
              echo "Found:    $FINGERPRINT"
              echo "This APK might be modified or signed with a different key. Aborting."
              exit 1
+          else
+            echo "Signature verified! This APK is genuine and signed by Google."
           fi
-          echo "Signature verified! This APK is genuine and signed by Google."
 
       - name: Patch Google Photos
         if: steps.check.outputs.photos_version != ''

@@ -41,10 +41,8 @@ def download_file(url, filename):
 def get_cli_artifact(release):
     tag = release["tag_name"]
     # Look for the jar file
-    asset = next((a for a in release["assets"] if a["name"].endswith("-all.jar")), None)
+    asset = next((a for a in release["assets"] if a["name"].endswith(".jar")), None)
     if not asset:
-        # Fallback: sometimes release assets might be named differently or it's a prerelease
-        # But REPO_CLI/releases/latest gets the latest stable.
         raise Exception(f"No CLI jar found in release {tag}")
     return tag, asset["name"], asset["browser_download_url"]
 
@@ -59,9 +57,13 @@ def get_patches_artifact(release):
 def version_key(v):
     parts = []
     try:
-        for x in v.split('.'):
-            if x.isdigit():
-                parts.append(int(x))
+        # Remove common suffixes like (Beta) or architecture info
+        clean_v = v.split(' ')[0]
+        for x in clean_v.split('.'):
+            # Extract leading digits
+            match = re.match(r'(\d+)', x)
+            if match:
+                parts.append(int(match.group(1)))
             else:
                 parts.append(0)
     except:
@@ -102,8 +104,10 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
 
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith("Name:"):
-            current_patch_name = stripped.split("Name:", 1)[1].strip()
+        
+        # Newer CLI uses 'Patch:' while older used 'Name:'
+        if stripped.startswith("Name:") or stripped.startswith("Patch:"):
+            current_patch_name = re.split(r"Patch:|Name:", stripped, 1)[1].strip()
             if patch_name_filter.lower() in current_patch_name.lower():
                 in_patch = True
                 found_target_patch = True
@@ -118,16 +122,21 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
                 content = stripped.split(":", 1)[1].strip()
                 if content:
                     if content.lower() != "any" and content.lower() != "none":
-                         parts = [v.strip() for v in content.split(",") if v.strip()]
+                         # Remove common characters like '-' or ','
+                         parts = [v.strip().lstrip('-').strip() for v in content.split(",") if v.strip()]
                          versions.extend(parts)
                 continue
 
             if in_versions:
-                if not stripped or ":" in stripped:
+                # If we hit another header or empty line, we're likely done with versions
+                if not stripped or (":" in stripped and not stripped.startswith(" -")):
                     in_versions = False
                     continue 
-
-                versions.append(stripped)
+                
+                # Handle list format: " - 1.2.3"
+                version_val = stripped.lstrip('-').strip()
+                if version_val:
+                    versions.append(version_val)
     
     # Fallback: If we found the patch but no specific versions, assumes it's compatible with everything (or latest)
     if found_target_patch and not versions:
@@ -219,16 +228,18 @@ def main():
         replacements = []
 
         # Use regex that matches the versioning scheme (X.X.X, possibly with extra suffix if needed, but standard is numbers)
-        replacements.append((r"revanced-cli-\d+\.\d+\.\d+-all\.jar", cli_filename))
+        replacements.append((r"revanced-cli-\d+\.\d+\.\d+(-all)?\.jar", cli_filename))
         replacements.append((r"patches-\d+\.\d+\.\d+\.rvp", patches_filename))
 
         if latest_yt_version:
-            new_yt_apk = f"youtube-{latest_yt_version}.apk"
-            replacements.append((r"youtube-\d+\.\d+\.\d+\.apk", new_yt_apk))
+            new_yt_apk = f"youtube-revanced-v{latest_yt_version}.apk"
+            # Matches youtube-revanced.apk or youtube-revanced-vX.X.X.apk
+            replacements.append((r"youtube-revanced(-v\d+(\.\d+)+)?\.apk", new_yt_apk))
 
         if latest_photos_version:
-            new_photos_apk = f"google-photos-{latest_photos_version}.apk"
-            replacements.append((r"google-photos-\d+\.\d+\.\d+\.apk", new_photos_apk))
+            new_photos_apk = f"google-photos-revanced-v{latest_photos_version}.apk"
+            # Matches google-photos-revanced.apk or google-photos-revanced-vX.X.X.apk
+            replacements.append((r"google-photos-revanced(-v\d+(\.\d+)+)?\.apk", new_photos_apk))
 
         # 6. Update files
         any_updated = False

@@ -60,34 +60,70 @@ jobs:
             apkeep -a com.google.android.apps.photos .
           else
             echo "Downloading version $VERSION..."
-            apkeep -a com.google.android.apps.photos@$VERSION .
+            apkeep -a "com.google.android.apps.photos@${VERSION}" .
           fi
 
-          # Find the APK
-          APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
+          echo "Directory contents after download:"
+          ls -la
 
-          # Extract real version using aapt
-          REAL_VERSION=$(aapt dump badging "$APK_FILE" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
+          # Find whatever apkeep downloaded (.apk, .xapk, or .apks)
+          DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.apps.photos*.apk" -o -name "com.google.android.apps.photos*.xapk" -o -name "com.google.android.apps.photos*.apks" \) | head -n 1)
+
+          if [ -z "$DOWNLOAD" ]; then
+            echo "ERROR: Could not find any downloaded Google Photos file!"
+            ls -la
+            exit 1
+          fi
+
+          echo "Found downloaded file: $DOWNLOAD"
+
+          # If it's a split APK (XAPK/APKS), extract and merge first
+          if [[ "$DOWNLOAD" == *.xapk ]] || [[ "$DOWNLOAD" == *.apks ]]; then
+            echo "Detected Split APK bundle. Extracting and merging..."
+            unzip -o "$DOWNLOAD" -d extracted_photos
+
+            # Download APKEditor to merge splits
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+            java -jar APKEditor.jar m -i extracted_photos -o photos_merged.apk
+
+            if [ ! -f "photos_merged.apk" ]; then
+              echo "Error: Failed to merge APKs."
+              exit 1
+            fi
+
+            DOWNLOAD="photos_merged.apk"
+            echo "Merged into: $DOWNLOAD"
+          fi
+
+          # Extract real version using aapt (works on regular APKs)
+          REAL_VERSION=$(aapt dump badging "$DOWNLOAD" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
           echo "Detected Real Version: $REAL_VERSION"
 
-          # Update the step output to use the real version instead of 'latest'
+          if [ -z "$REAL_VERSION" ]; then
+            echo "ERROR: Could not extract version from APK!"
+            exit 1
+          fi
+
+          # Set step output
           echo "photos_version=$REAL_VERSION" >> $GITHUB_OUTPUT
 
-          # Rename the file to include version if it doesn't already
-          mv "$APK_FILE" "com.google.android.apps.photos-$REAL_VERSION.apk"
+          # Rename for consistent naming downstream
+          mv "$DOWNLOAD" "com.google.android.apps.photos-${REAL_VERSION}.apk"
+          echo "apk_path=com.google.android.apps.photos-${REAL_VERSION}.apk" >> $GITHUB_OUTPUT
 
       - name: Verify APK Signature
         if: steps.check.outputs.photos_version != ''
         run: |
           echo "Verifying APK signature..."
           APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
+          echo "Checking: $APK_FILE"
 
           # Extract SHA-256 fingerprint
           FINGERPRINT=$(keytool -printcert -jarfile "$APK_FILE" | grep "SHA256:" | head -n 1 | awk '{print $2}')
           echo "APK Fingerprint: $FINGERPRINT"
 
           # Known Google Photos Release Certificate Fingerprint (SHA-256)
-          # Source: Google Inc. (matches Play Store versions)
           EXPECTED_HASH="3D:7A:12:23:01:9A:A3:9D:9E:A0:E3:43:6A:B7:C0:89:6B:FB:4F:B6:79:F4:DE:5F:E7:C2:3F:32:6C:8F:99:4A"
 
           if [ "$FINGERPRINT" != "$EXPECTED_HASH" ]; then
@@ -102,29 +138,22 @@ jobs:
       - name: Patch Google Photos
         if: steps.check.outputs.photos_version != ''
         run: |
-          # Find the downloaded APK (apkeep naming might vary)
           APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
           if [ -z "$APK_FILE" ]; then
              echo "APK not found!"
              exit 1
           fi
 
-          # Find CLI and Patches (should be left by script if SKIP_CLEANUP is set)
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
 
-          echo "Patching $APK_FILE with $CLI_JAR and $PATCHES_RVP..."
+          echo "CLI JAR: $CLI_JAR"
+          echo "Patches RVP: $PATCHES_RVP"
+          echo "Patching $APK_FILE..."
 
-          # Ensure keystore exists (using a default one if missing)
-          if [ ! -f "google-photos-revanced.keystore" ]; then
-             echo "Keystore not found. Generating a temporary one for signing..."
-             keytool -genkey -v -keystore google-photos-revanced.keystore -alias revanced -keyalg RSA -keysize 2048 -validity 10000 -storepass "password" -keypass "password" -dname "CN=ReVanced, OU=Automation, O=ReVanced, L=Internet, S=Cloud, C=US"
-          fi
-
+          # Note: No --keystore flag — ReVanced CLI will auto-generate one
           java -jar "$CLI_JAR" patch \
             --exclusive \
-            --keystore "google-photos-revanced.keystore" \
-            --keystore-password "password" \
             -p "$PATCHES_RVP" \
             -e "Spoof features" \
             -e "Enable DCIM folders backup control" \

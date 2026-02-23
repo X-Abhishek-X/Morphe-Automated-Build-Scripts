@@ -28,10 +28,9 @@ jobs:
           java-version: "17"
 
       - name: Install dependencies
-        run: |
-          pip install -r scripts/requirements.txt
+        run: pip install -r scripts/requirements.txt
 
-      - name: Install apkeep (python script)
+      - name: Install apkeep
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -47,9 +46,14 @@ jobs:
           SKIP_CLEANUP: "true"
         run: python scripts/check_updates.py
 
-      - name: Set build date
+      - name: Set build metadata
         id: date
-        run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+        run: |
+          echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+          echo "cli_version=$(basename "$CLI_JAR" .jar | grep -oP '\d+\.\d+\.\d+')" >> $GITHUB_OUTPUT
+          echo "patches_version=$(basename "$PATCHES_RVP" .rvp | grep -oP '\d+\.\d+\.\d+')" >> $GITHUB_OUTPUT
 
       - name: Download Google Photos APK
         if: steps.check.outputs.photos_version != ''
@@ -58,113 +62,93 @@ jobs:
           sudo apt-get update && sudo apt-get install -y aapt
 
           VERSION="${{ steps.check.outputs.photos_version }}"
-          echo "Expected version: $VERSION"
+          echo "Downloading Google Photos $VERSION..."
           if [ "$VERSION" = "latest" ]; then
-            echo "Downloading latest version..."
             apkeep -a com.google.android.apps.photos .
           else
-            echo "Downloading version $VERSION..."
             apkeep -a "com.google.android.apps.photos@${VERSION}" .
           fi
 
-          echo "Directory contents after download:"
-          ls -la
+          echo "Files after download:"; ls -la
 
-          # Find whatever apkeep downloaded (.apk, .xapk, or .apks)
           DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.apps.photos*.apk" -o -name "com.google.android.apps.photos*.xapk" -o -name "com.google.android.apps.photos*.apks" \) | head -n 1)
 
           if [ -z "$DOWNLOAD" ]; then
-            echo "ERROR: Could not find any downloaded Google Photos file!"
-            ls -la
-            exit 1
+            echo "ERROR: No Google Photos file found!"; ls -la; exit 1
           fi
 
-          echo "Found downloaded file: $DOWNLOAD"
+          echo "Found: $DOWNLOAD"
 
-          # If it's a split APK (XAPK/APKS), extract and merge first
+          # Download APKEditor (needed for XAPK or ABI splits)
+          APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+          curl -L -o APKEditor.jar "$APKEDITOR_URL"
+
           if [[ "$DOWNLOAD" == *.xapk ]] || [[ "$DOWNLOAD" == *.apks ]]; then
-            echo "Detected Split APK bundle. Extracting and merging..."
+            echo "Split APK detected. Extracting..."
             unzip -o "$DOWNLOAD" -d extracted_photos
+            echo "Extracted:"; ls extracted_photos/
 
-            # Download APKEditor to merge splits
-            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
-            curl -L -o APKEditor.jar "$APKEDITOR_URL"
-            java -jar APKEditor.jar m -i extracted_photos -o photos_merged.apk
+            # ARM64-v8a (nodpi)
+            mkdir -p merge_photos_arm64
+            cp extracted_photos/base.apk merge_photos_arm64/
+            find extracted_photos -name "*arm64*" | while read f; do cp "$f" merge_photos_arm64/; done
+            java -jar APKEditor.jar m -i merge_photos_arm64 -o photos-merged-arm64.apk
 
-            if [ ! -f "photos_merged.apk" ]; then
-              echo "Error: Failed to merge APKs."
-              exit 1
-            fi
+            # ARMv7 (nodpi)
+            mkdir -p merge_photos_arm7
+            cp extracted_photos/base.apk merge_photos_arm7/
+            find extracted_photos \( -name "*armeabi_v7a*" -o -name "*armeabi-v7a*" \) | while read f; do cp "$f" merge_photos_arm7/; done
+            java -jar APKEditor.jar m -i merge_photos_arm7 -o photos-merged-arm7.apk
 
-            DOWNLOAD="photos_merged.apk"
-            echo "Merged into: $DOWNLOAD"
+            # Get version from arm64 build
+            REAL_VERSION=$(aapt dump badging photos-merged-arm64.apk | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
+          else
+            echo "Single APK. Using as-is for both architectures."
+            cp "$DOWNLOAD" photos-merged-arm64.apk
+            cp "$DOWNLOAD" photos-merged-arm7.apk
+            REAL_VERSION=$(aapt dump badging "$DOWNLOAD" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
           fi
 
-          # Extract real version using aapt (works on regular APKs)
-          REAL_VERSION=$(aapt dump badging "$DOWNLOAD" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
-          echo "Detected Real Version: $REAL_VERSION"
-
+          echo "Detected version: $REAL_VERSION"
           if [ -z "$REAL_VERSION" ]; then
-            echo "ERROR: Could not extract version from APK!"
-            exit 1
+            echo "ERROR: Could not extract version!"; exit 1
           fi
 
-          # Set step output
           echo "photos_version=$REAL_VERSION" >> $GITHUB_OUTPUT
-
-          # Rename for consistent naming downstream
-          mv "$DOWNLOAD" "com.google.android.apps.photos-${REAL_VERSION}.apk"
-          echo "apk_path=com.google.android.apps.photos-${REAL_VERSION}.apk" >> $GITHUB_OUTPUT
 
       - name: Verify APK Signature
         if: steps.check.outputs.photos_version != ''
         run: |
-          echo "Verifying APK signature..."
-          APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
-          echo "Checking: $APK_FILE"
+          APK_FILE="photos-merged-arm64.apk"
+          echo "Verifying signature of $APK_FILE..."
 
-          # Try apksigner first (more reliable on modern APK formats)
           if command -v apksigner &> /dev/null; then
             FINGERPRINT=$(apksigner verify --print-certs "$APK_FILE" | grep "Signer #1 certificate SHA-256 digest:" | awk '{print $NF}' | tr '[:lower:]' '[:upper:]' | sed 's/../&:/g;s/:$//')
           else
-            # Fallback to keytool
             FINGERPRINT=$(keytool -printcert -jarfile "$APK_FILE" 2>/dev/null | grep "SHA256:" | head -n 1 | awk '{print $2}')
           fi
 
           echo "APK Fingerprint: $FINGERPRINT"
-
-          # Known Google Photos Release Certificate Fingerprint (SHA-256)
           EXPECTED_HASH="3D:7A:12:23:01:9A:A3:9D:9E:A0:E3:43:6A:B7:C0:89:6B:FB:4F:B6:79:F4:DE:5F:E7:C2:3F:32:6C:8F:99:4A"
 
           if [ -z "$FINGERPRINT" ]; then
-            echo "WARNING: Could not extract fingerprint. Skipping verification (apkeep downloads from Play Store so this is likely safe)."
+            echo "WARNING: Could not extract fingerprint. Skipping verification."
           elif [ "$FINGERPRINT" != "$EXPECTED_HASH" ]; then
-             echo "ERROR: Signature verification failed!"
-             echo "Expected: $EXPECTED_HASH"
-             echo "Found:    $FINGERPRINT"
-             echo "This APK might be modified or signed with a different key. Aborting."
-             exit 1
+            echo "ERROR: Signature mismatch! Expected: $EXPECTED_HASH | Found: $FINGERPRINT"
+            exit 1
           else
-            echo "Signature verified! This APK is genuine and signed by Google."
+            echo "Signature verified! Genuine Google APK."
           fi
 
-      - name: Patch Google Photos
+      - name: Patch Google Photos (ARM64-v8a)
         if: steps.check.outputs.photos_version != ''
         run: |
-          APK_FILE=$(find . -name "com.google.android.apps.photos*.apk" | head -n 1)
-          if [ -z "$APK_FILE" ]; then
-             echo "APK not found!"
-             exit 1
-          fi
-
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+          VERSION="${{ steps.download.outputs.photos_version }}"
+          TODAY="${{ steps.date.outputs.today }}"
 
-          echo "CLI JAR: $CLI_JAR"
-          echo "Patches RVP: $PATCHES_RVP"
-          echo "Patching $APK_FILE..."
-
-          # Note: No --keystore flag — ReVanced CLI will auto-generate one
+          echo "Patching Google Photos ARM64-v8a..."
           java -jar "$CLI_JAR" patch \
             --exclusive \
             -p "$PATCHES_RVP" \
@@ -172,35 +156,109 @@ jobs:
             -e "Enable DCIM folders backup control" \
             -e "GmsCore support" \
             -e "Change package name" \
-            -o "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}.apk" \
-            "$APK_FILE"
+            -o "google-photos-revanced-v${VERSION}-arm64-v8a-nodpi-${TODAY}.apk" \
+            photos-merged-arm64.apk
 
-      - name: Upload Patched APK
+      - name: Patch Google Photos (ARMv7)
+        if: steps.check.outputs.photos_version != ''
+        run: |
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+          VERSION="${{ steps.download.outputs.photos_version }}"
+          TODAY="${{ steps.date.outputs.today }}"
+
+          echo "Patching Google Photos ARMv7..."
+          java -jar "$CLI_JAR" patch \
+            --exclusive \
+            -p "$PATCHES_RVP" \
+            -e "Spoof features" \
+            -e "Enable DCIM folders backup control" \
+            -e "GmsCore support" \
+            -e "Change package name" \
+            -o "google-photos-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk" \
+            photos-merged-arm7.apk
+
+      - name: Upload Artifacts
         if: steps.check.outputs.photos_version != ''
         uses: actions/upload-artifact@v4
         with:
           name: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}"
-          path: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}.apk"
+          path: |
+            google-photos-revanced-v${{ steps.download.outputs.photos_version }}-arm64-v8a-nodpi-${{ steps.date.outputs.today }}.apk
+            google-photos-revanced-v${{ steps.download.outputs.photos_version }}-armeabi-v7a-nodpi-${{ steps.date.outputs.today }}.apk
           retention-days: 90
 
       - name: Create Release
         if: steps.check.outputs.photos_version != ''
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: "google-photos-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}"
-          name: "Google Photos v${{ steps.download.outputs.photos_version }} (${{ steps.date.outputs.today }})"
-          body: |
-            Automated daily build of Google Photos ReVanced.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.download.outputs.photos_version }}"
+          TODAY="${{ steps.date.outputs.today }}"
+          CLI_VER="${{ steps.date.outputs.cli_version }}"
+          PATCHES_VER="${{ steps.date.outputs.patches_version }}"
 
-            **App Version:** ${{ steps.download.outputs.photos_version }}
-            **Build Date:** ${{ steps.date.outputs.today }}
+          ARM64_APK="google-photos-revanced-v${VERSION}-arm64-v8a-nodpi-${TODAY}.apk"
+          ARM7_APK="google-photos-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk"
 
-            *Signed by Google (verified).*
-          files: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}.apk"
-          draft: false
-          prerelease: false
+          gh release create "google-photos-v${VERSION}-${TODAY}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Google Photos v${VERSION} (${TODAY})" \
+            --notes "## 📷 Google Photos ReVanced v${VERSION}
 
-      - name: Commit and Push changes
+**Build Date:** ${TODAY}
+**ReVanced CLI:** v${CLI_VER}
+**ReVanced Patches:** v${PATCHES_VER}
+
+---
+
+## 📦 Downloads
+
+| File | Architecture |
+|------|-------------|
+| \`${ARM64_APK}\` | ARM64-v8a (64-bit) — Most modern devices |
+| \`${ARM7_APK}\` | ARMv7 (32-bit) — Older devices |
+
+> Both builds are **nodpi** (no density-specific resources stripped).
+
+---
+
+## ✅ Patches Applied
+
+- **Spoof features** — Unlocks Pixel-exclusive features (Unlimited original quality backup)
+- **Enable DCIM folders backup control** — Allows controlling DCIM folder backup
+- **GmsCore support** — Allows app to work without root using MicroG
+- **Change package name** — Installs alongside the original Google Photos app
+
+---
+
+## 📋 Installation
+
+1. Install the APK for your device architecture.
+2. It will install as a **separate app** alongside the original Google Photos.
+3. Sign in and enjoy unlimited original quality backup!
+
+*Automated daily build — Signed with auto-generated key.*" \
+            "$ARM64_APK" \
+            "$ARM7_APK"
+
+      - name: Delete old Google Photos releases
+        if: steps.check.outputs.photos_version != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TODAY="${{ steps.date.outputs.today }}"
+          echo "Cleaning up old Google Photos releases (keeping today: $TODAY)..."
+
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 50 --json tagName,name \
+            | jq -r '.[] | select(.tagName | startswith("google-photos")) | select(.tagName | contains("'"$TODAY"'") | not) | .tagName' \
+            | while read TAG; do
+                echo "Deleting release: $TAG"
+                gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes 2>/dev/null || true
+                git push origin --delete "$TAG" 2>/dev/null || true
+              done
+
+      - name: Commit and Push README changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update ReVanced versions [skip ci]"

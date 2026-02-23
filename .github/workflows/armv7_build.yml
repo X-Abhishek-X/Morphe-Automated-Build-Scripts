@@ -66,9 +66,8 @@ jobs:
           TODAY="${{ steps.meta.outputs.today }}"
 
           APK_FILE=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
-
           if [ -z "$APK_FILE" ]; then
-            echo "ERROR: YouTube file not found. Files:"; ls -la; exit 1
+            echo "ERROR: YouTube file not found."; ls -la; exit 1
           fi
           echo "Found: $APK_FILE"
 
@@ -82,26 +81,26 @@ jobs:
             if [ -z "$MAIN_APK" ]; then
               MAIN_APK=$(find extracted_yt -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
             fi
-            echo "Main APK: $MAIN_APK"
+            echo "Main APK: $MAIN_APK ($(du -sh "$MAIN_APK" | cut -f1))"
+            cp "$MAIN_APK" input.apk
 
-            # Download APKEditor
-            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
-            curl -L -o APKEditor.jar "$APKEDITOR_URL"
-
-            # ARMv7 nodpi: main APK + all config splits EXCEPT arm64
-            mkdir -p merge_yt_arm7
-            cp "$MAIN_APK" merge_yt_arm7/base.apk
-            find extracted_yt -maxdepth 1 -name "config.*.apk" ! -name "config.arm64*" | while read f; do cp "$f" merge_yt_arm7/; done
-            echo "ARMv7 merge dir:"; ls merge_yt_arm7/
-            java -jar APKEditor.jar m -i merge_yt_arm7 -o yt_arm7_input.apk
-
-            if [ ! -f "yt_arm7_input.apk" ]; then
-              echo "ERROR: APKEditor merge failed."; exit 1
+            # Inject ARMv7 native libs from config split if it exists
+            ARM7_CONFIG=$(find extracted_yt -maxdepth 1 \( -name "config.armeabi_v7a.apk" -o -name "config.armeabi-v7a.apk" \) | head -n 1)
+            if [ -n "$ARM7_CONFIG" ]; then
+              echo "Injecting ARMv7 native libs from: $ARM7_CONFIG"
+              mkdir -p arm7_tmp
+              unzip -o "$ARM7_CONFIG" "lib/*" -d arm7_tmp/ 2>/dev/null || true
+              if [ -d "arm7_tmp/lib" ]; then
+                cd arm7_tmp && zip -r ../input.apk lib/ && cd ..
+                echo "ARMv7 native libs injected."
+              fi
+            else
+              echo "No ARMv7 config split found in this XAPK — using base APK only."
             fi
-            INPUT_APK="yt_arm7_input.apk"
+
+            echo "Final input size: $(du -sh input.apk | cut -f1)"
           else
-            echo "Single APK. Using as-is."
-            INPUT_APK="$APK_FILE"
+            cp "$APK_FILE" input.apk
           fi
 
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
@@ -165,7 +164,7 @@ jobs:
             -e "Video quality" \
             -e "Wide search bar" \
             -o "$OUTPUT" \
-            "$INPUT_APK"
+            input.apk
 
       - name: Upload YouTube ARMv7 artifact
         if: steps.meta.outputs.youtube_version != ''
@@ -234,7 +233,7 @@ jobs:
           python scripts/check_updates.py
           echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
-      - name: Download Google Photos APK
+      - name: Download and Build Google Photos ARMv7 nodpi
         if: steps.meta.outputs.photos_version != ''
         id: download
         run: |
@@ -264,19 +263,25 @@ jobs:
             if [ -z "$MAIN_APK" ]; then
               MAIN_APK=$(find extracted_photos -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
             fi
-            echo "Main APK: $MAIN_APK"
+            echo "Main APK: $MAIN_APK ($(du -sh "$MAIN_APK" | cut -f1))"
+            cp "$MAIN_APK" photos_input.apk
 
-            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
-            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+            # Inject ARMv7 native libs if config split exists
+            ARM7_CONFIG=$(find extracted_photos -maxdepth 1 \( -name "config.armeabi_v7a.apk" -o -name "config.armeabi-v7a.apk" \) | head -n 1)
+            if [ -n "$ARM7_CONFIG" ]; then
+              echo "Injecting ARMv7 native libs from: $ARM7_CONFIG"
+              mkdir -p arm7_tmp
+              unzip -o "$ARM7_CONFIG" "lib/*" -d arm7_tmp/ 2>/dev/null || true
+              if [ -d "arm7_tmp/lib" ]; then
+                cd arm7_tmp && zip -r ../photos_input.apk lib/ && cd ..
+                echo "ARMv7 native libs injected."
+              fi
+            else
+              echo "No ARMv7 config split found — using base APK only."
+            fi
 
-            # ARMv7 nodpi: main APK + all config splits EXCEPT arm64
-            mkdir -p merge_photos_arm7
-            cp "$MAIN_APK" merge_photos_arm7/base.apk
-            find extracted_photos -maxdepth 1 -name "config.*.apk" ! -name "config.arm64*" | while read f; do cp "$f" merge_photos_arm7/; done
-            echo "ARMv7 merge dir:"; ls merge_photos_arm7/
-            java -jar APKEditor.jar m -i merge_photos_arm7 -o photos_arm7_input.apk
-
-            DOWNLOAD="photos_arm7_input.apk"
+            echo "Final input size: $(du -sh photos_input.apk | cut -f1)"
+            DOWNLOAD="photos_input.apk"
           fi
 
           REAL_VERSION=$(aapt dump badging "$DOWNLOAD" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
@@ -289,7 +294,7 @@ jobs:
           mv "$DOWNLOAD" "com.google.android.apps.photos-${REAL_VERSION}-arm7.apk"
           echo "apk_path=com.google.android.apps.photos-${REAL_VERSION}-arm7.apk" >> $GITHUB_OUTPUT
 
-      - name: Build Google Photos ARMv7 nodpi
+      - name: Patch Google Photos ARMv7 nodpi
         if: steps.meta.outputs.photos_version != ''
         run: |
           APK_FILE=$(find . -name "com.google.android.apps.photos*-arm7.apk" | head -n 1)

@@ -46,6 +46,10 @@ jobs:
           SKIP_CLEANUP: "true"
         run: python scripts/check_updates.py
 
+      - name: Set build date
+        id: date
+        run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+
       - name: Download YouTube APK
         if: steps.check.outputs.youtube_version != ''
         run: |
@@ -161,29 +165,30 @@ jobs:
             -e "Video ads" \
             -e "Video quality" \
             -e "Wide search bar" \
-            -o "youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk" \
+            -o "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk" \
             "$APK_FILE"
 
       - name: Upload YouTube ReVanced
         if: steps.check.outputs.youtube_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}"
-          path: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk"
+          name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}"
+          path: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
           retention-days: 90
 
       - name: Create Release
         if: steps.check.outputs.youtube_version != ''
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}"
-          name: "YouTube ReVanced v${{ steps.check.outputs.youtube_version }}"
+          tag_name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}"
+          name: "YouTube ReVanced v${{ steps.check.outputs.youtube_version }} (${{ steps.date.outputs.today }})"
           body: |
-            Automated build of YouTube ReVanced.
+            Automated daily build of YouTube ReVanced.
 
-            **Version:** ${{ steps.check.outputs.youtube_version }}
+            **App Version:** ${{ steps.check.outputs.youtube_version }}
+            **Build Date:** ${{ steps.date.outputs.today }}
 
             *Signed by Google (verified).*
-          files: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}.apk"
+          files: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
           draft: false
           prerelease: false

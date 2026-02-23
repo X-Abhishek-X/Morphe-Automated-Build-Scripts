@@ -71,9 +71,25 @@ jobs:
       - name: Prepare ARM64 and ARMv7 APKs
         if: steps.check.outputs.youtube_version != ''
         run: |
-          DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
+          echo "All files in workspace:"
+          find . -maxdepth 2 -type f | sort
+
+          # Try package-name pattern first
+          DOWNLOAD=$(find . -maxdepth 2 -type f \( -name "*youtube*.xapk" -o -name "*youtube*.apks" -o -name "*youtube*.apk" \) | grep -iv "revanced\|merged" | head -n 1)
+
+          # Fall back to any split APK (most likely the YouTube one)
           if [ -z "$DOWNLOAD" ]; then
-            echo "ERROR: No YouTube file found after download!"; ls -la; exit 1
+            DOWNLOAD=$(find . -maxdepth 2 -type f \( -name "*.xapk" -o -name "*.apks" \) | head -n 1)
+          fi
+
+          # Fall back to any apk that isn't one of our outputs
+          if [ -z "$DOWNLOAD" ]; then
+            DOWNLOAD=$(find . -maxdepth 2 -type f -name "*.apk" | grep -iv "revanced\|merged" | head -n 1)
+          fi
+
+          if [ -z "$DOWNLOAD" ]; then
+            echo "ERROR: No YouTube APK file found after download. Listing all files:"
+            ls -laR; exit 1
           fi
           echo "Found: $DOWNLOAD"
 
@@ -264,13 +280,13 @@ jobs:
           ARM64_APK="youtube-revanced-v${VERSION}-arm64-v8a-nodpi-${TODAY}.apk"
           ARM7_APK="youtube-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk"
 
-          # Write release notes to a file to avoid YAML/shell quoting issues
+          # Write release notes to file
           {
             echo "## YouTube ReVanced v${VERSION}"
             echo ""
-            echo "**Build Date:** ${TODAY}"
-            echo "**ReVanced CLI:** v${CLI_VER}"
-            echo "**ReVanced Patches:** v${PATCHES_VER}"
+            echo "Build Date: ${TODAY}"
+            echo "ReVanced CLI: v${CLI_VER}"
+            echo "ReVanced Patches: v${PATCHES_VER}"
             echo ""
             echo "---"
             echo ""
@@ -281,11 +297,11 @@ jobs:
             echo "| \`${ARM64_APK}\` | ARM64-v8a (64-bit) | Most modern Android devices (2017+) |"
             echo "| \`${ARM7_APK}\` | ARMv7 (32-bit) | Older Android devices |"
             echo ""
-            echo "> Both builds are **nodpi** — no density resources stripped, works on all screen densities."
+            echo "> Both builds are nodpi — no density resources stripped, works on all screen densities."
             echo ""
             echo "---"
             echo ""
-            echo "## Patches Applied ($(echo "Bypass URL redirects Bypass image region restrictions Change form factor Check watch history domain name resolution Copy video URL Custom player overlay opacity Disable auto captions Disable double tap actions Disable fullscreen ambient mode Disable haptic feedback Disable player popup panels Disable resuming Shorts on startup Disable rolling number animations Disable sign in to TV popup Disable video codecs Downloads Exit fullscreen mode Force original audio GmsCore support Hide Shorts components Hide ads Hide end screen cards Hide end screen suggested video Hide info cards Hide layout components Hide player flyout menu items Hide player overlay buttons Hide related video overlay Hide timestamp Hide video action buttons Loop video Miniplayer Navigation buttons Open Shorts in regular player Open links externally Open videos fullscreen Playback speed Remove background playback restrictions Remove viewer discretion dialog Return YouTube Dislike Sanitize sharing links Seekbar Shorts autoplay SponsorBlock Spoof app version Spoof device dimensions Spoof video streams Swipe controls Theme Video ads Video quality Wide search bar" | wc -w) patches)"
+            echo "## Patches Applied"
             echo ""
             echo "- Bypass URL redirects"
             echo "- Bypass image region restrictions"
@@ -344,11 +360,11 @@ jobs:
             echo ""
             echo "## Installation"
             echo ""
-            echo "1. Install **GmsCore (MicroG)** — required for login: https://github.com/ReVanced/GmsCore/releases"
-            echo "2. Download the APK for your device architecture above."
-            echo "3. Install it and open YouTube ReVanced."
+            echo "1. Install GmsCore (MicroG) first — required for Google account login: https://github.com/ReVanced/GmsCore/releases"
+            echo "2. Download the APK for your device architecture."
+            echo "3. Install and open YouTube ReVanced."
             echo ""
-            echo "*Automated daily build. Signed with auto-generated key.*"
+            echo "Automated daily build."
           } > release_notes.md
 
           gh release create "youtube-revanced-v${VERSION}-${TODAY}" \

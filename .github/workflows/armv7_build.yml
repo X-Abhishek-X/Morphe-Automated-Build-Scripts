@@ -1,0 +1,340 @@
+name: Build ARMv7 (armeabi-v7a nodpi)
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # Run daily at 2 AM UTC (after the arm64 builds)
+  workflow_dispatch:
+
+jobs:
+  build-youtube-armv7:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Install apkeep
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/install_apkeep.py
+          chmod +x apkeep
+          sudo mv apkeep /usr/local/bin/
+          apkeep --version
+
+      - name: Set build date and versions
+        id: meta
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKIP_CLEANUP: "true"
+        run: |
+          python scripts/check_updates.py
+          echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+
+      - name: Download YouTube APK
+        if: steps.meta.outputs.youtube_version != ''
+        run: |
+          VERSION="${{ steps.meta.outputs.youtube_version }}"
+          echo "Downloading YouTube $VERSION..."
+          if [ "$VERSION" = "latest" ]; then
+            apkeep -a com.google.android.youtube .
+          else
+            apkeep -a "com.google.android.youtube@${VERSION}" .
+          fi
+          echo "Files after download:"; ls -la
+
+      - name: Build YouTube ARMv7 nodpi
+        if: steps.meta.outputs.youtube_version != ''
+        run: |
+          VERSION="${{ steps.meta.outputs.youtube_version }}"
+          TODAY="${{ steps.meta.outputs.today }}"
+
+          APK_FILE=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
+
+          if [ -z "$APK_FILE" ]; then
+            echo "ERROR: YouTube file not found. Files:"; ls -la; exit 1
+          fi
+          echo "Found: $APK_FILE"
+
+          if [[ "$APK_FILE" == *.xapk ]] || [[ "$APK_FILE" == *.apks ]]; then
+            echo "Split APK detected. Extracting..."
+            unzip -o "$APK_FILE" -d extracted_yt
+            echo "Extracted:"; ls extracted_yt/
+
+            # Find main APK (base.apk or package-named .apk)
+            MAIN_APK=$(find extracted_yt -maxdepth 1 -name "base.apk" | head -n 1)
+            if [ -z "$MAIN_APK" ]; then
+              MAIN_APK=$(find extracted_yt -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
+            fi
+            echo "Main APK: $MAIN_APK"
+
+            # Download APKEditor
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+
+            # ARMv7 nodpi: main APK + all config splits EXCEPT arm64
+            mkdir -p merge_yt_arm7
+            cp "$MAIN_APK" merge_yt_arm7/base.apk
+            find extracted_yt -maxdepth 1 -name "config.*.apk" ! -name "config.arm64*" | while read f; do cp "$f" merge_yt_arm7/; done
+            echo "ARMv7 merge dir:"; ls merge_yt_arm7/
+            java -jar APKEditor.jar m -i merge_yt_arm7 -o yt_arm7_input.apk
+
+            if [ ! -f "yt_arm7_input.apk" ]; then
+              echo "ERROR: APKEditor merge failed."; exit 1
+            fi
+            INPUT_APK="yt_arm7_input.apk"
+          else
+            echo "Single APK. Using as-is."
+            INPUT_APK="$APK_FILE"
+          fi
+
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+          OUTPUT="youtube-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk"
+
+          echo "Patching with $CLI_JAR..."
+          java -jar "$CLI_JAR" patch \
+            --exclusive \
+            -p "$PATCHES_RVP" \
+            -e "Bypass URL redirects" \
+            -e "Bypass image region restrictions" \
+            -e "Change form factor" \
+            -e "Check watch history domain name resolution" \
+            -e "Copy video URL" \
+            -e "Custom player overlay opacity" \
+            -e "Disable auto captions" \
+            -e "Disable double tap actions" \
+            -e "Disable fullscreen ambient mode" \
+            -e "Disable haptic feedback" \
+            -e "Disable player popup panels" \
+            -e "Disable resuming Shorts on startup" \
+            -e "Disable rolling number animations" \
+            -e "Disable sign in to TV popup" \
+            -e "Disable video codecs" \
+            -e "Downloads" \
+            -e "Exit fullscreen mode" \
+            -e "Force original audio" \
+            -e "GmsCore support" \
+            -e "Hide Shorts components" \
+            -e "Hide ads" \
+            -e "Hide end screen cards" \
+            -e "Hide end screen suggested video" \
+            -e "Hide info cards" \
+            -e "Hide layout components" \
+            -e "Hide player flyout menu items" \
+            -e "Hide player overlay buttons" \
+            -e "Hide related video overlay" \
+            -e "Hide timestamp" \
+            -e "Hide video action buttons" \
+            -e "Loop video" \
+            -e "Miniplayer" \
+            -e "Navigation buttons" \
+            -e "Open Shorts in regular player" \
+            -e "Open links externally" \
+            -e "Open videos fullscreen" \
+            -e "Playback speed" \
+            -e "Remove background playback restrictions" \
+            -e "Remove viewer discretion dialog" \
+            -e "Return YouTube Dislike" \
+            -e "Sanitize sharing links" \
+            -e "Seekbar" \
+            -e "Shorts autoplay" \
+            -e "SponsorBlock" \
+            -e "Spoof app version" \
+            -e "Spoof device dimensions" \
+            -e "Spoof video streams" \
+            -e "Swipe controls" \
+            -e "Theme" \
+            -e "Video ads" \
+            -e "Video quality" \
+            -e "Wide search bar" \
+            -o "$OUTPUT" \
+            "$INPUT_APK"
+
+      - name: Upload YouTube ARMv7 artifact
+        if: steps.meta.outputs.youtube_version != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: "youtube-revanced-v${{ steps.meta.outputs.youtube_version }}-armeabi-v7a-nodpi-${{ steps.meta.outputs.today }}"
+          path: "youtube-revanced-v${{ steps.meta.outputs.youtube_version }}-armeabi-v7a-nodpi-${{ steps.meta.outputs.today }}.apk"
+          retention-days: 90
+
+      - name: Create YouTube ARMv7 Release
+        if: steps.meta.outputs.youtube_version != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "youtube-revanced-v${{ steps.meta.outputs.youtube_version }}-armeabi-v7a-${{ steps.meta.outputs.today }}"
+          name: "YouTube ReVanced v${{ steps.meta.outputs.youtube_version }} ARMv7 (${{ steps.meta.outputs.today }})"
+          body: |
+            Automated daily build of YouTube ReVanced — ARMv7 (armeabi-v7a) nodpi.
+
+            **App Version:** ${{ steps.meta.outputs.youtube_version }}
+            **Build Date:** ${{ steps.meta.outputs.today }}
+            **Architecture:** armeabi-v7a (32-bit, for older devices)
+
+            Install GmsCore (MicroG) first: https://github.com/ReVanced/GmsCore/releases
+          files: "youtube-revanced-v${{ steps.meta.outputs.youtube_version }}-armeabi-v7a-nodpi-${{ steps.meta.outputs.today }}.apk"
+          draft: false
+          prerelease: false
+
+  build-photos-armv7:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Install apkeep
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/install_apkeep.py
+          chmod +x apkeep
+          sudo mv apkeep /usr/local/bin/
+          apkeep --version
+
+      - name: Set build date and versions
+        id: meta
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKIP_CLEANUP: "true"
+        run: |
+          python scripts/check_updates.py
+          echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+
+      - name: Download Google Photos APK
+        if: steps.meta.outputs.photos_version != ''
+        id: download
+        run: |
+          sudo apt-get update && sudo apt-get install -y aapt
+
+          VERSION="${{ steps.meta.outputs.photos_version }}"
+          echo "Downloading Google Photos $VERSION..."
+          if [ "$VERSION" = "latest" ]; then
+            apkeep -a com.google.android.apps.photos .
+          else
+            apkeep -a "com.google.android.apps.photos@${VERSION}" .
+          fi
+          echo "Files after download:"; ls -la
+
+          DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.apps.photos*.apk" -o -name "com.google.android.apps.photos*.xapk" -o -name "com.google.android.apps.photos*.apks" \) | head -n 1)
+          if [ -z "$DOWNLOAD" ]; then
+            echo "ERROR: Google Photos file not found."; ls -la; exit 1
+          fi
+          echo "Found: $DOWNLOAD"
+
+          if [[ "$DOWNLOAD" == *.xapk ]] || [[ "$DOWNLOAD" == *.apks ]]; then
+            echo "Split APK. Extracting..."
+            unzip -o "$DOWNLOAD" -d extracted_photos
+            echo "Extracted:"; ls extracted_photos/
+
+            MAIN_APK=$(find extracted_photos -maxdepth 1 -name "base.apk" | head -n 1)
+            if [ -z "$MAIN_APK" ]; then
+              MAIN_APK=$(find extracted_photos -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
+            fi
+            echo "Main APK: $MAIN_APK"
+
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+
+            # ARMv7 nodpi: main APK + all config splits EXCEPT arm64
+            mkdir -p merge_photos_arm7
+            cp "$MAIN_APK" merge_photos_arm7/base.apk
+            find extracted_photos -maxdepth 1 -name "config.*.apk" ! -name "config.arm64*" | while read f; do cp "$f" merge_photos_arm7/; done
+            echo "ARMv7 merge dir:"; ls merge_photos_arm7/
+            java -jar APKEditor.jar m -i merge_photos_arm7 -o photos_arm7_input.apk
+
+            DOWNLOAD="photos_arm7_input.apk"
+          fi
+
+          REAL_VERSION=$(aapt dump badging "$DOWNLOAD" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
+          echo "Version: $REAL_VERSION"
+          if [ -z "$REAL_VERSION" ]; then
+            echo "ERROR: Could not extract version."; exit 1
+          fi
+          echo "photos_version=$REAL_VERSION" >> $GITHUB_OUTPUT
+
+          mv "$DOWNLOAD" "com.google.android.apps.photos-${REAL_VERSION}-arm7.apk"
+          echo "apk_path=com.google.android.apps.photos-${REAL_VERSION}-arm7.apk" >> $GITHUB_OUTPUT
+
+      - name: Build Google Photos ARMv7 nodpi
+        if: steps.meta.outputs.photos_version != ''
+        run: |
+          APK_FILE=$(find . -name "com.google.android.apps.photos*-arm7.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+            echo "ERROR: APK not found."; exit 1
+          fi
+
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+          VERSION="${{ steps.download.outputs.photos_version }}"
+          TODAY="${{ steps.meta.outputs.today }}"
+
+          echo "Patching $APK_FILE..."
+          java -jar "$CLI_JAR" patch \
+            --exclusive \
+            -p "$PATCHES_RVP" \
+            -e "Spoof features" \
+            -e "Enable DCIM folders backup control" \
+            -e "GmsCore support" \
+            -e "Change package name" \
+            -o "google-photos-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk" \
+            "$APK_FILE"
+
+      - name: Upload Google Photos ARMv7 artifact
+        if: steps.meta.outputs.photos_version != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-armeabi-v7a-nodpi-${{ steps.meta.outputs.today }}"
+          path: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-armeabi-v7a-nodpi-${{ steps.meta.outputs.today }}.apk"
+          retention-days: 90
+
+      - name: Create Google Photos ARMv7 Release
+        if: steps.meta.outputs.photos_version != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "google-photos-v${{ steps.download.outputs.photos_version }}-armeabi-v7a-${{ steps.meta.outputs.today }}"
+          name: "Google Photos v${{ steps.download.outputs.photos_version }} ARMv7 (${{ steps.meta.outputs.today }})"
+          body: |
+            Automated daily build of Google Photos ReVanced — ARMv7 (armeabi-v7a) nodpi.
+
+            **App Version:** ${{ steps.download.outputs.photos_version }}
+            **Build Date:** ${{ steps.meta.outputs.today }}
+            **Architecture:** armeabi-v7a (32-bit, for older devices)
+
+            Installs alongside the original Google Photos app.
+          files: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-armeabi-v7a-nodpi-${{ steps.meta.outputs.today }}.apk"
+          draft: false
+          prerelease: false

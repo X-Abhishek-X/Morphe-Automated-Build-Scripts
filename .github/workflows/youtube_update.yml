@@ -103,19 +103,36 @@ jobs:
             unzip -o "$DOWNLOAD" -d extracted_apk
             echo "Extracted:"; ls extracted_apk/
 
-            # ARM64-v8a: base + arm64 split, no density splits
-            mkdir -p merge_arm64
-            cp extracted_apk/base.apk merge_arm64/
-            find extracted_apk -name "*arm64*" | while read f; do cp "$f" merge_arm64/; done
-            echo "ARM64 merge dir:"; ls merge_arm64/
-            java -jar APKEditor.jar m -i merge_arm64 -o merged-arm64.apk
+            # Find the main APK — could be base.apk (Play Store split) or <package>.apk (XAPK format)
+            MAIN_APK=$(find extracted_apk -maxdepth 1 -name "base.apk" | head -n 1)
+            if [ -z "$MAIN_APK" ]; then
+              MAIN_APK=$(find extracted_apk -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
+            fi
+            echo "Main APK: $MAIN_APK"
 
-            # ARMv7: base + armeabi-v7a split, no density splits
+            # ARM64-v8a nodpi: main APK + arm64_v8a config split (no density splits)
+            mkdir -p merge_arm64
+            cp "$MAIN_APK" merge_arm64/base.apk
+            ARM64_SPLIT=$(find extracted_apk -maxdepth 1 -name "config.arm64_v8a.apk" | head -n 1)
+            if [ -n "$ARM64_SPLIT" ]; then
+              cp "$ARM64_SPLIT" merge_arm64/
+              java -jar APKEditor.jar m -i merge_arm64 -o merged-arm64.apk
+            else
+              echo "No ARM64 ABI split found. Using main APK directly."
+              cp "$MAIN_APK" merged-arm64.apk
+            fi
+
+            # ARMv7 nodpi: main APK + armeabi_v7a config split (if available)
             mkdir -p merge_arm7
-            cp extracted_apk/base.apk merge_arm7/
-            find extracted_apk \( -name "*armeabi_v7a*" -o -name "*armeabi-v7a*" \) | while read f; do cp "$f" merge_arm7/; done
-            echo "ARMv7 merge dir:"; ls merge_arm7/
-            java -jar APKEditor.jar m -i merge_arm7 -o merged-arm7.apk
+            cp "$MAIN_APK" merge_arm7/base.apk
+            ARM7_SPLIT=$(find extracted_apk -maxdepth 1 \( -name "config.armeabi_v7a.apk" -o -name "config.armeabi-v7a.apk" \) | head -n 1)
+            if [ -n "$ARM7_SPLIT" ]; then
+              cp "$ARM7_SPLIT" merge_arm7/
+              java -jar APKEditor.jar m -i merge_arm7 -o merged-arm7.apk
+            else
+              echo "No ARMv7 ABI split found. Using main APK directly for ARMv7."
+              cp "$MAIN_APK" merged-arm7.apk
+            fi
           else
             echo "Single APK. Using as-is for both architectures."
             cp "$DOWNLOAD" merged-arm64.apk

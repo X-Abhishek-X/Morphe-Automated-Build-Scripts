@@ -84,36 +84,32 @@ jobs:
           if [[ "$APK_FILE" == *.xapk ]] || [[ "$APK_FILE" == *.apks ]]; then
             echo "Split APK bundle detected. Extracting..."
             unzip -o "$APK_FILE" -d extracted_apk
-            echo "Extracted contents:"; ls extracted_apk/
+            echo "Extracted:"; ls extracted_apk/
 
-            # Get the main APK (base.apk or package-named .apk — not a config split)
+            # Download APKEditor
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+
+            # APKEditor needs base.apk as the main entry point.
+            # XAPK from ApkPure names the main APK after the package, so rename it.
             MAIN_APK=$(find extracted_apk -maxdepth 1 -name "base.apk" | head -n 1)
             if [ -z "$MAIN_APK" ]; then
               MAIN_APK=$(find extracted_apk -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
             fi
-            echo "Main APK: $MAIN_APK ($(du -sh "$MAIN_APK" | cut -f1))"
+            echo "Main APK: $MAIN_APK"
 
-            # Copy main APK as the working file
-            cp "$MAIN_APK" merged.apk
+            # Build merge directory: base.apk + ALL config splits (density + language + arm64 native libs)
+            mkdir -p merge_dir
+            cp "$MAIN_APK" merge_dir/base.apk
+            find extracted_apk -maxdepth 1 -name "config.*.apk" | while read f; do cp "$f" merge_dir/; done
+            echo "Merge dir contents:"; ls merge_dir/
 
-            # Inject ARM64 native libraries directly into the APK using zip.
-            # APKEditor silently drops the native .so files, so we do this manually.
-            ARM64_CONFIG=$(find extracted_apk -maxdepth 1 -name "config.arm64_v8a.apk" | head -n 1)
-            if [ -n "$ARM64_CONFIG" ]; then
-              echo "Injecting ARM64 native libs from: $ARM64_CONFIG"
-              mkdir -p arm64_libs_tmp
-              unzip -o "$ARM64_CONFIG" "lib/*" -d arm64_libs_tmp/ 2>/dev/null || true
-              if [ -d "arm64_libs_tmp/lib" ]; then
-                cd arm64_libs_tmp && zip -r ../merged.apk lib/ && cd ..
-                echo "ARM64 native libs injected."
-              else
-                echo "No lib/ directory found in ARM64 config split."
-              fi
-            else
-              echo "WARNING: No config.arm64_v8a.apk found. APK will lack ARM64 native code."
+            java -jar APKEditor.jar m -i merge_dir -o merged.apk
+
+            if [ ! -f "merged.apk" ]; then
+              echo "Error: APKEditor merge failed."; exit 1
             fi
-
-            echo "Final merged APK size: $(du -sh merged.apk | cut -f1)"
+            echo "Merged APK size: $(du -sh merged.apk | cut -f1)"
             APK_FILE="merged.apk"
           fi
 
@@ -207,3 +203,4 @@ jobs:
           files: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
           draft: false
           prerelease: false
+          overwrite: true

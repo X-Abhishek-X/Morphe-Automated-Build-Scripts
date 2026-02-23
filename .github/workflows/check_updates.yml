@@ -107,28 +107,17 @@ jobs:
             fi
             echo "Main APK: $MAIN_APK"
 
-            # ARM64-v8a nodpi
+            # ARM64-v8a: all config splits except armeabi
             mkdir -p merge_photos_arm64
             cp "$MAIN_APK" merge_photos_arm64/base.apk
-            ARM64_SPLIT=$(find extracted_photos -maxdepth 1 -name "config.arm64_v8a.apk" | head -n 1)
-            if [ -n "$ARM64_SPLIT" ]; then
-              cp "$ARM64_SPLIT" merge_photos_arm64/
-              java -jar APKEditor.jar m -i merge_photos_arm64 -o photos-merged-arm64.apk
-            else
-              cp "$MAIN_APK" photos-merged-arm64.apk
-            fi
+            find extracted_photos -maxdepth 1 -name "config.*.apk" ! -name "config.armeabi*" | while read f; do cp "$f" merge_photos_arm64/; done
+            java -jar APKEditor.jar m -i merge_photos_arm64 -o photos-merged-arm64.apk
 
-            # ARMv7 nodpi
+            # ARMv7: all config splits except arm64
             mkdir -p merge_photos_arm7
             cp "$MAIN_APK" merge_photos_arm7/base.apk
-            ARM7_SPLIT=$(find extracted_photos -maxdepth 1 \( -name "config.armeabi_v7a.apk" -o -name "config.armeabi-v7a.apk" \) | head -n 1)
-            if [ -n "$ARM7_SPLIT" ]; then
-              cp "$ARM7_SPLIT" merge_photos_arm7/
-              java -jar APKEditor.jar m -i merge_photos_arm7 -o photos-merged-arm7.apk
-            else
-              echo "No ARMv7 split. Using main APK for ARMv7."
-              cp "$MAIN_APK" photos-merged-arm7.apk
-            fi
+            find extracted_photos -maxdepth 1 -name "config.*.apk" ! -name "config.arm64*" | while read f; do cp "$f" merge_photos_arm7/; done
+            java -jar APKEditor.jar m -i merge_photos_arm7 -o photos-merged-arm7.apk
             REAL_VERSION=$(aapt dump badging photos-merged-arm64.apk | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
           else
             echo "Single APK. Using as-is for both architectures."

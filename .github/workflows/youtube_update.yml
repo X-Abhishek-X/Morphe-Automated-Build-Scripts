@@ -56,75 +56,75 @@ jobs:
           echo "cli_version=$CLI_VER" >> $GITHUB_OUTPUT
           echo "patches_version=$PATCHES_VER" >> $GITHUB_OUTPUT
 
-      - name: Download YouTube APK
+      - name: Download and Prepare APKs
         if: steps.check.outputs.youtube_version != ''
         run: |
           VERSION="${{ steps.check.outputs.youtube_version }}"
           echo "Downloading YouTube $VERSION..."
+
+          # Record files before download so we can identify the new one
+          before=$(find . -maxdepth 2 -type f \( -name "*.apk" -o -name "*.xapk" -o -name "*.apks" \) | sort)
+
           if [ "$VERSION" = "latest" ]; then
             apkeep -a com.google.android.youtube .
           else
             apkeep -a "com.google.android.youtube@${VERSION}" .
           fi
+
           echo "Files after download:"; ls -la
 
-      - name: Prepare ARM64 and ARMv7 APKs
-        if: steps.check.outputs.youtube_version != ''
-        run: |
-          echo "All files in workspace:"
-          find . -maxdepth 2 -type f | sort
+          # Find the newly added file by comparing before/after
+          after=$(find . -maxdepth 2 -type f \( -name "*.apk" -o -name "*.xapk" -o -name "*.apks" \) | sort)
+          DOWNLOAD=$(comm -13 <(echo "$before") <(echo "$after") | head -n 1)
 
-          # Try package-name pattern first
-          DOWNLOAD=$(find . -maxdepth 2 -type f \( -name "*youtube*.xapk" -o -name "*youtube*.apks" -o -name "*youtube*.apk" \) | grep -iv "revanced\|merged" | head -n 1)
-
-          # Fall back to any split APK (most likely the YouTube one)
+          # Fall back: any xapk/apks not previously present
           if [ -z "$DOWNLOAD" ]; then
             DOWNLOAD=$(find . -maxdepth 2 -type f \( -name "*.xapk" -o -name "*.apks" \) | head -n 1)
           fi
 
-          # Fall back to any apk that isn't one of our outputs
+          # Final fall back: any apk not matching our outputs
           if [ -z "$DOWNLOAD" ]; then
             DOWNLOAD=$(find . -maxdepth 2 -type f -name "*.apk" | grep -iv "revanced\|merged" | head -n 1)
           fi
 
           if [ -z "$DOWNLOAD" ]; then
-            echo "ERROR: No YouTube APK file found after download. Listing all files:"
-            ls -laR; exit 1
+            echo "ERROR: Could not find the downloaded YouTube file. All files:"
+            find . -maxdepth 3 -type f | sort
+            exit 1
           fi
-          echo "Found: $DOWNLOAD"
+          echo "Using: $DOWNLOAD"
 
+          # Download APKEditor for merging split APKs
           APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
-          echo "Downloading APKEditor from: $APKEDITOR_URL"
           curl -L -o APKEditor.jar "$APKEDITOR_URL"
 
           if [[ "$DOWNLOAD" == *.xapk ]] || [[ "$DOWNLOAD" == *.apks ]]; then
             echo "Split APK detected. Extracting..."
             unzip -o "$DOWNLOAD" -d extracted_apk
-            echo "Extracted contents:"; ls extracted_apk/
+            echo "Extracted:"; ls extracted_apk/
 
-            # ARM64-v8a (nodpi): base + arm64 ABI split only, no density splits
+            # ARM64-v8a: base + arm64 split, no density splits
             mkdir -p merge_arm64
             cp extracted_apk/base.apk merge_arm64/
             find extracted_apk -name "*arm64*" | while read f; do cp "$f" merge_arm64/; done
             echo "ARM64 merge dir:"; ls merge_arm64/
             java -jar APKEditor.jar m -i merge_arm64 -o merged-arm64.apk
-            echo "ARM64 merged: $(du -sh merged-arm64.apk)"
 
-            # ARMv7 (nodpi): base + armeabi-v7a ABI split only, no density splits
+            # ARMv7: base + armeabi-v7a split, no density splits
             mkdir -p merge_arm7
             cp extracted_apk/base.apk merge_arm7/
             find extracted_apk \( -name "*armeabi_v7a*" -o -name "*armeabi-v7a*" \) | while read f; do cp "$f" merge_arm7/; done
             echo "ARMv7 merge dir:"; ls merge_arm7/
             java -jar APKEditor.jar m -i merge_arm7 -o merged-arm7.apk
-            echo "ARMv7 merged: $(du -sh merged-arm7.apk)"
           else
-            echo "Single APK (no ABI splits). Using as-is for both architectures."
+            echo "Single APK. Using as-is for both architectures."
             cp "$DOWNLOAD" merged-arm64.apk
             cp "$DOWNLOAD" merged-arm7.apk
           fi
 
-          [ -f "merged-arm64.apk" ] || { echo "ERROR: merged-arm64.apk missing!"; exit 1; }
-          [ -f "merged-arm7.apk" ]  || { echo "ERROR: merged-arm7.apk missing!"; exit 1; }
+          [ -f "merged-arm64.apk" ] || { echo "ERROR: merged-arm64.apk not created!"; exit 1; }
+          [ -f "merged-arm7.apk" ]  || { echo "ERROR: merged-arm7.apk not created!"; exit 1; }
+          echo "Both merged APKs ready."
 
       - name: Patch YouTube (ARM64-v8a)
         if: steps.check.outputs.youtube_version != ''

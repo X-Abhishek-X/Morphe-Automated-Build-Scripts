@@ -65,6 +65,10 @@ jobs:
 
           VERSION="${{ steps.check.outputs.photos_version }}"
           echo "Downloading Google Photos $VERSION..."
+
+          # Record files before download to identify the newly added file
+          before=$(find . -maxdepth 2 -type f \( -name "*.apk" -o -name "*.xapk" -o -name "*.apks" \) | sort)
+
           if [ "$VERSION" = "latest" ]; then
             apkeep -a com.google.android.apps.photos .
           else
@@ -72,27 +76,22 @@ jobs:
           fi
           echo "Files after download:"; ls -la
 
-          echo "All files in workspace:"
-          find . -maxdepth 2 -type f | sort
+          # Identify by diff
+          after=$(find . -maxdepth 2 -type f \( -name "*.apk" -o -name "*.xapk" -o -name "*.apks" \) | sort)
+          DOWNLOAD=$(comm -13 <(echo "$before") <(echo "$after") | head -n 1)
 
-          # Try package-name pattern first
-          DOWNLOAD=$(find . -maxdepth 2 -type f \( -name "*photos*.xapk" -o -name "*photos*.apks" -o -name "*photos*.apk" -o -name "*com.google.android.apps.photos*.apk" \) | grep -iv "revanced\|merged" | head -n 1)
-
-          # Fall back to any split APK
           if [ -z "$DOWNLOAD" ]; then
             DOWNLOAD=$(find . -maxdepth 2 -type f \( -name "*.xapk" -o -name "*.apks" \) | head -n 1)
           fi
-
-          # Fall back to any apk that isn't our output
           if [ -z "$DOWNLOAD" ]; then
             DOWNLOAD=$(find . -maxdepth 2 -type f -name "*.apk" | grep -iv "revanced\|merged" | head -n 1)
           fi
 
           if [ -z "$DOWNLOAD" ]; then
-            echo "ERROR: No Google Photos file found. Listing all files:"
-            ls -laR; exit 1
+            echo "ERROR: Could not find downloaded Google Photos file. All files:"
+            find . -maxdepth 3 -type f | sort; exit 1
           fi
-          echo "Found: $DOWNLOAD"
+          echo "Using: $DOWNLOAD"
 
           APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
           curl -L -o APKEditor.jar "$APKEDITOR_URL"

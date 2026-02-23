@@ -47,6 +47,10 @@ jobs:
           SKIP_CLEANUP: "true"
         run: python scripts/check_updates.py
 
+      - name: Set build date
+        id: date
+        run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+
       - name: Download Google Photos APK
         if: steps.check.outputs.photos_version != ''
         id: download
@@ -168,30 +172,31 @@ jobs:
             -e "Enable DCIM folders backup control" \
             -e "GmsCore support" \
             -e "Change package name" \
-            -o "google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk" \
+            -o "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}.apk" \
             "$APK_FILE"
 
       - name: Upload Patched APK
         if: steps.check.outputs.photos_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}"
-          path: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk"
+          name: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}"
+          path: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}.apk"
           retention-days: 90
 
       - name: Create Release
         if: steps.check.outputs.photos_version != ''
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: "google-photos-v${{ steps.download.outputs.photos_version }}"
-          name: "Google Photos v${{ steps.download.outputs.photos_version }}"
+          tag_name: "google-photos-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}"
+          name: "Google Photos v${{ steps.download.outputs.photos_version }} (${{ steps.date.outputs.today }})"
           body: |
-            Automated build of Google Photos ReVanced.
+            Automated daily build of Google Photos ReVanced.
 
-            **Version:** ${{ steps.download.outputs.photos_version }}
+            **App Version:** ${{ steps.download.outputs.photos_version }}
+            **Build Date:** ${{ steps.date.outputs.today }}
 
             *Signed by Google (verified).*
-          files: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}.apk"
+          files: "google-photos-revanced-v${{ steps.download.outputs.photos_version }}-${{ steps.date.outputs.today }}.apk"
           draft: false
           prerelease: false
 

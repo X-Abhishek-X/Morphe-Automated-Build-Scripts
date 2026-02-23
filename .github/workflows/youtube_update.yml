@@ -2,7 +2,7 @@ name: Check for ReVanced Updates (YouTube)
 
 on:
   schedule:
-    - cron: "0 1 * * *" # Run daily at 1 AM UTC
+    - cron: "0 1 * * *" # Run daily at 1 AM (separate from Photos)
   workflow_dispatch:
 
 jobs:
@@ -27,9 +27,10 @@ jobs:
           java-version: "17"
 
       - name: Install dependencies
-        run: pip install -r scripts/requirements.txt
+        run: |
+          pip install -r scripts/requirements.txt
 
-      - name: Install apkeep
+      - name: Install apkeep (python script)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -45,102 +46,70 @@ jobs:
           SKIP_CLEANUP: "true"
         run: python scripts/check_updates.py
 
-      - name: Set build metadata
+      - name: Set build date
         id: date
-        run: |
-          echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
-          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
-          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
-          CLI_VER=$(basename "$CLI_JAR" .jar | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
-          PATCHES_VER=$(basename "$PATCHES_RVP" .rvp | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
-          echo "cli_version=$CLI_VER" >> $GITHUB_OUTPUT
-          echo "patches_version=$PATCHES_VER" >> $GITHUB_OUTPUT
+        run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
-      - name: Download and Prepare APKs
+      - name: Download YouTube APK
         if: steps.check.outputs.youtube_version != ''
         run: |
           VERSION="${{ steps.check.outputs.youtube_version }}"
-          echo "Downloading YouTube $VERSION..."
-
-          # Record files before download so we can identify the new one
-          before=$(find . -maxdepth 2 -type f \( -name "*.apk" -o -name "*.xapk" -o -name "*.apks" \) | sort)
-
+          echo "Expected version: $VERSION"
           if [ "$VERSION" = "latest" ]; then
+            echo "Downloading latest version..."
             apkeep -a com.google.android.youtube .
           else
+            echo "Downloading version $VERSION..."
             apkeep -a "com.google.android.youtube@${VERSION}" .
           fi
 
-          echo "Files after download:"; ls -la
+      - name: Patch YouTube
+        if: steps.check.outputs.youtube_version != ''
+        run: |
+          echo "Current directory contents:"
+          ls -la
 
-          # Find the newly added file by comparing before/after
-          after=$(find . -maxdepth 2 -type f \( -name "*.apk" -o -name "*.xapk" -o -name "*.apks" \) | sort)
-          DOWNLOAD=$(comm -13 <(echo "$before") <(echo "$after") | head -n 1)
+          # Find the downloaded file (could be .apk, .xapk, or .apks)
+          APK_FILE=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
 
-          # Fall back: any xapk/apks not previously present
-          if [ -z "$DOWNLOAD" ]; then
-            DOWNLOAD=$(find . -maxdepth 2 -type f \( -name "*.xapk" -o -name "*.apks" \) | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+             echo "APK not found! Listing files:"
+             ls -la
+             exit 1
           fi
 
-          # Final fall back: any apk not matching our outputs
-          if [ -z "$DOWNLOAD" ]; then
-            DOWNLOAD=$(find . -maxdepth 2 -type f -name "*.apk" | grep -iv "revanced\|merged" | head -n 1)
-          fi
+          echo "Found file: $APK_FILE"
 
-          if [ -z "$DOWNLOAD" ]; then
-            echo "ERROR: Could not find the downloaded YouTube file. All files:"
-            find . -maxdepth 3 -type f | sort
-            exit 1
-          fi
-          echo "Using: $DOWNLOAD"
+          # Handle XAPK/APKS (Split APKs) which apkeep downloads from Play Store
+          if [[ "$APK_FILE" == *.xapk ]] || [[ "$APK_FILE" == *.apks ]]; then
+            echo "Detected Split APK bundle. Extracting and Merging..."
+            unzip -o "$APK_FILE" -d extracted_apk
 
-          # Download APKEditor for merging split APKs
-          APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
-          curl -L -o APKEditor.jar "$APKEDITOR_URL"
+            # Download APKEditor to merge splits
+            echo "Downloading APKEditor..."
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
 
-          if [[ "$DOWNLOAD" == *.xapk ]] || [[ "$DOWNLOAD" == *.apks ]]; then
-            echo "Split APK detected. Extracting..."
-            unzip -o "$DOWNLOAD" -d extracted_apk
-            echo "Extracted:"; ls extracted_apk/
+            # Merge the split APKs into a single APK
+            java -jar APKEditor.jar m -i extracted_apk -o merged.apk
 
-            # Find the main APK — could be base.apk (Play Store split) or <package>.apk (XAPK format)
-            MAIN_APK=$(find extracted_apk -maxdepth 1 -name "base.apk" | head -n 1)
-            if [ -z "$MAIN_APK" ]; then
-              MAIN_APK=$(find extracted_apk -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
+            if [ ! -f "merged.apk" ]; then
+              echo "Error: Failed to merge APKs."
+              exit 1
             fi
-            echo "Main APK: $MAIN_APK"
 
-            # ARM64-v8a: all config splits EXCEPT armeabi variants (keeps density + language + arm64 libs)
-            mkdir -p merge_arm64
-            cp "$MAIN_APK" merge_arm64/base.apk
-            find extracted_apk -maxdepth 1 -name "config.*.apk" ! -name "config.armeabi*" | while read f; do cp "$f" merge_arm64/; done
-            echo "ARM64 merge dir:"; ls merge_arm64/
-            java -jar APKEditor.jar m -i merge_arm64 -o merged-arm64.apk
-
-            # ARMv7: all config splits EXCEPT arm64 ABI (keeps density + language + armeabi libs if any)
-            mkdir -p merge_arm7
-            cp "$MAIN_APK" merge_arm7/base.apk
-            find extracted_apk -maxdepth 1 -name "config.*.apk" ! -name "config.arm64*" | while read f; do cp "$f" merge_arm7/; done
-            echo "ARMv7 merge dir:"; ls merge_arm7/
-            java -jar APKEditor.jar m -i merge_arm7 -o merged-arm7.apk
-          else
-            echo "Single APK. Using as-is for both architectures."
-            cp "$DOWNLOAD" merged-arm64.apk
-            cp "$DOWNLOAD" merged-arm7.apk
+            echo "Successfully merged APKs into merged.apk"
+            APK_FILE="merged.apk"
           fi
 
-          [ -f "merged-arm64.apk" ] || { echo "ERROR: merged-arm64.apk not created!"; exit 1; }
-          [ -f "merged-arm7.apk" ]  || { echo "ERROR: merged-arm7.apk not created!"; exit 1; }
-          echo "Both merged APKs ready."
-
-      - name: Patch YouTube (ARM64-v8a)
-        if: steps.check.outputs.youtube_version != ''
-        run: |
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
-          VERSION="${{ steps.check.outputs.youtube_version }}"
-          TODAY="${{ steps.date.outputs.today }}"
-          echo "Patching ARM64-v8a with $CLI_JAR and $PATCHES_RVP..."
+
+          echo "CLI JAR: $CLI_JAR"
+          echo "Patches RVP: $PATCHES_RVP"
+          echo "Patching $APK_FILE..."
+
+          # Note: No --keystore flag — ReVanced CLI will auto-generate one
           java -jar "$CLI_JAR" patch \
             --exclusive \
             -p "$PATCHES_RVP" \
@@ -196,204 +165,30 @@ jobs:
             -e "Video ads" \
             -e "Video quality" \
             -e "Wide search bar" \
-            -o "youtube-revanced-v${VERSION}-arm64-v8a-nodpi-${TODAY}.apk" \
-            merged-arm64.apk
+            -o "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk" \
+            "$APK_FILE"
 
-      - name: Patch YouTube (ARMv7)
-        if: steps.check.outputs.youtube_version != ''
-        run: |
-          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
-          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
-          VERSION="${{ steps.check.outputs.youtube_version }}"
-          TODAY="${{ steps.date.outputs.today }}"
-          echo "Patching ARMv7 with $CLI_JAR and $PATCHES_RVP..."
-          java -jar "$CLI_JAR" patch \
-            --exclusive \
-            -p "$PATCHES_RVP" \
-            -e "Bypass URL redirects" \
-            -e "Bypass image region restrictions" \
-            -e "Change form factor" \
-            -e "Check watch history domain name resolution" \
-            -e "Copy video URL" \
-            -e "Custom player overlay opacity" \
-            -e "Disable auto captions" \
-            -e "Disable double tap actions" \
-            -e "Disable fullscreen ambient mode" \
-            -e "Disable haptic feedback" \
-            -e "Disable player popup panels" \
-            -e "Disable resuming Shorts on startup" \
-            -e "Disable rolling number animations" \
-            -e "Disable sign in to TV popup" \
-            -e "Disable video codecs" \
-            -e "Downloads" \
-            -e "Exit fullscreen mode" \
-            -e "Force original audio" \
-            -e "GmsCore support" \
-            -e "Hide Shorts components" \
-            -e "Hide ads" \
-            -e "Hide end screen cards" \
-            -e "Hide end screen suggested video" \
-            -e "Hide info cards" \
-            -e "Hide layout components" \
-            -e "Hide player flyout menu items" \
-            -e "Hide player overlay buttons" \
-            -e "Hide related video overlay" \
-            -e "Hide timestamp" \
-            -e "Hide video action buttons" \
-            -e "Loop video" \
-            -e "Miniplayer" \
-            -e "Navigation buttons" \
-            -e "Open Shorts in regular player" \
-            -e "Open links externally" \
-            -e "Open videos fullscreen" \
-            -e "Playback speed" \
-            -e "Remove background playback restrictions" \
-            -e "Remove viewer discretion dialog" \
-            -e "Return YouTube Dislike" \
-            -e "Sanitize sharing links" \
-            -e "Seekbar" \
-            -e "Shorts autoplay" \
-            -e "SponsorBlock" \
-            -e "Spoof app version" \
-            -e "Spoof device dimensions" \
-            -e "Spoof video streams" \
-            -e "Swipe controls" \
-            -e "Theme" \
-            -e "Video ads" \
-            -e "Video quality" \
-            -e "Wide search bar" \
-            -o "youtube-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk" \
-            merged-arm7.apk
-
-      - name: Upload Artifacts
+      - name: Upload YouTube ReVanced
         if: steps.check.outputs.youtube_version != ''
         uses: actions/upload-artifact@v4
         with:
           name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}"
-          path: |
-            youtube-revanced-v${{ steps.check.outputs.youtube_version }}-arm64-v8a-nodpi-${{ steps.date.outputs.today }}.apk
-            youtube-revanced-v${{ steps.check.outputs.youtube_version }}-armeabi-v7a-nodpi-${{ steps.date.outputs.today }}.apk
+          path: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
           retention-days: 90
 
       - name: Create Release
         if: steps.check.outputs.youtube_version != ''
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ steps.check.outputs.youtube_version }}"
-          TODAY="${{ steps.date.outputs.today }}"
-          CLI_VER="${{ steps.date.outputs.cli_version }}"
-          PATCHES_VER="${{ steps.date.outputs.patches_version }}"
-          ARM64_APK="youtube-revanced-v${VERSION}-arm64-v8a-nodpi-${TODAY}.apk"
-          ARM7_APK="youtube-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk"
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}"
+          name: "YouTube ReVanced v${{ steps.check.outputs.youtube_version }} (${{ steps.date.outputs.today }})"
+          body: |
+            Automated daily build of YouTube ReVanced.
 
-          # Write release notes to file
-          {
-            echo "## YouTube ReVanced v${VERSION}"
-            echo ""
-            echo "Build Date: ${TODAY}"
-            echo "ReVanced CLI: v${CLI_VER}"
-            echo "ReVanced Patches: v${PATCHES_VER}"
-            echo ""
-            echo "---"
-            echo ""
-            echo "## Downloads"
-            echo ""
-            echo "| File | Architecture | Notes |"
-            echo "|------|-------------|-------|"
-            echo "| \`${ARM64_APK}\` | ARM64-v8a (64-bit) | Most modern Android devices (2017+) |"
-            echo "| \`${ARM7_APK}\` | ARMv7 (32-bit) | Older Android devices |"
-            echo ""
-            echo "> Both builds are nodpi — no density resources stripped, works on all screen densities."
-            echo ""
-            echo "---"
-            echo ""
-            echo "## Patches Applied"
-            echo ""
-            echo "- Bypass URL redirects"
-            echo "- Bypass image region restrictions"
-            echo "- Change form factor"
-            echo "- Check watch history domain name resolution"
-            echo "- Copy video URL"
-            echo "- Custom player overlay opacity"
-            echo "- Disable auto captions"
-            echo "- Disable double tap actions"
-            echo "- Disable fullscreen ambient mode"
-            echo "- Disable haptic feedback"
-            echo "- Disable player popup panels"
-            echo "- Disable resuming Shorts on startup"
-            echo "- Disable rolling number animations"
-            echo "- Disable sign in to TV popup"
-            echo "- Disable video codecs"
-            echo "- Downloads"
-            echo "- Exit fullscreen mode"
-            echo "- Force original audio"
-            echo "- GmsCore support"
-            echo "- Hide Shorts components"
-            echo "- Hide ads"
-            echo "- Hide end screen cards"
-            echo "- Hide end screen suggested video"
-            echo "- Hide info cards"
-            echo "- Hide layout components"
-            echo "- Hide player flyout menu items"
-            echo "- Hide player overlay buttons"
-            echo "- Hide related video overlay"
-            echo "- Hide timestamp"
-            echo "- Hide video action buttons"
-            echo "- Loop video"
-            echo "- Miniplayer"
-            echo "- Navigation buttons"
-            echo "- Open Shorts in regular player"
-            echo "- Open links externally"
-            echo "- Open videos fullscreen"
-            echo "- Playback speed"
-            echo "- Remove background playback restrictions"
-            echo "- Remove viewer discretion dialog"
-            echo "- Return YouTube Dislike"
-            echo "- Sanitize sharing links"
-            echo "- Seekbar"
-            echo "- Shorts autoplay"
-            echo "- SponsorBlock"
-            echo "- Spoof app version"
-            echo "- Spoof device dimensions"
-            echo "- Spoof video streams"
-            echo "- Swipe controls"
-            echo "- Theme"
-            echo "- Video ads"
-            echo "- Video quality"
-            echo "- Wide search bar"
-            echo ""
-            echo "---"
-            echo ""
-            echo "## Installation"
-            echo ""
-            echo "1. Install GmsCore (MicroG) first — required for Google account login: https://github.com/ReVanced/GmsCore/releases"
-            echo "2. Download the APK for your device architecture."
-            echo "3. Install and open YouTube ReVanced."
-            echo ""
-            echo "Automated daily build."
-          } > release_notes.md
+            **App Version:** ${{ steps.check.outputs.youtube_version }}
+            **Build Date:** ${{ steps.date.outputs.today }}
 
-          gh release create "youtube-revanced-v${VERSION}-${TODAY}" \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "YouTube ReVanced v${VERSION} (${TODAY})" \
-            --notes-file release_notes.md \
-            --clobber \
-            "$ARM64_APK" \
-            "$ARM7_APK"
-
-      - name: Delete old YouTube releases
-        if: steps.check.outputs.youtube_version != ''
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TODAY="${{ steps.date.outputs.today }}"
-          echo "Removing old YouTube releases (keeping today: $TODAY)..."
-          gh release list --repo "$GITHUB_REPOSITORY" --limit 50 --json tagName \
-            | jq -r '.[] | select(.tagName | startswith("youtube-revanced")) | select(.tagName | contains("'"$TODAY"'") | not) | .tagName' \
-            | while read TAG; do
-                echo "Deleting: $TAG"
-                gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes 2>/dev/null || true
-                git push origin --delete "$TAG" 2>/dev/null || true
-              done
-          echo "Cleanup done."
+            *Signed by Google (verified).*
+          files: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
+          draft: false
+          prerelease: false

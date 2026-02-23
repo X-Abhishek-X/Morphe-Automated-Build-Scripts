@@ -374,3 +374,4 @@ jobs:
                 gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes 2>/dev/null || true
                 git push origin --delete "$TAG" 2>/dev/null || true
               done
+

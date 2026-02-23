@@ -2,7 +2,7 @@ name: Check for ReVanced Updates (YouTube)
 
 on:
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "0 1 * * *" # Run daily at 1 AM UTC
   workflow_dispatch:
 
 jobs:
@@ -51,8 +51,10 @@ jobs:
           echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
-          echo "cli_version=$(basename "$CLI_JAR" .jar | grep -oP '\d+\.\d+\.\d+')" >> $GITHUB_OUTPUT
-          echo "patches_version=$(basename "$PATCHES_RVP" .rvp | grep -oP '\d+\.\d+\.\d+')" >> $GITHUB_OUTPUT
+          CLI_VER=$(basename "$CLI_JAR" .jar | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+          PATCHES_VER=$(basename "$PATCHES_RVP" .rvp | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+          echo "cli_version=$CLI_VER" >> $GITHUB_OUTPUT
+          echo "patches_version=$PATCHES_VER" >> $GITHUB_OUTPUT
 
       - name: Download YouTube APK
         if: steps.check.outputs.youtube_version != ''
@@ -70,15 +72,11 @@ jobs:
         if: steps.check.outputs.youtube_version != ''
         run: |
           DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
-
           if [ -z "$DOWNLOAD" ]; then
-            echo "ERROR: No YouTube file found after download!"
-            ls -la; exit 1
+            echo "ERROR: No YouTube file found after download!"; ls -la; exit 1
           fi
-
           echo "Found: $DOWNLOAD"
 
-          # Download latest APKEditor
           APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
           echo "Downloading APKEditor from: $APKEDITOR_URL"
           curl -L -o APKEditor.jar "$APKEDITOR_URL"
@@ -88,7 +86,7 @@ jobs:
             unzip -o "$DOWNLOAD" -d extracted_apk
             echo "Extracted contents:"; ls extracted_apk/
 
-            # --- ARM64-v8a (nodpi): base + arm64 ABI split only ---
+            # ARM64-v8a (nodpi): base + arm64 ABI split only, no density splits
             mkdir -p merge_arm64
             cp extracted_apk/base.apk merge_arm64/
             find extracted_apk -name "*arm64*" | while read f; do cp "$f" merge_arm64/; done
@@ -96,16 +94,15 @@ jobs:
             java -jar APKEditor.jar m -i merge_arm64 -o merged-arm64.apk
             echo "ARM64 merged: $(du -sh merged-arm64.apk)"
 
-            # --- ARMv7 (nodpi): base + armeabi-v7a ABI split only ---
+            # ARMv7 (nodpi): base + armeabi-v7a ABI split only, no density splits
             mkdir -p merge_arm7
             cp extracted_apk/base.apk merge_arm7/
             find extracted_apk \( -name "*armeabi_v7a*" -o -name "*armeabi-v7a*" \) | while read f; do cp "$f" merge_arm7/; done
             echo "ARMv7 merge dir:"; ls merge_arm7/
             java -jar APKEditor.jar m -i merge_arm7 -o merged-arm7.apk
             echo "ARMv7 merged: $(du -sh merged-arm7.apk)"
-
           else
-            echo "Single APK detected (no ABI splits available). Using as-is for both."
+            echo "Single APK (no ABI splits). Using as-is for both architectures."
             cp "$DOWNLOAD" merged-arm64.apk
             cp "$DOWNLOAD" merged-arm7.apk
           fi
@@ -120,8 +117,7 @@ jobs:
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
           VERSION="${{ steps.check.outputs.youtube_version }}"
           TODAY="${{ steps.date.outputs.today }}"
-
-          echo "Patching ARM64-v8a..."
+          echo "Patching ARM64-v8a with $CLI_JAR and $PATCHES_RVP..."
           java -jar "$CLI_JAR" patch \
             --exclusive \
             -p "$PATCHES_RVP" \
@@ -187,8 +183,7 @@ jobs:
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
           VERSION="${{ steps.check.outputs.youtube_version }}"
           TODAY="${{ steps.date.outputs.today }}"
-
-          echo "Patching ARMv7..."
+          echo "Patching ARMv7 with $CLI_JAR and $PATCHES_RVP..."
           java -jar "$CLI_JAR" patch \
             --exclusive \
             -p "$PATCHES_RVP" \
@@ -266,96 +261,100 @@ jobs:
           TODAY="${{ steps.date.outputs.today }}"
           CLI_VER="${{ steps.date.outputs.cli_version }}"
           PATCHES_VER="${{ steps.date.outputs.patches_version }}"
-
           ARM64_APK="youtube-revanced-v${VERSION}-arm64-v8a-nodpi-${TODAY}.apk"
           ARM7_APK="youtube-revanced-v${VERSION}-armeabi-v7a-nodpi-${TODAY}.apk"
+
+          # Write release notes to a file to avoid YAML/shell quoting issues
+          {
+            echo "## YouTube ReVanced v${VERSION}"
+            echo ""
+            echo "**Build Date:** ${TODAY}"
+            echo "**ReVanced CLI:** v${CLI_VER}"
+            echo "**ReVanced Patches:** v${PATCHES_VER}"
+            echo ""
+            echo "---"
+            echo ""
+            echo "## Downloads"
+            echo ""
+            echo "| File | Architecture | Notes |"
+            echo "|------|-------------|-------|"
+            echo "| \`${ARM64_APK}\` | ARM64-v8a (64-bit) | Most modern Android devices (2017+) |"
+            echo "| \`${ARM7_APK}\` | ARMv7 (32-bit) | Older Android devices |"
+            echo ""
+            echo "> Both builds are **nodpi** — no density resources stripped, works on all screen densities."
+            echo ""
+            echo "---"
+            echo ""
+            echo "## Patches Applied ($(echo "Bypass URL redirects Bypass image region restrictions Change form factor Check watch history domain name resolution Copy video URL Custom player overlay opacity Disable auto captions Disable double tap actions Disable fullscreen ambient mode Disable haptic feedback Disable player popup panels Disable resuming Shorts on startup Disable rolling number animations Disable sign in to TV popup Disable video codecs Downloads Exit fullscreen mode Force original audio GmsCore support Hide Shorts components Hide ads Hide end screen cards Hide end screen suggested video Hide info cards Hide layout components Hide player flyout menu items Hide player overlay buttons Hide related video overlay Hide timestamp Hide video action buttons Loop video Miniplayer Navigation buttons Open Shorts in regular player Open links externally Open videos fullscreen Playback speed Remove background playback restrictions Remove viewer discretion dialog Return YouTube Dislike Sanitize sharing links Seekbar Shorts autoplay SponsorBlock Spoof app version Spoof device dimensions Spoof video streams Swipe controls Theme Video ads Video quality Wide search bar" | wc -w) patches)"
+            echo ""
+            echo "- Bypass URL redirects"
+            echo "- Bypass image region restrictions"
+            echo "- Change form factor"
+            echo "- Check watch history domain name resolution"
+            echo "- Copy video URL"
+            echo "- Custom player overlay opacity"
+            echo "- Disable auto captions"
+            echo "- Disable double tap actions"
+            echo "- Disable fullscreen ambient mode"
+            echo "- Disable haptic feedback"
+            echo "- Disable player popup panels"
+            echo "- Disable resuming Shorts on startup"
+            echo "- Disable rolling number animations"
+            echo "- Disable sign in to TV popup"
+            echo "- Disable video codecs"
+            echo "- Downloads"
+            echo "- Exit fullscreen mode"
+            echo "- Force original audio"
+            echo "- GmsCore support"
+            echo "- Hide Shorts components"
+            echo "- Hide ads"
+            echo "- Hide end screen cards"
+            echo "- Hide end screen suggested video"
+            echo "- Hide info cards"
+            echo "- Hide layout components"
+            echo "- Hide player flyout menu items"
+            echo "- Hide player overlay buttons"
+            echo "- Hide related video overlay"
+            echo "- Hide timestamp"
+            echo "- Hide video action buttons"
+            echo "- Loop video"
+            echo "- Miniplayer"
+            echo "- Navigation buttons"
+            echo "- Open Shorts in regular player"
+            echo "- Open links externally"
+            echo "- Open videos fullscreen"
+            echo "- Playback speed"
+            echo "- Remove background playback restrictions"
+            echo "- Remove viewer discretion dialog"
+            echo "- Return YouTube Dislike"
+            echo "- Sanitize sharing links"
+            echo "- Seekbar"
+            echo "- Shorts autoplay"
+            echo "- SponsorBlock"
+            echo "- Spoof app version"
+            echo "- Spoof device dimensions"
+            echo "- Spoof video streams"
+            echo "- Swipe controls"
+            echo "- Theme"
+            echo "- Video ads"
+            echo "- Video quality"
+            echo "- Wide search bar"
+            echo ""
+            echo "---"
+            echo ""
+            echo "## Installation"
+            echo ""
+            echo "1. Install **GmsCore (MicroG)** — required for login: https://github.com/ReVanced/GmsCore/releases"
+            echo "2. Download the APK for your device architecture above."
+            echo "3. Install it and open YouTube ReVanced."
+            echo ""
+            echo "*Automated daily build. Signed with auto-generated key.*"
+          } > release_notes.md
 
           gh release create "youtube-revanced-v${VERSION}-${TODAY}" \
             --repo "$GITHUB_REPOSITORY" \
             --title "YouTube ReVanced v${VERSION} (${TODAY})" \
-            --notes "## 📹 YouTube ReVanced v${VERSION}
-
-**Build Date:** ${TODAY}
-**ReVanced CLI:** v${CLI_VER}
-**ReVanced Patches:** v${PATCHES_VER}
-
----
-
-## 📦 Downloads
-
-| File | Architecture |
-|------|-------------|
-| \`${ARM64_APK}\` | ARM64-v8a (64-bit) — Most modern devices |
-| \`${ARM7_APK}\` | ARMv7 (32-bit) — Older devices |
-
-> Both builds are **nodpi** (no density-specific resources stripped).
-
----
-
-## ✅ Patches Applied
-
-- Bypass URL redirects
-- Bypass image region restrictions
-- Change form factor
-- Check watch history domain name resolution
-- Copy video URL
-- Custom player overlay opacity
-- Disable auto captions
-- Disable double tap actions
-- Disable fullscreen ambient mode
-- Disable haptic feedback
-- Disable player popup panels
-- Disable resuming Shorts on startup
-- Disable rolling number animations
-- Disable sign in to TV popup
-- Disable video codecs
-- Downloads
-- Exit fullscreen mode
-- Force original audio
-- GmsCore support
-- Hide Shorts components
-- **Hide ads** 🚫
-- Hide end screen cards
-- Hide end screen suggested video
-- Hide info cards
-- Hide layout components
-- Hide player flyout menu items
-- Hide player overlay buttons
-- Hide related video overlay
-- Hide timestamp
-- Hide video action buttons
-- Loop video
-- Miniplayer
-- Navigation buttons
-- Open Shorts in regular player
-- Open links externally
-- Open videos fullscreen
-- Playback speed
-- Remove background playback restrictions
-- Remove viewer discretion dialog
-- **Return YouTube Dislike** 👎
-- Sanitize sharing links
-- Seekbar
-- Shorts autoplay
-- **SponsorBlock** ⏭️
-- Spoof app version
-- Spoof device dimensions
-- Spoof video streams
-- Swipe controls
-- Theme
-- **Video ads** 🚫
-- Video quality
-- Wide search bar
-
----
-
-## 📋 Installation
-
-1. Install **[GmsCore (MicroG)](https://github.com/ReVanced/GmsCore/releases)** first — required for login.
-2. Install the APK for your device architecture.
-3. Open YouTube ReVanced and sign in.
-
-*Automated daily build — Signed with auto-generated key.*" \
+            --notes-file release_notes.md \
             "$ARM64_APK" \
             "$ARM7_APK"
 
@@ -365,13 +364,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TODAY="${{ steps.date.outputs.today }}"
-          echo "Cleaning up old YouTube releases (keeping today: $TODAY)..."
-
-          gh release list --repo "$GITHUB_REPOSITORY" --limit 50 --json tagName,name \
+          echo "Removing old YouTube releases (keeping today: $TODAY)..."
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 50 --json tagName \
             | jq -r '.[] | select(.tagName | startswith("youtube-revanced")) | select(.tagName | contains("'"$TODAY"'") | not) | .tagName' \
             | while read TAG; do
-                echo "Deleting release: $TAG"
+                echo "Deleting: $TAG"
                 gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes 2>/dev/null || true
                 git push origin --delete "$TAG" 2>/dev/null || true
               done
-
+          echo "Cleanup done."

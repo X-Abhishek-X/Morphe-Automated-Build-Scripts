@@ -81,23 +81,23 @@ jobs:
             if [ -z "$MAIN_APK" ]; then
               MAIN_APK=$(find extracted_yt -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
             fi
-            echo "Main APK: $MAIN_APK ($(du -sh "$MAIN_APK" | cut -f1))"
-            cp "$MAIN_APK" input.apk
+            echo "Main APK: $MAIN_APK"
 
-            # Inject ARMv7 native libs from config split if it exists
-            ARM7_CONFIG=$(find extracted_yt -maxdepth 1 \( -name "config.armeabi_v7a.apk" -o -name "config.armeabi-v7a.apk" \) | head -n 1)
-            if [ -n "$ARM7_CONFIG" ]; then
-              echo "Injecting ARMv7 native libs from: $ARM7_CONFIG"
-              mkdir -p arm7_tmp
-              unzip -o "$ARM7_CONFIG" "lib/*" -d arm7_tmp/ 2>/dev/null || true
-              if [ -d "arm7_tmp/lib" ]; then
-                cd arm7_tmp && zip -r ../input.apk lib/ && cd ..
-                echo "ARMv7 native libs injected."
-              fi
-            else
-              echo "No ARMv7 config split found in this XAPK — using base APK only."
+            # Download APKEditor
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+
+            # Build merge directory, excluding 64-bit and x86 native lib configs to force ARMv7 fallback
+            mkdir -p merge_dir
+            cp "$MAIN_APK" merge_dir/base.apk
+            find extracted_yt -maxdepth 1 -name "config.*.apk" ! -name "*arm64*" ! -name "*x86*" | while read f; do cp "$f" merge_dir/; done
+            echo "Merge dir contents:"; ls merge_dir/
+
+            java -jar APKEditor.jar m -i merge_dir -o input.apk
+
+            if [ ! -f "input.apk" ]; then
+              echo "Error: APKEditor merge failed."; exit 1
             fi
-
             echo "Final input size: $(du -sh input.apk | cut -f1)"
           else
             cp "$APK_FILE" input.apk
@@ -259,27 +259,28 @@ jobs:
             unzip -o "$DOWNLOAD" -d extracted_photos
             echo "Extracted:"; ls extracted_photos/
 
+            # Download APKEditor
+            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
+            curl -L -o APKEditor.jar "$APKEDITOR_URL"
+
+            # Find main APK
             MAIN_APK=$(find extracted_photos -maxdepth 1 -name "base.apk" | head -n 1)
             if [ -z "$MAIN_APK" ]; then
               MAIN_APK=$(find extracted_photos -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
             fi
-            echo "Main APK: $MAIN_APK ($(du -sh "$MAIN_APK" | cut -f1))"
-            cp "$MAIN_APK" photos_input.apk
+            echo "Main APK: $MAIN_APK"
 
-            # Inject ARMv7 native libs if config split exists
-            ARM7_CONFIG=$(find extracted_photos -maxdepth 1 \( -name "config.armeabi_v7a.apk" -o -name "config.armeabi-v7a.apk" \) | head -n 1)
-            if [ -n "$ARM7_CONFIG" ]; then
-              echo "Injecting ARMv7 native libs from: $ARM7_CONFIG"
-              mkdir -p arm7_tmp
-              unzip -o "$ARM7_CONFIG" "lib/*" -d arm7_tmp/ 2>/dev/null || true
-              if [ -d "arm7_tmp/lib" ]; then
-                cd arm7_tmp && zip -r ../photos_input.apk lib/ && cd ..
-                echo "ARMv7 native libs injected."
-              fi
-            else
-              echo "No ARMv7 config split found — using base APK only."
+            # Build merge directory, excluding 64-bit and x86
+            mkdir -p merge_photos
+            cp "$MAIN_APK" merge_photos/base.apk
+            find extracted_photos -maxdepth 1 -name "config.*.apk" ! -name "*arm64*" ! -name "*x86*" | while read f; do cp "$f" merge_photos/; done
+            echo "Merge dir contents:"; ls merge_photos/
+
+            java -jar APKEditor.jar m -i merge_photos -o photos_input.apk
+
+            if [ ! -f "photos_input.apk" ]; then
+              echo "Error: APKEditor merge failed."; exit 1
             fi
-
             echo "Final input size: $(du -sh photos_input.apk | cut -f1)"
             DOWNLOAD="photos_input.apk"
           fi

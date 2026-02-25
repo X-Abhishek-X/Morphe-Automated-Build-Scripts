@@ -104,7 +104,7 @@ jobs:
             find extracted_apk -maxdepth 1 -name "config.*.apk" | while read f; do cp "$f" merge_dir/; done
             echo "Merge dir contents:"; ls merge_dir/
 
-            java -jar APKEditor.jar m -i merge_dir -o merged.apk
+            java -jar APKEditor.jar m -i merge_dir -o merged.apk -extractNativeLibs true
 
             if [ ! -f "merged.apk" ]; then
               echo "Error: APKEditor merge failed."; exit 1

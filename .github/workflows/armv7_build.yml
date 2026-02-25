@@ -93,7 +93,7 @@ jobs:
             find extracted_yt -maxdepth 1 -name "config.*.apk" ! -name "*arm64*" ! -name "*x86*" | while read f; do cp "$f" merge_dir/; done
             echo "Merge dir contents:"; ls merge_dir/
 
-            java -jar APKEditor.jar m -i merge_dir -o input.apk
+            java -jar APKEditor.jar m -i merge_dir -o input.apk -extractNativeLibs true
 
             if [ ! -f "input.apk" ]; then
               echo "Error: APKEditor merge failed."; exit 1
@@ -280,7 +280,7 @@ jobs:
             find extracted_photos -maxdepth 1 -name "config.*.apk" ! -name "*arm64*" ! -name "*x86*" | while read f; do cp "$f" merge_photos/; done
             echo "Merge dir contents:"; ls merge_photos/
 
-            java -jar APKEditor.jar m -i merge_photos -o photos_input.apk
+            java -jar APKEditor.jar m -i merge_photos -o photos_input.apk -extractNativeLibs true
 
             if [ ! -f "photos_input.apk" ]; then
               echo "Error: APKEditor merge failed."; exit 1

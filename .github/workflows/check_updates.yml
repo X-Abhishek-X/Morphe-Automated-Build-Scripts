@@ -177,8 +177,12 @@ jobs:
           echo "Patches RVP: $PATCHES_RVP"
           echo "Patching $APK_FILE..."
 
-          # Note: No --keystore flag — ReVanced CLI will auto-generate one
+          # Use a constant keystore to keep app signatures identical across daily builds
           java -jar "$CLI_JAR" patch \
+            --keystore="revanced.keystore" \
+            --keystore-entry-alias="revanced" \
+            --keystore-entry-password="revanced" \
+            --keystore-password="revanced" \
             --exclusive \
             -p "$PATCHES_RVP" \
             -e "Spoof features" \

@@ -109,6 +109,10 @@ jobs:
 
           echo "Patching with $CLI_JAR..."
           java -jar "$CLI_JAR" patch \
+            --keystore="revanced.keystore" \
+            --keystore-entry-alias="revanced" \
+            --keystore-entry-password="revanced" \
+            --keystore-password="revanced" \
             --exclusive \
             -p "$PATCHES_RVP" \
             -e "Bypass URL redirects" \
@@ -310,6 +314,10 @@ jobs:
 
           echo "Patching $APK_FILE..."
           java -jar "$CLI_JAR" patch \
+            --keystore="revanced.keystore" \
+            --keystore-entry-alias="revanced" \
+            --keystore-entry-password="revanced" \
+            --keystore-password="revanced" \
             --exclusive \
             -p "$PATCHES_RVP" \
             -e "Spoof features" \

@@ -63,8 +63,8 @@ jobs:
              exit 1
           fi
 
-          # If it's a zip/xapk, extract and merge only the required splits for arm64
-          if unzip -t "$APK_FILE" > /dev/null 2>&1; then
+          # If it contains .apk files inside, it's a split bundle.
+          if unzip -l "$APK_FILE" | grep -q '\.apk$'; then
             echo "Split APK bundle detected. Extracting..."
             mv "$APK_FILE" bundle.xapk
             unzip -o bundle.xapk -d extracted_apk
@@ -188,7 +188,8 @@ jobs:
              exit 1
           fi
 
-          if unzip -t "$APK_FILE" > /dev/null 2>&1; then
+          # If it contains .apk files inside, it's a split bundle.
+          if unzip -l "$APK_FILE" | grep -q '\.apk$'; then
             echo "Split APK bundle detected. Extracting..."
             mv "$APK_FILE" bundle.xapk
             unzip -o bundle.xapk -d extracted_photos

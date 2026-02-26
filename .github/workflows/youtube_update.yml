@@ -188,6 +188,16 @@ jobs:
           path: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
           retention-days: 90
 
+      - name: Delete Old Releases
+        if: steps.check.outputs.youtube_version != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --json tagName -q ".[].tagName" | grep "^youtube-revanced-v" | while read -r tag; do
+            echo "Deleting old release: $tag"
+            gh release delete "$tag" -y --cleanup-tag || true
+          done
+
       - name: Create Release
         if: steps.check.outputs.youtube_version != ''
         uses: softprops/action-gh-release@v1

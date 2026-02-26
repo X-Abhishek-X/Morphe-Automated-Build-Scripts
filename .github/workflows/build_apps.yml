@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt bs4 requests
 
+      - name: Install clean apkeep from EFForg
+        run: |
+          wget -qO apkeep https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-musl
+          chmod +x apkeep
+          sudo mv apkeep /usr/local/bin/
+
       - name: Run update script (Check versions)
         id: check
         env:
@@ -46,13 +52,14 @@ jobs:
         run: |
           VERSION="${{ steps.check.outputs.youtube_version }}"
           echo "Expected version: $VERSION"
-          URL=$(python scripts/download_uptodown.py youtube "$VERSION")
-          if [ -z "$URL" ]; then
-            echo "Failed to fetch YouTube URL"
-            exit 1
+          if [ "$VERSION" = "latest" ]; then
+            apkeep -a com.google.android.youtube .
+          else
+            apkeep -a "com.google.android.youtube@${VERSION}" .
           fi
-          echo "Downloading from $URL"
-          wget "$URL" -O com.google.android.youtube.apk
+          DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
+          if [ -z "$DOWNLOAD" ]; then echo "YouTube APK not found!"; exit 1; fi
+          mv "$DOWNLOAD" "com.google.android.youtube.apk"
 
       - name: Patch YouTube
         if: steps.check.outputs.youtube_version != ''
@@ -162,22 +169,15 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y aapt
           VERSION="${{ steps.check.outputs.photos_version }}"
-
-          # Uptodown may not have the exact microversion (e.g. 6.94.0.x is 6.94 on uptodown)
+          echo "Expected version: $VERSION"
           if [ "$VERSION" = "latest" ]; then
-            SHORT_VERSION="7."
+            apkeep -a com.google.android.apps.photos .
           else
-            SHORT_VERSION=$(echo "$VERSION" | cut -d. -f1-2)
+            apkeep -a "com.google.android.apps.photos@${VERSION}" .
           fi
-          echo "Expected full version: $VERSION, short: $SHORT_VERSION"
-
-          URL=$(python scripts/download_uptodown.py google-photos "$SHORT_VERSION")
-          if [ -z "$URL" ]; then
-            echo "Failed to fetch Google Photos URL"
-            exit 1
-          fi
-          echo "Downloading from $URL"
-          wget "$URL" -O com.google.android.apps.photos.apk
+          DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.apps.photos*.apk" -o -name "com.google.android.apps.photos*.xapk" -o -name "com.google.android.apps.photos*.apks" \) | head -n 1)
+          if [ -z "$DOWNLOAD" ]; then echo "Photos APK not found!"; exit 1; fi
+          mv "$DOWNLOAD" "com.google.android.apps.photos.apk"
 
       - name: Patch Google Photos
         if: steps.check.outputs.photos_version != ''

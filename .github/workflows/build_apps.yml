@@ -87,10 +87,10 @@ jobs:
             mkdir -p merge_dir
             cp "$MAIN_APK" merge_dir/base.apk
             
-            # COPY ONLY ESSENTIAL SPLITS FOR S24 ULTRA (arm64, english, xxhdpi)
+            # COPY ONLY ESSENTIAL SPLITS FOR S24 ULTRA (arm64, english, plus all dpi permutations to prevent aapt errors)
             find extracted_apk -maxdepth 1 -name "config.arm64_v8a.apk" -exec cp {} merge_dir/ \;
             find extracted_apk -maxdepth 1 -name "config.en.apk" -exec cp {} merge_dir/ \;
-            find extracted_apk -maxdepth 1 -name "config.xxhdpi.apk" -exec cp {} merge_dir/ \;
+            find extracted_apk -maxdepth 1 -name "config.*dpi.apk" -exec cp {} merge_dir/ \;
 
             java -jar APKEditor.jar m -i merge_dir -o merged.apk -extractNativeLibs true
 
@@ -207,10 +207,10 @@ jobs:
             mkdir -p merge_photos
             cp "$MAIN_APK" merge_photos/base.apk
             
-            # COPY ONLY ESSENTIAL SPLITS FOR S24 ULTRA (arm64, english, xxhdpi)
+            # COPY ONLY ESSENTIAL SPLITS FOR S24 ULTRA (arm64, english, plus all dpi permutations to prevent aapt errors)
             find extracted_photos -maxdepth 1 -name "config.arm64_v8a.apk" -exec cp {} merge_photos/ \;
             find extracted_photos -maxdepth 1 -name "config.en.apk" -exec cp {} merge_photos/ \;
-            find extracted_photos -maxdepth 1 -name "config.xxhdpi.apk" -exec cp {} merge_photos/ \;
+            find extracted_photos -maxdepth 1 -name "config.*dpi.apk" -exec cp {} merge_photos/ \;
 
             java -jar APKEditor.jar m -i merge_photos -o photos_merged.apk -extractNativeLibs true
 

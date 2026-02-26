@@ -30,7 +30,7 @@ def get_download_link(version_target: str, uptodown_name: str) -> str:
                     version_url_parts = entry["versionURL"]
                     version_url = f"{version_url_parts['url']}/{version_url_parts['extraURL']}/{version_url_parts['versionID']}"
                     
-                    is_apk = entry.get('kindFile') == 'apk'
+                    is_xapk = entry.get('kindFile') == 'xapk'
                     
                     version_page = session.get(version_url)
                     soup2 = BeautifulSoup(version_page.content, "html.parser")
@@ -49,7 +49,7 @@ def get_download_link(version_target: str, uptodown_name: str) -> str:
                     if button and 'data-url' in button.attrs:
                         download_url = f"https://dw.uptodown.com/dwn/{button['data-url']}"
                         
-                        if is_apk:
+                        if is_xapk:
                             return download_url
                         else:
                             if not found_xapk_url:

@@ -55,7 +55,8 @@ def get_download_link(version_target: str, uptodown_name: str) -> str:
                             print(f"URL Found: {download_url}", file=sys.stderr)
                             dl_resp = session.get(download_url, stream=True)
                             dl_resp.raise_for_status()
-                            with open(f"com.google.android.apps.{uptodown_name}.apk".replace(".apps.youtube", ".youtube"), 'wb') as f:
+                            filename = f"com.google.android.youtube.apk" if uptodown_name == "youtube" else f"com.google.android.apps.photos.apk"
+                            with open(filename, 'wb') as f:
                                 for chunk in dl_resp.iter_content(chunk_size=8192):
                                     f.write(chunk)
                             return True

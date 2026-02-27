@@ -1,12 +1,68 @@
-name: Build ReVanced Apps (YouTube & Google Photos)
+name: Build ReVanced Apps (YouTube, Google Photos & Reddit)
 
 on:
   schedule:
-    - cron: "0 1 * * *" # Run daily at 1 AM UTC
-  workflow_dispatch:
+    - cron: "0 2 * * *" # Run daily at 2 AM UTC — check for new supported versions
+  workflow_dispatch: # Allow manual trigger at any time
 
 jobs:
+  # ─────────────────────────────────────────────────────────────
+  # JOB 1: Check if any app has a newly supported version
+  # ─────────────────────────────────────────────────────────────
+  check-versions:
+    name: "🔍 Check for new supported versions"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    outputs:
+      needs_build: ${{ steps.check.outputs.needs_build }}
+      youtube_version: ${{ steps.check.outputs.youtube_version }}
+      photos_version: ${{ steps.check.outputs.photos_version }}
+      reddit_version: ${{ steps.check.outputs.reddit_version }}
+      patches_tag: ${{ steps.check.outputs.patches_tag }}
+      cli_tag: ${{ steps.check.outputs.cli_tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Install Python dependencies
+        run: pip install -r scripts/requirements.txt bs4 requests
+
+      - name: Run version check script
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKIP_CLEANUP: "true"
+        run: python scripts/check_updates.py
+
+      - name: Show detected versions
+        run: |
+          echo "needs_build:     ${{ steps.check.outputs.needs_build }}"
+          echo "youtube_version: ${{ steps.check.outputs.youtube_version }}"
+          echo "photos_version:  ${{ steps.check.outputs.photos_version }}"
+          echo "reddit_version:  ${{ steps.check.outputs.reddit_version }}"
+          echo "patches_tag:     ${{ steps.check.outputs.patches_tag }}"
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 2: Build and release — only runs when versions changed
+  # ─────────────────────────────────────────────────────────────
   build-and-release:
+    name: "🔨 Build & Release ReVanced Apps"
+    needs: check-versions
+    if: needs.check-versions.outputs.needs_build == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -21,61 +77,63 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Set up Java
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "17"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r scripts/requirements.txt bs4 requests
 
-      - name: Install clean apkeep from EFForg
+      - name: Install aapt (for version extraction)
+        run: sudo apt-get update && sudo apt-get install -y aapt
+
+      - name: Install apkeep (clean APK downloader fallback)
         run: |
           wget -qO apkeep https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu
           chmod +x apkeep
           sudo mv apkeep /usr/local/bin/
 
-      - name: Run update script (Check versions)
-        id: check
+      # Re-run check script to download CLI tools (SKIP_CLEANUP=true keeps the jar/rvp)
+      - name: Download ReVanced CLI & Patches
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SKIP_CLEANUP: "true"
-        run: python scripts/check_updates.py
+        run: |
+          python scripts/check_updates.py
+          echo "CLI jar: $(find . -name 'revanced-cli-*.jar' | head -1)"
+          echo "Patches rvp: $(find . -name 'patches-*.rvp' | head -1)"
 
       - name: Set build date
         id: date
         run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
+      # ─── YOUTUBE ────────────────────────────────────────────────
       - name: Download YouTube APK
-        if: steps.check.outputs.youtube_version != ''
+        if: needs.check-versions.outputs.youtube_version != ''
+        id: dl_youtube
         run: |
-          VERSION="${{ steps.check.outputs.youtube_version }}"
-          echo "Expected version: $VERSION"
-          echo "Fetching latest pure APK from Uptodown..."
+          VERSION="${{ needs.check-versions.outputs.youtube_version }}"
+          echo "Downloading YouTube $VERSION from Uptodown..."
           python scripts/download_uptodown.py "youtube" "$VERSION"
           if [ ! -f "com.google.android.youtube.apk" ]; then
-            echo "YouTube APK not downloaded securely from Uptodown!"
+            echo "❌ YouTube APK download failed!"
             exit 1
           fi
+          echo "✅ YouTube APK downloaded."
 
       - name: Patch YouTube
-        if: steps.check.outputs.youtube_version != ''
+        if: needs.check-versions.outputs.youtube_version != ''
         run: |
           APK_FILE="com.google.android.youtube.apk"
-          if [ ! -f "$APK_FILE" ]; then
-             echo "YouTube pure standalone APK not found for patching!"
-             exit 1
-          fi
-
-          # Strip 32-bit libraries strictly to conform to the S24 Ultra (arm64-v8a native only)
-          # Otherwise Android 14 blocklists the Universal APK install instantly.
-          echo "Stripping 32-bit libraries (armeabi-v7a, x86) from pristine standalone APK..."
-          zip -d "$APK_FILE" "lib/armeabi-v7a/*" "lib/x86/*" "lib/armeabi/*" || true
-
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
-          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp"  | head -n 1)
+          VERSION="${{ needs.check-versions.outputs.youtube_version }}"
+          TODAY="${{ steps.date.outputs.today }}"
+          OUTPUT="youtube-revanced-v${VERSION}-${TODAY}.apk"
 
+          echo "Patching YouTube $VERSION → $OUTPUT"
           java -jar "$CLI_JAR" patch \
             --keystore="revanced.keystore" \
             --exclusive \
@@ -132,49 +190,39 @@ jobs:
             -e "Video ads" \
             -e "Video quality" \
             -e "Wide search bar" \
-            -o "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk" \
+            -o "$OUTPUT" \
             "$APK_FILE"
+          echo "yt_output=$OUTPUT" >> $GITHUB_OUTPUT
 
-      # --- GOOGLE PHOTOS BUILD SECTION ---
+      # ─── GOOGLE PHOTOS ──────────────────────────────────────────
       - name: Download Google Photos APK
-        if: steps.check.outputs.photos_version != ''
-        id: download_photos
+        if: needs.check-versions.outputs.photos_version != ''
+        id: dl_photos
         run: |
-          sudo apt-get update && sudo apt-get install -y aapt
-          VERSION="${{ steps.check.outputs.photos_version }}"
-          echo "Expected version: $VERSION"
-          if [ "$VERSION" = "latest" ]; then
-            VERSION_TARGET="google-photos"
-          else
-            VERSION_TARGET="$VERSION"
-          fi
-          echo "Fetching Google Photos standalone pure APK from Uptodown..."
-          python scripts/download_uptodown.py "google-photos" "$VERSION_TARGET"
+          VERSION="${{ needs.check-versions.outputs.photos_version }}"
+          echo "Downloading Google Photos ${VERSION} from Uptodown..."
+          python scripts/download_uptodown.py "google-photos" "$VERSION"
           if [ ! -f "com.google.android.apps.photos.apk" ]; then
-            echo "Google Photos pure standalone APK not successfully fetched!"
+            echo "❌ Google Photos APK download failed!"
             exit 1
           fi
+          REAL_VERSION=$(aapt dump badging "com.google.android.apps.photos.apk" \
+            | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
+          echo "photos_real_version=$REAL_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Google Photos APK downloaded (real version: $REAL_VERSION)."
 
       - name: Patch Google Photos
-        if: steps.check.outputs.photos_version != ''
+        if: needs.check-versions.outputs.photos_version != ''
+        id: patch_photos
         run: |
           APK_FILE="com.google.android.apps.photos.apk"
-          if [ ! -f "$APK_FILE" ]; then
-             echo "Photos standalone pure APK not found!"
-             exit 1
-          fi
-
-          REAL_VERSION=$(aapt dump badging "$APK_FILE" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
-          echo "photos_real_version=$REAL_VERSION" >> $GITHUB_OUTPUT
-
-          # Strip 32-bit libraries strictly to conform to the S24 Ultra (arm64-v8a native only)
-          # Otherwise Android 14 blocklists the Universal APK install instantly.
-          echo "Stripping 32-bit libraries (armeabi-v7a, x86) from pristine standalone APK..."
-          zip -d "$APK_FILE" "lib/armeabi-v7a/*" "lib/x86/*" "lib/armeabi/*" || true
-
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
-          PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp"  | head -n 1)
+          REAL_VERSION="${{ steps.dl_photos.outputs.photos_real_version }}"
+          TODAY="${{ steps.date.outputs.today }}"
+          OUTPUT="google-photos-revanced-v${REAL_VERSION}-${TODAY}.apk"
 
+          echo "Patching Google Photos $REAL_VERSION → $OUTPUT"
           java -jar "$CLI_JAR" patch \
             --keystore="revanced.keystore" \
             --exclusive \
@@ -183,60 +231,144 @@ jobs:
             -e "Enable DCIM folders backup control" \
             -e "GmsCore support" \
             -e "Change package name" \
-            -o "google-photos-revanced-v${{ steps.download_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}.apk" \
+            -o "$OUTPUT" \
             "$APK_FILE"
+          echo "photos_output=$OUTPUT" >> $GITHUB_OUTPUT
 
-      # --- UPLOAD ARTIFACTS ---
-      - name: Upload YouTube ReVanced Artifact
-        if: steps.check.outputs.youtube_version != ''
+      # ─── REDDIT ─────────────────────────────────────────────────
+      - name: Download Reddit APK
+        if: needs.check-versions.outputs.reddit_version != ''
+        id: dl_reddit
+        run: |
+          VERSION="${{ needs.check-versions.outputs.reddit_version }}"
+          echo "Downloading Reddit ${VERSION} from Uptodown..."
+          python scripts/download_uptodown.py "reddit" "$VERSION"
+          if [ ! -f "com.reddit.frontpage.apk" ]; then
+            echo "❌ Reddit APK download failed!"
+            exit 1
+          fi
+          REAL_VERSION=$(aapt dump badging "com.reddit.frontpage.apk" \
+            | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
+          echo "reddit_real_version=$REAL_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Reddit APK downloaded (real version: $REAL_VERSION)."
+
+      - name: Patch Reddit
+        if: needs.check-versions.outputs.reddit_version != ''
+        id: patch_reddit
+        run: |
+          APK_FILE="com.reddit.frontpage.apk"
+          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
+          PATCHES_RVP=$(find . -name "patches-*.rvp"  | head -n 1)
+          REAL_VERSION="${{ steps.dl_reddit.outputs.reddit_real_version }}"
+          TODAY="${{ steps.date.outputs.today }}"
+          OUTPUT="reddit-revanced-v${REAL_VERSION}-${TODAY}.apk"
+
+          echo "Patching Reddit $REAL_VERSION → $OUTPUT"
+          # List all available Reddit patches first so we can see what's supported
+          java -jar "$CLI_JAR" list-patches -p "$PATCHES_RVP" -f com.reddit.frontpage || true
+
+          java -jar "$CLI_JAR" patch \
+            --keystore="revanced.keystore" \
+            --exclusive \
+            -p "$PATCHES_RVP" \
+            -e "Spoof client" \
+            -e "Premium icon" \
+            -e "Hide ads" \
+            -e "Sanitize sharing links" \
+            -e "Open links externally" \
+            -e "GmsCore support" \
+            -o "$OUTPUT" \
+            "$APK_FILE"
+          echo "reddit_output=$OUTPUT" >> $GITHUB_OUTPUT
+
+      # ─── UPLOAD ARTIFACTS (for 90-day retention backup) ─────────
+      - name: Upload YouTube artifact
+        if: needs.check-versions.outputs.youtube_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}"
-          path: "youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
+          name: "youtube-revanced-v${{ needs.check-versions.outputs.youtube_version }}-${{ steps.date.outputs.today }}"
+          path: "youtube-revanced-v${{ needs.check-versions.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
           retention-days: 90
 
-      - name: Upload Google Photos ReVanced Artifact
-        if: steps.check.outputs.photos_version != ''
+      - name: Upload Google Photos artifact
+        if: needs.check-versions.outputs.photos_version != ''
         uses: actions/upload-artifact@v4
         with:
-          name: "google-photos-revanced-v${{ steps.download_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}"
-          path: "google-photos-revanced-v${{ steps.download_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}.apk"
+          name: "google-photos-revanced-v${{ steps.dl_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}"
+          path: "google-photos-revanced-v${{ steps.dl_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}.apk"
           retention-days: 90
 
-      # --- CONSOLIDATE RELEASES ---
-      - name: Delete Old Consolidated Releases
+      - name: Upload Reddit artifact
+        if: needs.check-versions.outputs.reddit_version != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: "reddit-revanced-v${{ steps.dl_reddit.outputs.reddit_real_version }}-${{ steps.date.outputs.today }}"
+          path: "reddit-revanced-v${{ steps.dl_reddit.outputs.reddit_real_version }}-${{ steps.date.outputs.today }}.apk"
+          retention-days: 90
+
+      # ─── RELEASE MANAGEMENT ─────────────────────────────────────
+      - name: Delete old consolidated releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release list --json tagName -q ".[].tagName" | grep "^revanced-apps-v" | while read -r tag; do
-            echo "Deleting old composite release: $tag"
-            gh release delete "$tag" -y --cleanup-tag || true
-          done
+          gh release list --json tagName -q ".[].tagName" \
+            | grep "^revanced-apps-v" \
+            | while read -r tag; do
+                echo "Deleting old release: $tag"
+                gh release delete "$tag" -y --cleanup-tag || true
+              done
 
-      - name: Create Combined Release
-        uses: softprops/action-gh-release@v1
+      - name: Build release body
+        id: release_body
+        run: |
+          TODAY="${{ steps.date.outputs.today }}"
+          YT_VER="${{ needs.check-versions.outputs.youtube_version }}"
+          PHOTOS_VER="${{ steps.dl_photos.outputs.photos_real_version }}"
+          REDDIT_VER="${{ steps.dl_reddit.outputs.reddit_real_version }}"
+          PATCHES_TAG="${{ needs.check-versions.outputs.patches_tag }}"
+          CLI_TAG="${{ needs.check-versions.outputs.cli_tag }}"
+
+          cat <<EOF > release_body.md
+          ## 📦 ReVanced Apps — Automated Build
+
+          Automatically built whenever a new supported version is detected.
+          All apps are signed with a unified secure keystore.
+
+          | App | Patched Version |
+          |-----|----------------|
+          | 📺 YouTube ReVanced | \`${YT_VER:-N/A}\` |
+          | 📸 Google Photos ReVanced | \`${PHOTOS_VER:-N/A}\` |
+          | 🔴 Reddit ReVanced | \`${REDDIT_VER:-N/A}\` |
+
+          **ReVanced Patches:** \`${PATCHES_TAG}\`
+          **ReVanced CLI:** \`${CLI_TAG}\`
+          **Build Date:** \`${TODAY}\`
+
+          ---
+          ### 📥 Installation Notes
+          - Install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) before launching any of these apps.
+          - If you have a previous version installed, uninstall it first or sign both with the same keystore.
+          EOF
+
+          echo "release_body_file=release_body.md" >> $GITHUB_OUTPUT
+
+      - name: Create combined release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: "revanced-apps-v${{ steps.date.outputs.today }}"
-          name: "ReVanced Apps (YouTube & Google Photos) - ${{ steps.date.outputs.today }}"
-          body: |
-            Automated bundled build of YouTube ReVanced and Google Photos ReVanced.
-
-            **YouTube App Version:** ${{ steps.check.outputs.youtube_version }}
-            **Google Photos App Version:** ${{ steps.download_photos.outputs.photos_real_version }}
-
-            **Build Date:** ${{ steps.date.outputs.today }}
-
-            _Both apps were automatically signed with a unified secure Keystore and generated flawlessly direct from source code._
+          name: "ReVanced Apps — ${{ steps.date.outputs.today }}"
+          body_path: release_body.md
           files: |
-            youtube-revanced-v${{ steps.check.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk
-            google-photos-revanced-v${{ steps.download_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}.apk
+            youtube-revanced-v${{ needs.check-versions.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk
+            google-photos-revanced-v${{ steps.dl_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}.apk
+            reddit-revanced-v${{ steps.dl_reddit.outputs.reddit_real_version }}-${{ steps.date.outputs.today }}.apk
           draft: false
           prerelease: false
-          overwrite: true
 
-      - name: Commit and Push README changes
+      # ─── COMMIT STATE + README ───────────────────────────────────
+      - name: Commit updated state file and README
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update ReVanced versions [skip ci]"
+          commit_message: "chore: update ReVanced built versions state [skip ci]"
           branch: master
-          file_pattern: "README.md"
+          file_pattern: "README.md .github/last_built_versions.json"

@@ -3,10 +3,12 @@ import requests
 import re
 import subprocess
 import sys
+import json
 
 # Constants
 REPO_CLI = "ReVanced/revanced-cli"
 REPO_PATCHES = "ReVanced/revanced-patches"
+STATE_FILE = ".github/last_built_versions.json"
 FILES_TO_UPDATE = [
     "README.md"
 ]
@@ -145,6 +147,31 @@ def get_compatible_versions(cli_jar, patches_rvp, package_name, patch_name_filte
 
     return versions
 
+def load_last_built_versions():
+    """Load the JSON state file tracking the last successfully built versions."""
+    if os.path.exists(STATE_FILE):
+        try:
+            with open(STATE_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Could not read state file: {e}")
+    return {}
+
+def save_last_built_versions(versions_dict):
+    """Save the current versions to the state file."""
+    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+    with open(STATE_FILE, 'w') as f:
+        json.dump(versions_dict, f, indent=2)
+    print(f"State file updated: {STATE_FILE}")
+
+def set_github_output(key, value):
+    """Write a key=value pair to GITHUB_OUTPUT."""
+    gh_output = os.getenv("GITHUB_OUTPUT")
+    if gh_output:
+        with open(gh_output, "a") as gh_out:
+            gh_out.write(f"{key}={value}\n")
+    print(f"  → {key}={value}")
+
 def update_file(filepath, replacements):
     print(f"Updating {filepath}...")
     if not os.path.exists(filepath):
@@ -193,23 +220,17 @@ def main():
 
         # 3. Get YouTube compatible version
         yt_versions = get_compatible_versions(cli_filename, patches_filename, "com.google.android.youtube", "Video ads")
-
         latest_yt_version = None
         if not yt_versions:
             print("Could not find compatible versions for YouTube Video ads patch. Skipping YouTube version update.")
         else:
-
             yt_versions.sort(key=version_key)
             latest_yt_version = yt_versions[-1]
             print(f"Latest supported YouTube version: {latest_yt_version}")
-            if os.getenv("GITHUB_OUTPUT"):
-                with open(os.getenv("GITHUB_OUTPUT"), "a") as gh_out:
-                    gh_out.write(f"youtube_version={latest_yt_version}\n")
 
         # 4. Get Google Photos compatible version
         photos_versions = get_compatible_versions(cli_filename, patches_filename, "com.google.android.apps.photos", "Spoof features")
         latest_photos_version = None
-
         if not photos_versions:
             print("Could not find compatible versions for Google Photos Spoof features patch.")
         else:
@@ -218,38 +239,104 @@ def main():
             else:
                 photos_versions.sort(key=version_key)
                 latest_photos_version = photos_versions[-1]
-            
             print(f"Latest supported Google Photos version: {latest_photos_version}")
-            if os.getenv("GITHUB_OUTPUT"):
-                with open(os.getenv("GITHUB_OUTPUT"), "a") as gh_out:
-                    gh_out.write(f"photos_version={latest_photos_version}\n")
 
-        # 5. Prepare replacements
+        # 5. Get Reddit compatible version
+        # Reddit package: com.reddit.frontpage
+        # Primary patch to pin version on: "Spoof client" or "Premium icon" (use the broadest one)
+        reddit_versions = get_compatible_versions(cli_filename, patches_filename, "com.reddit.frontpage", "Spoof client")
+        if not reddit_versions:
+            # Fallback: try another patch name
+            reddit_versions = get_compatible_versions(cli_filename, patches_filename, "com.reddit.frontpage", "Premium icon")
+        if not reddit_versions:
+            # Final fallback: any patch for Reddit
+            reddit_versions = get_compatible_versions(cli_filename, patches_filename, "com.reddit.frontpage", "Reddit")
+
+        latest_reddit_version = None
+        if not reddit_versions:
+            print("Could not find compatible versions for Reddit. Skipping Reddit.")
+        else:
+            if "latest" in reddit_versions:
+                latest_reddit_version = "latest"
+            else:
+                reddit_versions.sort(key=version_key)
+                latest_reddit_version = reddit_versions[-1]
+            print(f"Latest supported Reddit version: {latest_reddit_version}")
+
+        # 6. Compare against last built state to detect real changes
+        last_built = load_last_built_versions()
+        print(f"\nLast built versions: {last_built}")
+
+        current_versions = {
+            "patches_tag": patches_tag,
+            "cli_tag": cli_tag,
+        }
+        if latest_yt_version:
+            current_versions["youtube"] = latest_yt_version
+        if latest_photos_version:
+            current_versions["google_photos"] = latest_photos_version
+        if latest_reddit_version:
+            current_versions["reddit"] = latest_reddit_version
+
+        print(f"Current versions:    {current_versions}")
+
+        # Build is needed if patches changed OR any app version changed
+        needs_build = (
+            last_built.get("patches_tag") != patches_tag
+            or last_built.get("cli_tag") != cli_tag
+            or (latest_yt_version and last_built.get("youtube") != latest_yt_version)
+            or (latest_photos_version and last_built.get("google_photos") != latest_photos_version)
+            or (latest_reddit_version and last_built.get("reddit") != latest_reddit_version)
+        )
+
+        if needs_build:
+            print("\n✅ Changes detected — build will proceed.")
+        else:
+            print("\n⏭️  No changes detected — skipping build.")
+
+        # 7. Write all outputs to GITHUB_OUTPUT
+        print("\nWriting GitHub outputs...")
+        set_github_output("needs_build", "true" if needs_build else "false")
+        set_github_output("patches_tag", patches_tag)
+        set_github_output("cli_tag", cli_tag)
+
+        if latest_yt_version:
+            set_github_output("youtube_version", latest_yt_version)
+        if latest_photos_version:
+            set_github_output("photos_version", latest_photos_version)
+        if latest_reddit_version:
+            set_github_output("reddit_version", latest_reddit_version)
+
+        # 8. Prepare README replacements
         replacements = []
-
-        # Use regex that matches the versioning scheme (X.X.X, possibly with extra suffix if needed, but standard is numbers)
         replacements.append((r"revanced-cli-\d+\.\d+\.\d+(-all)?\.jar", cli_filename))
         replacements.append((r"patches-\d+\.\d+\.\d+\.rvp", patches_filename))
 
         if latest_yt_version:
             new_yt_apk = f"youtube-revanced-v{latest_yt_version}.apk"
-            # Matches youtube-revanced.apk or youtube-revanced-vX.X.X.apk
             replacements.append((r"youtube-revanced(-v\d+(\.\d+)+)?\.apk", new_yt_apk))
 
         if latest_photos_version:
             new_photos_apk = f"google-photos-revanced-v{latest_photos_version}.apk"
-            # Matches google-photos-revanced.apk or google-photos-revanced-vX.X.X.apk
             replacements.append((r"google-photos-revanced(-v\d+(\.\d+)+)?\.apk", new_photos_apk))
 
-        # 6. Update files
+        if latest_reddit_version:
+            new_reddit_apk = f"reddit-revanced-v{latest_reddit_version}.apk"
+            replacements.append((r"reddit-revanced(-v\d+(\.\d+)+)?\.apk", new_reddit_apk))
+
+        # 9. Update files
         any_updated = False
         for filepath in FILES_TO_UPDATE:
             if update_file(filepath, replacements):
                 any_updated = True
 
-        # 7. Cleanup
+        # 10. Save current versions as new state (will be committed when build succeeds)
+        # We save to a temp file here; the workflow commits it only on successful build
+        save_last_built_versions(current_versions)
+
+        # 11. Cleanup
         if not os.getenv("SKIP_CLEANUP"):
-            print("Cleaning up...")
+            print("Cleaning up downloaded tool files...")
             if os.path.exists(cli_filename):
                 os.remove(cli_filename)
             if os.path.exists(patches_filename):
@@ -258,9 +345,9 @@ def main():
             print("Skipping cleanup (SKIP_CLEANUP is set).")
 
         if any_updated:
-            print("Updates applied.")
+            print("README updates applied.")
         else:
-            print("Everything is up to date.")
+            print("README is up to date.")
 
     except Exception as e:
         print(f"An error occurred: {e}")

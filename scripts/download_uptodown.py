@@ -49,7 +49,7 @@ def get_download_link(version_target: str, uptodown_name: str) -> str:
                     if button and 'data-url' in button.attrs:
                         download_url = f"https://dw.uptodown.com/dwn/{button['data-url']}"
                         
-                        if is_xapk:
+                        if not is_xapk:
                             return download_url
                         else:
                             if not found_xapk_url:

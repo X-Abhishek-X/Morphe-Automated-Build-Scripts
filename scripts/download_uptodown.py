@@ -57,11 +57,18 @@ def get_download_link(version_target: str, uptodown_name: str) -> str:
             page += 1
             
         if found_xapk_url:
-            return found_xapk_url
+            print(f"URL Found: {found_xapk_url}", file=sys.stderr)
+            # Perform the actual download maintaining the session
+            dl_resp = session.get(found_xapk_url, stream=True)
+            dl_resp.raise_for_status()
+            with open(f"com.google.android.apps.{uptodown_name}.apk".replace(".apps.youtube", ".youtube"), 'wb') as f:
+                for chunk in dl_resp.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            return True
             
     except Exception as e:
         sys.stderr.write(f"Error fetching version link: {e}\n")
-    return None
+    return False
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -69,8 +76,9 @@ if __name__ == "__main__":
     
     uptodown_name = sys.argv[1]
     version = sys.argv[2]
-    link = get_download_link(version, uptodown_name)
-    if link:
-        print(link)
+    print(f"Downloading {uptodown_name} {version} from Uptodown...", file=sys.stderr)
+    success = get_download_link(version, uptodown_name)
+    if success:
+        print(f"Successfully downloaded independent APK.")
     else:
         sys.exit(1)

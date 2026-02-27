@@ -52,56 +52,21 @@ jobs:
         run: |
           VERSION="${{ steps.check.outputs.youtube_version }}"
           echo "Expected version: $VERSION"
-          if [ "$VERSION" = "latest" ]; then
-            apkeep -a com.google.android.youtube .
-          else
-            apkeep -a "com.google.android.youtube@${VERSION}" .
+          echo "Fetching latest pure APK from Uptodown..."
+          python scripts/download_uptodown.py "youtube" "$VERSION"
+          if [ ! -f "com.google.android.youtube.apk" ]; then
+            echo "YouTube APK not downloaded securely from Uptodown!"
+            exit 1
           fi
-          DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.youtube*.apk" -o -name "com.google.android.youtube*.xapk" -o -name "com.google.android.youtube*.apks" \) | head -n 1)
-          if [ -z "$DOWNLOAD" ]; then echo "YouTube APK not found!"; exit 1; fi
-          mv "$DOWNLOAD" "com.google.android.youtube.apk"
 
       - name: Patch YouTube
         if: steps.check.outputs.youtube_version != ''
         run: |
           APK_FILE="com.google.android.youtube.apk"
           if [ ! -f "$APK_FILE" ]; then
-             echo "YouTube APK not found!"
+             echo "YouTube pure standalone APK not found for patching!"
              exit 1
           fi
-
-          # If it contains .apk files inside, it's a split bundle.
-          if unzip -l "$APK_FILE" | grep -q '\.apk$'; then
-            echo "Split APK bundle detected. Extracting..."
-            mv "$APK_FILE" bundle.xapk
-            unzip -o bundle.xapk -d extracted_apk
-            
-            APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
-            curl -L -o APKEditor.jar "$APKEDITOR_URL"
-
-            MAIN_APK=$(find extracted_apk -maxdepth 1 -name "base.apk" | head -n 1)
-            if [ -z "$MAIN_APK" ]; then
-              MAIN_APK=$(find extracted_apk -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
-            fi
-
-            mkdir -p merge_dir
-            cp "$MAIN_APK" merge_dir/base.apk
-            
-            # Copy ALL config splits (languages, features, dependencies) to avoid app crashes
-            find extracted_apk -maxdepth 1 -name "config.*.apk" -exec cp {} merge_dir/ \;
-
-            java -jar APKEditor.jar m -i merge_dir -o merged.apk -extractNativeLibs true
-
-            if [ ! -f "merged.apk" ]; then
-              echo "Error: APKEditor merge failed."; exit 1
-            fi
-            APK_FILE="merged.apk"
-          fi
-
-          # Strip 32-bit libraries strictly for S24 Ultra (arm64-v8a only)
-          # This prevents "App not installed" errors on modern 64-bit-only processors.
-          echo "Stripping 32-bit libraries (armeabi-v7a, x86) to ensure strict arm64-v8a compatibility..."
-          zip -d "$APK_FILE" "lib/armeabi-v7a/*" "lib/x86/*" || true
 
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)
@@ -174,60 +139,28 @@ jobs:
           VERSION="${{ steps.check.outputs.photos_version }}"
           echo "Expected version: $VERSION"
           if [ "$VERSION" = "latest" ]; then
-            apkeep -a com.google.android.apps.photos .
+            VERSION_TARGET="google-photos"
           else
-            apkeep -a "com.google.android.apps.photos@${VERSION}" .
+            VERSION_TARGET="$VERSION"
           fi
-          DOWNLOAD=$(find . -maxdepth 1 \( -name "com.google.android.apps.photos*.apk" -o -name "com.google.android.apps.photos*.xapk" -o -name "com.google.android.apps.photos*.apks" \) | head -n 1)
-          if [ -z "$DOWNLOAD" ]; then echo "Photos APK not found!"; exit 1; fi
-          mv "$DOWNLOAD" "com.google.android.apps.photos.apk"
+          echo "Fetching Google Photos standalone pure APK from Uptodown..."
+          python scripts/download_uptodown.py "google-photos" "$VERSION_TARGET"
+          if [ ! -f "com.google.android.apps.photos.apk" ]; then
+            echo "Google Photos pure standalone APK not successfully fetched!"
+            exit 1
+          fi
 
       - name: Patch Google Photos
         if: steps.check.outputs.photos_version != ''
         run: |
           APK_FILE="com.google.android.apps.photos.apk"
           if [ ! -f "$APK_FILE" ]; then
-             echo "Photos APK not found!"
+             echo "Photos standalone pure APK not found!"
              exit 1
-          fi
-
-          # If it contains .apk files inside, it's a split bundle.
-          if unzip -l "$APK_FILE" | grep -q '\.apk$'; then
-            echo "Split APK bundle detected. Extracting..."
-            mv "$APK_FILE" bundle.xapk
-            unzip -o bundle.xapk -d extracted_photos
-            
-            if [ ! -f "APKEditor.jar" ]; then
-              APKEDITOR_URL=$(curl -s https://api.github.com/repos/REAndroid/APKEditor/releases/latest | grep "browser_download_url.*jar" | cut -d '"' -f 4 | head -n 1)
-              curl -L -o APKEditor.jar "$APKEDITOR_URL"
-            fi
-
-            MAIN_APK=$(find extracted_photos -maxdepth 1 -name "base.apk" | head -n 1)
-            if [ -z "$MAIN_APK" ]; then
-              MAIN_APK=$(find extracted_photos -maxdepth 1 -name "*.apk" ! -name "config.*" | head -n 1)
-            fi
-
-            mkdir -p merge_photos
-            cp "$MAIN_APK" merge_photos/base.apk
-            
-            # Copy ALL config splits (languages, features, dependencies) to avoid app crashes
-            find extracted_photos -maxdepth 1 -name "config.*.apk" -exec cp {} merge_photos/ \;
-
-            java -jar APKEditor.jar m -i merge_photos -o photos_merged.apk -extractNativeLibs true
-
-            if [ ! -f "photos_merged.apk" ]; then
-              echo "Error: APKEditor merge failed."; exit 1
-            fi
-            APK_FILE="photos_merged.apk"
           fi
 
           REAL_VERSION=$(aapt dump badging "$APK_FILE" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
           echo "photos_real_version=$REAL_VERSION" >> $GITHUB_OUTPUT
-
-          # Strip 32-bit libraries strictly for S24 Ultra (arm64-v8a only)
-          # This prevents "App not installed" errors on modern 64-bit-only processors.
-          echo "Stripping 32-bit libraries (armeabi-v7a, x86) to ensure strict arm64-v8a compatibility..."
-          zip -d "$APK_FILE" "lib/armeabi-v7a/*" "lib/x86/*" || true
 
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)

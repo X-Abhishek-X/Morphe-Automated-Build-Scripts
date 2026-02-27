@@ -225,13 +225,13 @@ jobs:
             APK_FILE="photos_merged.apk"
           fi
 
+          REAL_VERSION=$(aapt dump badging "$APK_FILE" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
+          echo "photos_real_version=$REAL_VERSION" >> $GITHUB_OUTPUT
+
           # Strip 32-bit libraries strictly for S24 Ultra (arm64-v8a only)
           # This prevents "App not installed" errors on modern 64-bit-only processors.
           echo "Stripping 32-bit libraries (armeabi-v7a, x86) to ensure strict arm64-v8a compatibility..."
           zip -d "$APK_FILE" "lib/armeabi-v7a/*" "lib/x86/*" || true
-
-          REAL_VERSION=$(aapt dump badging "$APK_FILE" | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
-          echo "photos_real_version=$REAL_VERSION" >> $GITHUB_OUTPUT
 
           CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
           PATCHES_RVP=$(find . -name "patches-*.rvp" | head -n 1)

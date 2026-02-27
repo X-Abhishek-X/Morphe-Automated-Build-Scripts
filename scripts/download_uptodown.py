@@ -25,8 +25,8 @@ def get_download_link(version_target: str, uptodown_name: str) -> str:
                 break
                 
             for entry in version_data:
-                # We want a version that starts with the main target components (e.g., "20.14.43" or "6.94")
-                if entry["version"] == version_target or entry["version"].startswith(version_target):
+                # If 'latest' is requested (or target equals the app name due to legacy script behavior), grab the first entry
+                if version_target in ["latest", uptodown_name] or entry["version"] == version_target or entry["version"].startswith(version_target):
                     version_url_parts = entry["versionURL"]
                     version_url = f"{version_url_parts['url']}/{version_url_parts['extraURL']}/{version_url_parts['versionID']}"
                     
@@ -50,21 +50,16 @@ def get_download_link(version_target: str, uptodown_name: str) -> str:
                         download_url = f"https://dw.uptodown.com/dwn/{button['data-url']}"
                         
                         if is_xapk:
-                            return download_url
+                            continue # We DO NOT want split bundles. We want the pure APK.
                         else:
-                            if not found_xapk_url:
-                                found_xapk_url = download_url
+                            print(f"URL Found: {download_url}", file=sys.stderr)
+                            dl_resp = session.get(download_url, stream=True)
+                            dl_resp.raise_for_status()
+                            with open(f"com.google.android.apps.{uptodown_name}.apk".replace(".apps.youtube", ".youtube"), 'wb') as f:
+                                for chunk in dl_resp.iter_content(chunk_size=8192):
+                                    f.write(chunk)
+                            return True
             page += 1
-            
-        if found_xapk_url:
-            print(f"URL Found: {found_xapk_url}", file=sys.stderr)
-            # Perform the actual download maintaining the session
-            dl_resp = session.get(found_xapk_url, stream=True)
-            dl_resp.raise_for_status()
-            with open(f"com.google.android.apps.{uptodown_name}.apk".replace(".apps.youtube", ".youtube"), 'wb') as f:
-                for chunk in dl_resp.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            return True
             
     except Exception as e:
         sys.stderr.write(f"Error fetching version link: {e}\n")

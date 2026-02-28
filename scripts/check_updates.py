@@ -241,27 +241,6 @@ def main():
                 latest_photos_version = photos_versions[-1]
             print(f"Latest supported Google Photos version: {latest_photos_version}")
 
-        # 5. Get Reddit compatible version
-        # Reddit package: com.reddit.frontpage
-        # Primary patch to pin version on: "Spoof client" or "Premium icon" (use the broadest one)
-        reddit_versions = get_compatible_versions(cli_filename, patches_filename, "com.reddit.frontpage", "Spoof client")
-        if not reddit_versions:
-            # Fallback: try another patch name
-            reddit_versions = get_compatible_versions(cli_filename, patches_filename, "com.reddit.frontpage", "Premium icon")
-        if not reddit_versions:
-            # Final fallback: any patch for Reddit
-            reddit_versions = get_compatible_versions(cli_filename, patches_filename, "com.reddit.frontpage", "Reddit")
-
-        latest_reddit_version = None
-        if not reddit_versions:
-            print("Could not find compatible versions for Reddit. Skipping Reddit.")
-        else:
-            if "latest" in reddit_versions:
-                latest_reddit_version = "latest"
-            else:
-                reddit_versions.sort(key=version_key)
-                latest_reddit_version = reddit_versions[-1]
-            print(f"Latest supported Reddit version: {latest_reddit_version}")
 
         # 6. Compare against last built state to detect real changes
         last_built = load_last_built_versions()
@@ -275,8 +254,6 @@ def main():
             current_versions["youtube"] = latest_yt_version
         if latest_photos_version:
             current_versions["google_photos"] = latest_photos_version
-        if latest_reddit_version:
-            current_versions["reddit"] = latest_reddit_version
 
         print(f"Current versions:    {current_versions}")
 
@@ -286,7 +263,6 @@ def main():
             or last_built.get("cli_tag") != cli_tag
             or (latest_yt_version and last_built.get("youtube") != latest_yt_version)
             or (latest_photos_version and last_built.get("google_photos") != latest_photos_version)
-            or (latest_reddit_version and last_built.get("reddit") != latest_reddit_version)
         )
 
         if needs_build:
@@ -304,8 +280,6 @@ def main():
             set_github_output("youtube_version", latest_yt_version)
         if latest_photos_version:
             set_github_output("photos_version", latest_photos_version)
-        if latest_reddit_version:
-            set_github_output("reddit_version", latest_reddit_version)
 
         # 8. Prepare README replacements
         replacements = []
@@ -319,10 +293,6 @@ def main():
         if latest_photos_version:
             new_photos_apk = f"google-photos-revanced-v{latest_photos_version}.apk"
             replacements.append((r"google-photos-revanced(-v\d+(\.\d+)+)?\.apk", new_photos_apk))
-
-        if latest_reddit_version:
-            new_reddit_apk = f"reddit-revanced-v{latest_reddit_version}.apk"
-            replacements.append((r"reddit-revanced(-v\d+(\.\d+)+)?\.apk", new_reddit_apk))
 
         # 9. Update files
         any_updated = False

@@ -1,125 +1,81 @@
 # ReVanced Automated Build Scripts
 
-> Fully automated GitHub Actions workflows to build and release ReVanced-patched apps for YouTube, Google Photos, and Reddit.
+[![Build Status](https://github.com/X-Abhishek-X/ReVanced-Automated-Build-Scripts/actions/workflows/build_apps.yml/badge.svg)](https://github.com/X-Abhishek-X/ReVanced-Automated-Build-Scripts/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![ReVanced](https://img.shields.io/badge/ReVanced-Community-blue)](https://github.com/ReVanced)
 
-![GitHub License](https://img.shields.io/github/license/X-Abhishek-X/ReVanced-Automated-Build-Scripts)
-![ReVanced](https://img.shields.io/badge/ReVanced-Community-blue)
-![Automated](https://img.shields.io/badge/Build-Automated-green)
-
-This repository automatically builds ReVanced-patched APKs using GitHub Actions — triggered only when a new supported app version is detected, so you always get the latest compatible build without unnecessary runs.
+A powerful, fully automated GitHub Actions suite designed to build and release **ReVanced-patched** applications for YouTube, Google Photos, and Reddit. This repository monitors for new app versions and applies the latest community patches automatically.
 
 ---
 
-## What it does
+## 🚀 What it does
 
-- Checks for new supported versions of **YouTube**, **Google Photos**, and **Reddit** daily.
-- Compares against the last successfully built versions — **only rebuilds when something actually changed**.
-- Downloads clean standalone APKs from Uptodown (no split/XAPK bundles).
-- Patches using the official [ReVanced CLI](https://github.com/ReVanced/revanced-cli) and [Patches](https://github.com/ReVanced/revanced-patches).
-- Creates a new GitHub Release with all three patched APKs attached.
-- Automatically deletes the previous release to keep things clean.
+- **📅 Daily Version Monitoring**: Scans for new supported versions of YouTube, Google Photos, and Reddit every 24 hours.
+- **⚡ Smart Rebuilding**: Only triggers a build if a new app version or an updated patch set is detected.
+- **📦 Clean APK Sourcing**: Automatically fetches standalone APKs from reliable sources (Uptodown), avoiding complex split-APK issues.
+- **🛠️ Professional Patching**: Utilizes the official [ReVanced CLI](https://github.com/ReVanced/revanced-cli) for 100% compatibility.
+- **🧹 Automated Releases**: Maintains a clean release history by automatically attaching the latest builds and removing outdated ones.
 
 ---
 
-## Downloading the APKs
+## 📥 Downloading & Installation
 
-Go to the **[Releases](../../releases)** page and download the latest build:
+Access the **[Latest Releases](../../releases)** to download the pre-patched binaries.
 
-| App                       | Latest Filename                                |
-| ------------------------- | ---------------------------------------------- |
-| 📺 YouTube ReVanced       | `youtube-revanced-vX.X.X-YYYY.MM.DD.apk`       |
-| 📸 Google Photos ReVanced | `google-photos-revanced-vX.X.X-YYYY.MM.DD.apk` |
-| 🔴 Reddit ReVanced        | `reddit-revanced-vX.X.X-YYYY.MM.DD.apk`        |
+### Quick Start Guide
 
-### Installing YouTube ReVanced
+#### 📺 YouTube ReVanced
+1. **Required**: Install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first to enable Google Account sign-in.
+2. Install the YouTube ReVanced APK from the releases.
+3. Open and enjoy ad-free playback.
 
-1. Install **GmsCore (MicroG)** first — required for Google account login.
-   - [Download GmsCore here](https://github.com/ReVanced/GmsCore/releases/latest).
-2. Install the YouTube ReVanced APK.
-3. Open the app and sign in.
-
-### Installing Google Photos ReVanced
-
+#### 📸 Google Photos ReVanced
 1. Install the Google Photos ReVanced APK.
-2. It installs as a **separate app** alongside your original Google Photos — both can coexist.
-3. Sign in to get free unlimited original quality backup.
+2. Note: This installs as a **separate application** (`com.google.android.apps.photos.revanced`) and can coexist with the stock app.
+3. Sign in to enable Pixel-exclusive unlimited storage features.
 
-### Installing Reddit ReVanced
-
-1. Uninstall or keep the original Reddit app — Reddit ReVanced installs alongside it.
+#### 🔴 Reddit ReVanced
+1. (Optional) Uninstall the official Reddit app to avoid confusion.
 2. Install the Reddit ReVanced APK.
-3. Sign in with your Reddit account.
+3. Sign in to enjoy an ad-free experience and premium icons.
 
 ---
 
-## Patches included
+## 🛠️ Included Patches
 
 ### YouTube ReVanced
-
-Ad blocking, SponsorBlock, Return YouTube Dislike, background playback, downloads, hide Shorts, swipe controls, custom themes, and more.
+- **Ad Blocking & SponsorBlock integration**
+- **Background Playback & PiP**
+- **Return YouTube Dislike (RYD)**
+- **Swipe Controls & Custom Themes**
 
 ### Google Photos ReVanced
-
-- **Spoof features** — Enables Pixel-exclusive features including unlimited original quality backup.
-- **Enable DCIM folders backup control** — Control which folders are backed up.
-- **GmsCore support** — Works without root via MicroG.
-- **Change package name** — Installs alongside the original app.
+- **Device Spoofing**: Unlocks Pixel-exclusive unlimited original quality backups.
+- **DCIM Backup Control**: Granular folder selection for cloud sync.
+- **Non-Root Support**: Fully compatible with MicroG/GmsCore.
 
 ### Reddit ReVanced
-
-- **Spoof client** — Removes old Reddit API restrictions.
-- **Premium icon** — Unlocks premium app icons.
-- **Hide ads** — Removes ads from the feed.
-- **Sanitize sharing links** — Removes tracking parameters from shared links.
-- **Open links externally** — Opens external links in your default browser.
-- **GmsCore support** — Works without root via MicroG.
+- **Client Spoofing**: Removes restrictions on 3rd party API usage.
+- **Ad Removal**: Clean, sponsored-post-free feed.
+- **Privacy Improvements**: Sanitized sharing links (removes tracking params).
 
 ---
 
-## How it works
+## ⚙️ How it Works
 
-A single GitHub Actions workflow (`build_apps.yml`) runs daily:
+The automation is powered by a sophisticated GitHub Actions workflow:
 
-1. **Job 1 — `check-versions`**: Fetches the latest ReVanced CLI and patches, queries compatible app versions for all three apps, and compares them to the last successfully built state.
-
-2. **Job 2 — `build-and-release`** _(only runs if changes are detected)_:
-   - Downloads APKs from Uptodown.
-   - Patches each app with the relevant patches.
-   - Creates a dated GitHub Release with all APKs attached.
-   - Commits the updated state file so future runs know what was just built.
-
-### Smart update detection
-
-The workflow tracks built versions in `.github/last_built_versions.json`. On each check run, it compares:
-
-- The latest supported app versions (per ReVanced patches)
-- The patches version itself (new patches → rebuild everything)
-
-If nothing changed, the build job is **skipped entirely** — no unnecessary work.
+1. **Version Sync**: Queries the ReVanced API for the latest compatible app versions.
+2. **Delta Check**: Compares detected versions against `.github/last_built_versions.json`.
+3. **Automated Build**: If an update is found, it clones the CLI, patches the APKs, and signs them using a secure keystore.
+4. **Deployment**: Uploads assets to a new GitHub Release.
 
 ---
 
-## Running your own builds
+## ⚠️ Disclaimer
 
-1. Fork this repository.
-2. Go to the **Actions** tab in your fork and enable workflows.
-3. Workflows run daily automatically at **2 AM UTC**, or trigger manually via **Actions → Build ReVanced Apps → Run workflow**.
+This project provides automation scripts that modify third-party application binaries. Use of these scripts may violate the Terms of Service of the respective applications. This project is not affiliated with Google, YouTube, Reddit, or the official ReVanced team. Use at your own risk.
 
 ---
-
-## Credits
-
-This is a build wrapper around the tools made by the ReVanced team:
-
-- [ReVanced CLI](https://github.com/ReVanced/revanced-cli)
-- [ReVanced Patches](https://github.com/ReVanced/revanced-patches)
-- [apkeep](https://github.com/EFForg/apkeep) — for downloading APKs
-- [Uptodown](https://uptodown.com) — standalone APK source
-
----
-
-## Disclaimer
-
-This project is not affiliated with or endorsed by ReVanced, Google, YouTube, or Reddit.
-These scripts are for educational and personal use only. Use at your own risk.
-Patching apps may violate Terms of Service of the respective applications.
+**Maintained by [X-Abhishek-X](https://github.com/X-Abhishek-X)**
+olate Terms of Service of the respective applications.

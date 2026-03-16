@@ -106,6 +106,10 @@ jobs:
         run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
       # ─── YOUTUBE ────────────────────────────────────────────────
+
+      - name: Decode signing keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > revanced.keystore
+
       - name: Download YouTube APK
         if: needs.check-versions.outputs.youtube_version != ''
         run: |

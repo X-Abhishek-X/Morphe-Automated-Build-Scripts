@@ -1,11 +1,13 @@
-name: Build ReVanced Apps (YouTube & Google Photos)
+name: Build Morphe + De-ReVanced Apps (37 apps)
 
 on:
-  workflow_dispatch: # Manual trigger only — go to Actions tab → "Run workflow"
+  schedule:
+    - cron: "0 6 */2 * *"   # Every 2 days at 06:00 UTC
+  workflow_dispatch:
 
 jobs:
   # ─────────────────────────────────────────────────────────────
-  # JOB 1: Check if YouTube or Google Photos has a new supported version
+  # JOB 1: Detect which apps have a new supported version
   # ─────────────────────────────────────────────────────────────
   check-versions:
     name: "🔍 Check for new supported versions"
@@ -14,299 +16,189 @@ jobs:
       contents: read
 
     outputs:
-      needs_build: ${{ steps.check.outputs.needs_build }}
-      youtube_version: ${{ steps.check.outputs.youtube_version }}
-      photos_version: ${{ steps.check.outputs.photos_version }}
-      patches_tag: ${{ steps.check.outputs.patches_tag }}
-      cli_tag: ${{ steps.check.outputs.cli_tag }}
+      any_needs_build:  ${{ steps.check.outputs.any_needs_build }}
+      apps_to_build:    ${{ steps.check.outputs.apps_to_build }}
+      morphe_tag:       ${{ steps.check.outputs.morphe_tag }}
+      de_revanced_tag:  ${{ steps.check.outputs.de_revanced_tag }}
+      cli_tag:          ${{ steps.check.outputs.cli_tag }}
+      morphe_mpp:       ${{ steps.check.outputs.morphe_mpp }}
+      de_revanced_mpp:  ${{ steps.check.outputs.de_revanced_mpp }}
+      cli_jar:          ${{ steps.check.outputs.cli_jar }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.x" }
+      - uses: actions/setup-java@v4
+        with: { distribution: "zulu", java-version: "17" }
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      - name: Install dependencies
+        run: pip install -q requests beautifulsoup4
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - name: Install Python dependencies
-        run: pip install -r scripts/requirements.txt bs4 requests
-
-      - name: Run version check script
+      - name: Run version check
         id: check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SKIP_CLEANUP: "true"
         run: python scripts/check_updates.py
 
-      - name: Show detected versions
+      - name: Apps queued for rebuild
         run: |
-          echo "needs_build:     ${{ steps.check.outputs.needs_build }}"
-          echo "youtube_version: ${{ steps.check.outputs.youtube_version }}"
-          echo "photos_version:  ${{ steps.check.outputs.photos_version }}"
-          echo "patches_tag:     ${{ steps.check.outputs.patches_tag }}"
+          echo '${{ steps.check.outputs.apps_to_build }}' \
+            | python3 -c "import json,sys; apps=json.load(sys.stdin); \
+              [print(f\"  {a['key']:20} {a['version']}\") for a in apps] if apps \
+              else print('  Nothing changed.')"
 
   # ─────────────────────────────────────────────────────────────
-  # JOB 2: Build and release — only runs when versions changed
+  # JOB 2: Build only changed apps and publish one release
   # ─────────────────────────────────────────────────────────────
   build-and-release:
-    name: "🔨 Build & Release ReVanced Apps"
+    name: "🔨 Build & Release"
     needs: check-versions
-    if: needs.check-versions.outputs.needs_build == 'true'
+    if: needs.check-versions.outputs.any_needs_build == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.x" }
+      - uses: actions/setup-java@v4
+        with: { distribution: "zulu", java-version: "17" }
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - name: Install Python dependencies
-        run: pip install -r scripts/requirements.txt bs4 requests
-
-      - name: Install aapt (for version extraction)
-        run: sudo apt-get update && sudo apt-get install -y aapt
-
-      - name: Install apkeep (clean APK downloader fallback)
+      - name: Install dependencies
         run: |
-          wget -qO apkeep https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu
-          chmod +x apkeep
-          sudo mv apkeep /usr/local/bin/
+          pip install -q requests beautifulsoup4
+          sudo apt-get install -y -q aapt
 
-      # Re-run check script with SKIP_CLEANUP=true to keep the jar/rvp on disk
-      - name: Download ReVanced CLI & Patches
+      - name: Download Morphe CLI & both patch bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SKIP_CLEANUP: "true"
-        run: |
-          python scripts/check_updates.py
-          echo "CLI jar:     $(find . -name 'revanced-cli-*.jar' | head -1)"
-          echo "Patches rvp: $(find . -name 'patches-*.rvp'     | head -1)"
+        run: python scripts/check_updates.py
+
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > morphe.keystore
 
       - name: Set build date
         id: date
         run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
-      # ─── YOUTUBE ────────────────────────────────────────────────
-
-      - name: Decode signing keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > revanced.keystore
-
-      - name: Download YouTube APK
-        if: needs.check-versions.outputs.youtube_version != ''
+      - name: Build all changed apps
+        id: build
+        env:
+          APPS_JSON: ${{ needs.check-versions.outputs.apps_to_build }}
+          CLI_JAR:   ${{ needs.check-versions.outputs.cli_jar }}
+          MORPHE_MPP:   ${{ needs.check-versions.outputs.morphe_mpp }}
+          DE_REVANCED_MPP: ${{ needs.check-versions.outputs.de_revanced_mpp }}
+          TODAY: ${{ steps.date.outputs.today }}
         run: |
-          VERSION="${{ needs.check-versions.outputs.youtube_version }}"
-          echo "Downloading YouTube $VERSION from Uptodown..."
-          python scripts/download_uptodown.py "youtube" "$VERSION"
-          if [ ! -f "com.google.android.youtube.apk" ]; then
-            echo "❌ YouTube APK download failed!"
-            exit 1
-          fi
-          echo "✅ YouTube APK downloaded."
+          mkdir -p dist
+          CLI=$(find . -name "$CLI_JAR" | head -1)
+          MMPP=$(find . -name "$MORPHE_MPP" | head -1)
+          DMPP=$(find . -name "$DE_REVANCED_MPP" | head -1)
 
-      - name: Patch YouTube
-        if: needs.check-versions.outputs.youtube_version != ''
-        run: |
-          APK_FILE="com.google.android.youtube.apk"
-          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
-          PATCHES_RVP=$(find . -name "patches-*.rvp"  | head -n 1)
-          VERSION="${{ needs.check-versions.outputs.youtube_version }}"
-          TODAY="${{ steps.date.outputs.today }}"
-          OUTPUT="youtube-revanced-v${VERSION}-${TODAY}.apk"
+          echo "$APPS_JSON" | python3 -c "
+          import json, sys
+          apps = json.load(sys.stdin)
+          for a in apps:
+              print(a['key'], a['package'], a['slug'], a['version'], a['source'])
+          " | while read KEY PKG SLUG VER SOURCE; do
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "  Building: $KEY  v$VER"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-          echo "Patching YouTube $VERSION → $OUTPUT"
-          java -jar "$CLI_JAR" patch \
-            --keystore="revanced.keystore" \
-            --exclusive \
-            -p "$PATCHES_RVP" \
-            -e "Bypass URL redirects" \
-            -e "Bypass image region restrictions" \
-            -e "Change form factor" \
-            -e "Check watch history domain name resolution" \
-            -e "Copy video URL" \
-            -e "Custom player overlay opacity" \
-            -e "Disable auto captions" \
-            -e "Disable double tap actions" \
-            -e "Disable fullscreen ambient mode" \
-            -e "Disable haptic feedback" \
-            -e "Disable player popup panels" \
-            -e "Disable resuming Shorts on startup" \
-            -e "Disable rolling number animations" \
-            -e "Disable sign in to TV popup" \
-            -e "Disable video codecs" \
-            -e "Downloads" \
-            -e "Exit fullscreen mode" \
-            -e "Force original audio" \
-            -e "GmsCore support" \
-            -e "Hide Shorts components" \
-            -e "Hide ads" \
-            -e "Hide end screen cards" \
-            -e "Hide end screen suggested video" \
-            -e "Hide info cards" \
-            -e "Hide layout components" \
-            -e "Hide player flyout menu items" \
-            -e "Hide player overlay buttons" \
-            -e "Hide related video overlay" \
-            -e "Hide timestamp" \
-            -e "Hide video action buttons" \
-            -e "Loop video" \
-            -e "Miniplayer" \
-            -e "Navigation buttons" \
-            -e "Open Shorts in regular player" \
-            -e "Open links externally" \
-            -e "Open videos fullscreen" \
-            -e "Playback speed" \
-            -e "Remove background playback restrictions" \
-            -e "Remove viewer discretion dialog" \
-            -e "Return YouTube Dislike" \
-            -e "Sanitize sharing links" \
-            -e "Seekbar" \
-            -e "Shorts autoplay" \
-            -e "SponsorBlock" \
-            -e "Spoof app version" \
-            -e "Spoof device dimensions" \
-            -e "Spoof video streams" \
-            -e "Swipe controls" \
-            -e "Theme" \
-            -e "Video ads" \
-            -e "Video quality" \
-            -e "Wide search bar" \
-            -o "$OUTPUT" \
-            "$APK_FILE"
-          echo "✅ YouTube patched: $OUTPUT"
+            # Download APK
+            APK_FILE="${PKG}.apk"
+            python scripts/download_uptodown.py "$SLUG" "$VER" || {
+              echo "  ⚠️  Download failed for $KEY — skipping"
+              continue
+            }
+            [ -f "$APK_FILE" ] || { echo "  ⚠️  APK file missing — skipping"; continue; }
 
-      # ─── GOOGLE PHOTOS ──────────────────────────────────────────
-      - name: Download Google Photos APK
-        if: needs.check-versions.outputs.photos_version != ''
-        id: dl_photos
-        run: |
-          VERSION="${{ needs.check-versions.outputs.photos_version }}"
-          echo "Downloading Google Photos ${VERSION} from Uptodown..."
-          python scripts/download_uptodown.py "google-photos" "$VERSION"
-          if [ ! -f "com.google.android.apps.photos.apk" ]; then
-            echo "❌ Google Photos APK download failed!"
-            exit 1
-          fi
-          REAL_VERSION=$(aapt dump badging "com.google.android.apps.photos.apk" \
-            | grep "versionName" | sed -e "s/.*versionName='//" -e "s/'.*//")
-          echo "photos_real_version=$REAL_VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Google Photos APK downloaded (real version: $REAL_VERSION)."
+            # Use both patch bundles
+            OUT="dist/${KEY}-morphe-v${VER}-${TODAY}.apk"
+            java -jar "$CLI" patch \
+              --keystore=morphe.keystore \
+              -p "$MMPP" \
+              -p "$DMPP" \
+              -o "$OUT" \
+              "$APK_FILE" \
+              && echo "  ✅ $OUT" \
+              || echo "  ❌ Patch failed for $KEY"
 
-      - name: Patch Google Photos
-        if: needs.check-versions.outputs.photos_version != ''
-        id: patch_photos
-        run: |
-          APK_FILE="com.google.android.apps.photos.apk"
-          CLI_JAR=$(find . -name "revanced-cli-*.jar" | head -n 1)
-          PATCHES_RVP=$(find . -name "patches-*.rvp"  | head -n 1)
-          REAL_VERSION="${{ steps.dl_photos.outputs.photos_real_version }}"
-          TODAY="${{ steps.date.outputs.today }}"
-          OUTPUT="google-photos-revanced-v${REAL_VERSION}-${TODAY}.apk"
+            rm -f "$APK_FILE"
+          done
 
-          echo "Patching Google Photos $REAL_VERSION → $OUTPUT"
-          java -jar "$CLI_JAR" patch \
-            --keystore="revanced.keystore" \
-            --exclusive \
-            -p "$PATCHES_RVP" \
-            -e "Spoof features" \
-            -e "Enable DCIM folders backup control" \
-            -e "GmsCore support" \
-            -e "Change package name" \
-            -o "$OUTPUT" \
-            "$APK_FILE"
-          echo "✅ Google Photos patched: $OUTPUT"
+          # List what was built
+          echo ""
+          echo "Built APKs:"
+          ls -lh dist/ 2>/dev/null || echo "  None"
 
-      # ─── UPLOAD ARTIFACTS (90-day backup) ───────────────────────
-      - name: Upload YouTube artifact
-        if: needs.check-versions.outputs.youtube_version != ''
+      - name: Upload all APKs as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "youtube-revanced-v${{ needs.check-versions.outputs.youtube_version }}-${{ steps.date.outputs.today }}"
-          path: "youtube-revanced-v${{ needs.check-versions.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk"
+          name: "morphe-apps-${{ steps.date.outputs.today }}"
+          path: dist/*.apk
+          if-no-files-found: warn
           retention-days: 90
 
-      - name: Upload Google Photos artifact
-        if: needs.check-versions.outputs.photos_version != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: "google-photos-revanced-v${{ steps.dl_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}"
-          path: "google-photos-revanced-v${{ steps.dl_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}.apk"
-          retention-days: 90
+      - name: Build release notes
+        env:
+          APPS_JSON: ${{ needs.check-versions.outputs.apps_to_build }}
+          MORPHE_TAG:     ${{ needs.check-versions.outputs.morphe_tag }}
+          DRVR_TAG:       ${{ needs.check-versions.outputs.de_revanced_tag }}
+          CLI_TAG:        ${{ needs.check-versions.outputs.cli_tag }}
+          TODAY:          ${{ steps.date.outputs.today }}
+        run: |
+          {
+            echo "## Morphe + De-ReVanced Apps — Automated Build"
+            echo ""
+            echo "Only apps with new supported versions are rebuilt each run."
+            echo ""
+            echo "| App | Version |"
+            echo "|-----|---------|"
+            echo "$APPS_JSON" | python3 -c "
+          import json,sys
+          apps=json.load(sys.stdin)
+          for a in apps:
+              print(f\"| {a['key'].replace('_','-')} | \`{a['version']}\` |\")
+          "
+            echo ""
+            echo "**Morphe patches:** \`${MORPHE_TAG}\` · **De-ReVanced:** \`${DRVR_TAG}\` · **CLI:** \`${CLI_TAG}\`"
+            echo "**Build date:** \`${TODAY}\`"
+            echo ""
+            echo "---"
+            echo "### Install notes"
+            echo "- YouTube / YouTube Music: install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first"
+            echo "- All other apps: standalone install, no extra app needed"
+          } > release_body.md
 
-      # ─── RELEASE MANAGEMENT ─────────────────────────────────────
-      - name: Delete old releases
+      - name: Delete previous release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release list --json tagName -q ".[].tagName" \
-            | grep "^revanced-apps-v" \
+            | grep "^morphe-apps-v" \
             | while read -r tag; do
-                echo "Deleting old release: $tag"
                 gh release delete "$tag" -y --cleanup-tag || true
               done
 
-      - name: Build release notes
-        run: |
-          YT_VER="${{ needs.check-versions.outputs.youtube_version }}"
-          PHOTOS_VER="${{ steps.dl_photos.outputs.photos_real_version }}"
-          PATCHES_TAG="${{ needs.check-versions.outputs.patches_tag }}"
-          CLI_TAG="${{ needs.check-versions.outputs.cli_tag }}"
-          TODAY="${{ steps.date.outputs.today }}"
-          cat <<EOF > release_body.md
-          ## 📦 ReVanced Apps — Automated Build
-
-          Built automatically when a new supported version is detected.
-          All apps are signed with a unified secure keystore.
-
-          | App | Patched Version |
-          |-----|----------------|
-          | 📺 YouTube ReVanced | \`${YT_VER:-N/A}\` |
-          | 📸 Google Photos ReVanced | \`${PHOTOS_VER:-N/A}\` |
-
-          **ReVanced Patches:** \`${PATCHES_TAG}\`
-          **ReVanced CLI:** \`${CLI_TAG}\`
-          **Build Date:** \`${TODAY}\`
-
-          ---
-          ### 📥 Installation Notes
-          - Install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) before launching any of these apps.
-          - If you have a previous version installed, uninstall it first (or sign both with the same keystore).
-          EOF
-
-      - name: Create combined release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "revanced-apps-v${{ steps.date.outputs.today }}"
-          name: "ReVanced Apps — ${{ steps.date.outputs.today }}"
+          tag_name: "morphe-apps-v${{ steps.date.outputs.today }}"
+          name: "Morphe Apps — ${{ steps.date.outputs.today }}"
           body_path: release_body.md
-          files: |
-            youtube-revanced-v${{ needs.check-versions.outputs.youtube_version }}-${{ steps.date.outputs.today }}.apk
-            google-photos-revanced-v${{ steps.dl_photos.outputs.photos_real_version }}-${{ steps.date.outputs.today }}.apk
+          files: dist/*.apk
           draft: false
           prerelease: false
 
-      # ─── COMMIT STATE + README ───────────────────────────────────
-      - name: Commit updated state file and README
+      - name: Save updated state
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update ReVanced built versions state [skip ci]"
+          commit_message: "chore: update built versions state [skip ci]"
           branch: master
-          file_pattern: "README.md .github/last_built_versions.json"
+          file_pattern: ".github/last_built_versions.json"

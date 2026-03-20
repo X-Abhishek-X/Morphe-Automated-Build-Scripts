@@ -8,6 +8,7 @@ APP_FILENAME_MAP = {
     "youtube":       "com.google.android.youtube.apk",
     "google-photos": "com.google.android.apps.photos.apk",
     "reddit":        "com.reddit.frontpage.apk",
+    "youtube-music": "com.google.android.apps.youtube.music.apk",
 }
 
 def get_download_link(version_target: str, uptodown_name: str) -> str:

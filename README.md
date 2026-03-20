@@ -1,38 +1,61 @@
-# ReVanced-Automated-Build-Scripts
+# Morphe-Automated-Build-Scripts
 
 [![Build Status](https://github.com/X-Abhishek-X/ReVanced-Automated-Build-Scripts/actions/workflows/build_apps.yml/badge.svg)](https://github.com/X-Abhishek-X/ReVanced-Automated-Build-Scripts/actions)
 
-GitHub Actions suite that monitors for new app versions and automatically builds ReVanced-patched APKs for YouTube, Google Photos, and Reddit. Also includes Windows scripts for local patching.
+GitHub Actions suite that monitors for new app versions and automatically builds patched APKs using [Morphe](https://github.com/MorpheApp) and [De-ReVanced](https://github.com/RookieEnough/De-ReVanced) patches. Checks every 2 days — only rebuilds apps whose supported version has changed.
+
+### Supported apps
+
+**Morphe native patches** (YouTube, YouTube Music, Reddit)
+
+| App | Package |
+|-----|---------|
+| 📺 YouTube | `com.google.android.youtube` |
+| 🎵 YouTube Music | `com.google.android.apps.youtube.music` |
+| 🟠 Reddit | `com.reddit.frontpage` |
+
+**De-ReVanced patches** ([RookieEnough/De-ReVanced](https://github.com/RookieEnough/De-ReVanced))
+
+| App | App | App |
+|-----|-----|-----|
+| 🎵 Amazon Music | 🛍️ Amazon Shopping | 🍺 Angulus |
+| 🎸 Bandcamp | 🏏 Cricbuzz | 🏰 Disney+ |
+| 📘 Facebook | 💬 Messenger | 🧵 Threads |
+| 📰 Google News | 📸 Google Photos | 🎙️ Google Recorder |
+| ✉️ GMX Mail | 🔷 Hex Editor | 🎨 Icon Pack Studio |
+| 📰 Inshorts | 🎛️ irplus | 🎬 Letterboxd |
+| 📐 Microsoft Lens | 📱 Nothing X | 🇳🇱 NU.nl |
+| 📺 Peacock TV | 📷 Photoshop Mix | 📐 Photomath |
+| 🎨 Pixiv | ✉️ Proton Mail | 📦 RAR |
+| 🎶 SoundCloud | 🏃 Strava | 🎵 TikTok |
+| 🎵 TikTok (JP) | 📝 Tumblr | 📺 Twitch |
+| 📞 Viber | | |
 
 ### How it works
 
-1. Daily schedule checks for new supported app versions and updated patch sets
-2. If an update is detected, fetches clean APKs from Uptodown and patches them using [ReVanced CLI](https://github.com/ReVanced/revanced-cli)
-3. Signs and uploads patched APKs to a new GitHub Release
+1. Runs on a schedule every 2 days
+2. Fetches latest `morphe-cli`, `morphe-patches`, and `de-revanced-patches`
+3. Checks which of the 37 supported apps has a new compatible version
+4. Downloads only the changed apps' APKs from Uptodown and patches them
+5. Signs with a secure keystore and publishes all rebuilt APKs to a GitHub Release
 
 ### Download
 
-Pre-built APKs are available in [Releases](../../releases).
+Pre-built APKs are in [Releases](../../releases).
 
-- **YouTube ReVanced**: Install [GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first for Google account sign-in
-- **Google Photos ReVanced**: Installs as `com.google.android.apps.photos.revanced`, coexists with stock app
-- **Reddit ReVanced**: Works standalone or alongside the official app
+- **YouTube / YouTube Music**: install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first for Google account sign-in
+- **All other apps**: standalone install — no extra app needed
 
-### Local patching (Windows)
+### Patch sources
 
-Manual scripts in `local-scripts/` for patching on your own machine:
-
-```
-local-scripts/patch-youtube.bat          — one-click YouTube patch
-local-scripts/patch-youtube-custom.ps1   — custom patch selection
-local-scripts/patch-google-photos.bat    — Google Photos patch
-```
-
-Requires [ReVanced CLI](https://github.com/ReVanced/revanced-cli) and Java on PATH.
+| Source | Repo | Apps |
+|--------|------|------|
+| Morphe | [MorpheApp/morphe-patches](https://github.com/MorpheApp/morphe-patches) | YouTube, YouTube Music, Reddit |
+| De-ReVanced | [RookieEnough/De-ReVanced](https://github.com/RookieEnough/De-ReVanced) | 34 additional apps |
 
 ### Disclaimer
 
-Not affiliated with Google, YouTube, Reddit, or the ReVanced team. Modifying APKs may violate application Terms of Service. Use at your own risk.
+Not affiliated with Google, Meta, TikTok, Twitch, or any app developer. Modifying APKs may violate Terms of Service. Use at your own risk.
 
 ### License
 

@@ -1,85 +1,92 @@
-import os
-import requests
-import re
-import subprocess
-import sys
-import json
+import os, requests, re, subprocess, sys, json
 
-REPO_CLI     = "MorpheApp/morphe-cli"
-REPO_PATCHES = "MorpheApp/morphe-patches"
-STATE_FILE   = ".github/last_built_versions.json"
+REPO_CLI         = "MorpheApp/morphe-cli"
+REPO_MORPHE      = "MorpheApp/morphe-patches"
+REPO_DE_REVANCED = "RookieEnough/De-ReVanced"
+STATE_FILE       = ".github/last_built_versions.json"
 
+# All supported apps — source tells which .mpp to use
 APPS = {
-    "youtube": {
-        "package":       "com.google.android.youtube",
-        "uptodown_slug": "youtube",
-    },
-    "music": {
-        "package":       "com.google.android.apps.youtube.music",
-        "uptodown_slug": "youtube-music",
-    },
-    "reddit": {
-        "package":       "com.reddit.frontpage",
-        "uptodown_slug": "reddit",
-    },
+    # ── Morphe native patches ──────────────────────────────────
+    "youtube":        {"package": "com.google.android.youtube",               "slug": "youtube",              "source": "morphe"},
+    "music":          {"package": "com.google.android.apps.youtube.music",    "slug": "youtube-music",        "source": "morphe"},
+    "reddit":         {"package": "com.reddit.frontpage",                     "slug": "reddit",               "source": "morphe"},
+    # ── De-ReVanced patches ────────────────────────────────────
+    "tiktok":         {"package": "com.zhiliaoapp.musically",                 "slug": "tiktok",               "source": "de_revanced"},
+    "tiktok_jp":      {"package": "com.ss.android.ugc.trill",                 "slug": "tiktok-jp",            "source": "de_revanced"},
+    "twitch":         {"package": "tv.twitch.android.app",                    "slug": "twitch",               "source": "de_revanced"},
+    "facebook":       {"package": "com.facebook.katana",                      "slug": "facebook",             "source": "de_revanced"},
+    "messenger":      {"package": "com.facebook.orca",                        "slug": "facebook-messenger",   "source": "de_revanced"},
+    "threads":        {"package": "com.instagram.barcelona",                  "slug": "threads",              "source": "de_revanced"},
+    "disney_plus":    {"package": "com.disney.disneyplus",                    "slug": "disney-plus",          "source": "de_revanced"},
+    "soundcloud":     {"package": "com.soundcloud.android",                   "slug": "soundcloud",           "source": "de_revanced"},
+    "strava":         {"package": "com.strava",                               "slug": "strava",               "source": "de_revanced"},
+    "tumblr":         {"package": "com.tumblr",                               "slug": "tumblr",               "source": "de_revanced"},
+    "amazon_shop":    {"package": "com.amazon.mShop.android.shopping",        "slug": "amazon-shopping",      "source": "de_revanced"},
+    "amazon_music":   {"package": "com.amazon.mp3",                           "slug": "amazon-music",         "source": "de_revanced"},
+    "google_photos":  {"package": "com.google.android.apps.photos",           "slug": "google-photos",        "source": "de_revanced"},
+    "google_news":    {"package": "com.google.android.apps.magazines",        "slug": "google-news",          "source": "de_revanced"},
+    "google_rec":     {"package": "com.google.android.apps.recorder",         "slug": "google-recorder",      "source": "de_revanced"},
+    "proton_mail":    {"package": "ch.protonmail.android",                    "slug": "protonmail",           "source": "de_revanced"},
+    "ms_lens":        {"package": "com.microsoft.office.officelens",          "slug": "microsoft-lens",       "source": "de_revanced"},
+    "viber":          {"package": "com.viber.voip",                           "slug": "viber",                "source": "de_revanced"},
+    "letterboxd":     {"package": "com.letterboxd.letterboxd",                "slug": "letterboxd",           "source": "de_revanced"},
+    "pixiv":          {"package": "jp.pxv.android",                           "slug": "pixiv",                "source": "de_revanced"},
+    "cricbuzz":       {"package": "com.cricbuzz.android",                     "slug": "cricbuzz",             "source": "de_revanced"},
+    "bandcamp":       {"package": "com.bandcamp.android",                     "slug": "bandcamp",             "source": "de_revanced"},
+    "rar":            {"package": "com.rarlab.rar",                           "slug": "rar",                  "source": "de_revanced"},
+    "photomath":      {"package": "com.microblink.photomath",                 "slug": "photomath",            "source": "de_revanced"},
+    "peacock_tv":     {"package": "com.peacocktv.peacockandroid",             "slug": "peacock-tv",           "source": "de_revanced"},
+    "nothing_x":      {"package": "com.nothing.smartcenter",                  "slug": "nothing-smartcenter",  "source": "de_revanced"},
+    "inshorts":       {"package": "com.nis.app",                              "slug": "inshorts",             "source": "de_revanced"},
+    "icon_studio":    {"package": "ginlemon.iconpackstudio",                  "slug": "icon-pack-studio",     "source": "de_revanced"},
+    "hex_editor":     {"package": "com.myprog.hexedit",                       "slug": "hex-editor",           "source": "de_revanced"},
+    "gmx_mail":       {"package": "de.gmx.mobile.android.mail",               "slug": "gmx",                  "source": "de_revanced"},
+    "angulus":        {"package": "com.drinkplusplus.angulus",                "slug": "angulus",              "source": "de_revanced"},
+    "irplus":         {"package": "net.binarymode.android.irplus",            "slug": "irplus",               "source": "de_revanced"},
+    "photoshop_mix":  {"package": "com.adobe.photoshopmix",                   "slug": "photoshop-mix",        "source": "de_revanced"},
+    "nu_nl":          {"package": "nl.sanomamedia.android.nu",                "slug": "nu-nl",                "source": "de_revanced"},
 }
 
 def get_latest_release(repo):
-    url     = f"https://api.github.com/repos/{repo}/releases/latest"
+    url = f"https://api.github.com/repos/{repo}/releases/latest"
     headers = {"Accept": "application/vnd.github.v3+json"}
-    token   = os.environ.get("GITHUB_TOKEN")
+    token = os.environ.get("GITHUB_TOKEN")
     if token:
         headers["Authorization"] = f"token {token}"
-    resp = requests.get(url, headers=headers)
-    resp.raise_for_status()
-    return resp.json()
+    r = requests.get(url, headers=headers)
+    r.raise_for_status()
+    return r.json()
 
 def download_file(url, filename):
-    print(f"Downloading {filename}...")
+    print(f"  Downloading {filename}...")
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with open(filename, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
+            for chunk in r.iter_content(8192):
                 f.write(chunk)
-
-def get_cli_artifact(release):
-    tag   = release["tag_name"]
-    asset = next((a for a in release["assets"] if a["name"].endswith(".jar")), None)
-    if not asset:
-        raise Exception(f"No CLI jar in release {tag}")
-    return tag, asset["name"], asset["browser_download_url"]
-
-def get_patches_artifact(release):
-    tag   = release["tag_name"]
-    asset = next((a for a in release["assets"] if a["name"].endswith(".mpp")), None)
-    if not asset:
-        raise Exception(f"No patches .mpp in release {tag}")
-    return tag, asset["name"], asset["browser_download_url"]
 
 def version_key(v):
     parts = []
-    try:
-        for x in v.split("."):
-            m = re.match(r"(\d+)", x)
-            parts.append(int(m.group(1)) if m else 0)
-    except Exception:
-        return [0]
+    for x in str(v).split("."):
+        m = re.match(r"(\d+)", x)
+        parts.append(int(m.group(1)) if m else 0)
     return parts
 
-def get_compatible_versions(cli_jar, patches_mpp, package_name):
-    """Return sorted list of all compatible versions for a package across all patches."""
-    cmd = ["java", "-jar", cli_jar, "list-patches", "-p", patches_mpp, "-f", package_name, "-v"]
+def get_compatible_versions(cli_jar, mpp_files, package_name):
+    """Return sorted list of all compatible versions for a package."""
+    p_flags = []
+    for f in mpp_files:
+        p_flags += ["-p", f]
+    cmd = ["java", "-jar", cli_jar, "list-patches"] + p_flags + ["-f", package_name, "-v"]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-    except (FileNotFoundError, subprocess.CalledProcessError) as e:
-        print(f"CLI error for {package_name}: {e}")
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    except Exception as e:
+        print(f"  CLI error for {package_name}: {e}")
         return []
-
-    output       = result.stdout
     all_versions = set()
-    in_versions  = False
-
-    for line in output.splitlines():
+    in_versions = False
+    for line in result.stdout.splitlines():
         s = line.strip()
         if s.startswith("Compatible versions:"):
             in_versions = True
@@ -87,99 +94,101 @@ def get_compatible_versions(cli_jar, patches_mpp, package_name):
             if inline and inline.lower() not in ("any", "none"):
                 for v in inline.split(","):
                     v = v.strip().lstrip("-").strip()
-                    if v:
-                        all_versions.add(v)
+                    if v: all_versions.add(v)
         elif in_versions:
             if ":" in s and not s.startswith("-") and not s.startswith(" "):
                 in_versions = False
             elif s:
                 v = s.lstrip("-").strip()
-                if v:
-                    all_versions.add(v)
-
+                if v: all_versions.add(v)
     return sorted(all_versions, key=version_key)
 
 def load_state():
     if os.path.exists(STATE_FILE):
         try:
-            with open(STATE_FILE) as f:
-                return json.load(f)
-        except Exception:
-            pass
+            with open(STATE_FILE) as f: return json.load(f)
+        except Exception: pass
     return {}
 
 def save_state(state):
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    with open(STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2)
+    with open(STATE_FILE, "w") as f: json.dump(state, f, indent=2)
 
 def set_output(key, value):
-    gh_output = os.getenv("GITHUB_OUTPUT")
-    if gh_output:
-        with open(gh_output, "a") as f:
-            f.write(f"{key}={value}\n")
+    out = os.getenv("GITHUB_OUTPUT")
+    if out:
+        with open(out, "a") as f: f.write(f"{key}={value}\n")
     print(f"  → {key}={value}")
 
 def main():
-    cli_release     = get_latest_release(REPO_CLI)
-    patches_release = get_latest_release(REPO_PATCHES)
+    # ── Fetch releases ──────────────────────────────────────────
+    cli_rel = get_latest_release(REPO_CLI)
+    mor_rel = get_latest_release(REPO_MORPHE)
+    drvr_rel = get_latest_release(REPO_DE_REVANCED)
 
-    cli_tag,     cli_filename,     cli_url     = get_cli_artifact(cli_release)
-    patches_tag, patches_filename, patches_url = get_patches_artifact(patches_release)
+    cli_tag  = cli_rel["tag_name"]
+    mor_tag  = mor_rel["tag_name"]
+    drvr_tag = drvr_rel["tag_name"]
 
-    print(f"Morphe CLI:     {cli_tag} ({cli_filename})")
-    print(f"Morphe Patches: {patches_tag} ({patches_filename})")
+    cli_jar  = next(a for a in cli_rel["assets"] if a["name"].endswith(".jar"))
+    mor_mpp  = next(a for a in mor_rel["assets"] if a["name"].endswith(".mpp"))
+    drvr_mpp = next(a for a in drvr_rel["assets"] if a["name"].endswith(".mpp"))
 
-    if not os.path.exists(cli_filename):
-        download_file(cli_url, cli_filename)
-    if not os.path.exists(patches_filename):
-        download_file(patches_url, patches_filename)
+    print(f"Morphe CLI:       {cli_tag}  ({cli_jar['name']})")
+    print(f"Morphe patches:   {mor_tag}  ({mor_mpp['name']})")
+    print(f"De-ReVanced:      {drvr_tag} ({drvr_mpp['name']})")
 
-    # Get latest supported version per app
-    app_versions = {}
-    for app_key, info in APPS.items():
-        versions = get_compatible_versions(cli_filename, patches_filename, info["package"])
-        if versions:
-            latest = versions[-1]
-            app_versions[app_key] = latest
-            print(f"Latest supported {app_key}: {latest}")
-        else:
-            print(f"No compatible versions found for {app_key}")
+    if not os.path.exists(cli_jar["name"]):  download_file(cli_jar["url"],  cli_jar["name"])
+    if not os.path.exists(mor_mpp["name"]):  download_file(mor_mpp["url"],  mor_mpp["name"])
+    if not os.path.exists(drvr_mpp["name"]): download_file(drvr_mpp["url"], drvr_mpp["name"])
 
-    last = load_state()
-    print(f"\nLast built: {last}")
+    # ── Check versions per app ──────────────────────────────────
+    last    = load_state()
+    current = {"cli_tag": cli_tag, "morphe_tag": mor_tag, "de_revanced_tag": drvr_tag}
 
-    current = {"patches_tag": patches_tag, "cli_tag": cli_tag, **app_versions}
-    print(f"Current:    {current}")
+    apps_to_build = []
+    for key, info in APPS.items():
+        mpp_list = [mor_mpp["name"], drvr_mpp["name"]]  # pass both to every query
+        versions = get_compatible_versions(cli_jar["name"], mpp_list, info["package"])
+        latest   = versions[-1] if versions else ""
+        current[key] = latest
 
-    any_needs_build = False
-    for app_key in APPS:
-        ver = app_versions.get(app_key, "")
-        changed = (
-            last.get("patches_tag") != patches_tag
-            or last.get(app_key) != ver
-        )
-        needs = changed and bool(ver)
-        set_output(f"{app_key}_needs_build", "true" if needs else "false")
-        set_output(f"{app_key}_version", ver)
+        morphe_changed   = last.get("morphe_tag")     != mor_tag
+        drvr_changed     = last.get("de_revanced_tag") != drvr_tag
+        ver_changed      = last.get(key) != latest
+        patch_changed    = morphe_changed if info["source"] == "morphe" else drvr_changed
+
+        needs = bool(latest) and (ver_changed or patch_changed)
         if needs:
-            any_needs_build = True
-            print(f"✅ {app_key} needs rebuild (version: {ver})")
+            apps_to_build.append({
+                "key":     key,
+                "name":    key.replace("_", "-"),
+                "package": info["package"],
+                "slug":    info["slug"],
+                "version": latest,
+                "source":  info["source"],
+            })
+            print(f"  ✅ {key} → {latest} (rebuild)")
         else:
-            print(f"⏭️  {app_key} up to date")
+            print(f"  ⏭️  {key} → {latest or 'no versions'}")
 
-    set_output("any_needs_build", "true" if any_needs_build else "false")
-    set_output("patches_tag", patches_tag)
-    set_output("cli_tag", cli_tag)
-
+    any_needs = len(apps_to_build) > 0
     save_state(current)
 
+    set_output("any_needs_build",  "true" if any_needs else "false")
+    set_output("apps_to_build",    json.dumps(apps_to_build))
+    set_output("morphe_tag",       mor_tag)
+    set_output("de_revanced_tag",  drvr_tag)
+    set_output("cli_tag",          cli_tag)
+    set_output("morphe_mpp",       mor_mpp["name"])
+    set_output("de_revanced_mpp",  drvr_mpp["name"])
+    set_output("cli_jar",          cli_jar["name"])
+
     if not os.getenv("SKIP_CLEANUP"):
-        for f in [cli_filename, patches_filename]:
-            if os.path.exists(f):
-                os.remove(f)
+        for f in [cli_jar["name"], mor_mpp["name"], drvr_mpp["name"]]:
+            if os.path.exists(f): os.remove(f)
     else:
-        print("Skipping cleanup (SKIP_CLEANUP set).")
+        print("Skipping cleanup.")
 
 if __name__ == "__main__":
     main()

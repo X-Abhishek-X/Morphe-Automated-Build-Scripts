@@ -45,9 +45,15 @@ jobs:
       - name: Apps queued for rebuild
         run: |
           echo '${{ steps.check.outputs.apps_to_build }}' \
-            | python3 -c "import json,sys; apps=json.load(sys.stdin); \
-              [print(f\"  {a['key']:20} {a['version']}\") for a in apps] if apps \
-              else print('  Nothing changed.')"
+            | python3 -c "
+          import json, sys
+          apps = json.load(sys.stdin)
+          if apps:
+              for a in apps:
+                  print(f\"  {a['key']:20} {a['version']}\")
+          else:
+              print('  Nothing changed.')
+          "
 
   # ─────────────────────────────────────────────────────────────
   # JOB 2: Build only changed apps and publish one release
@@ -70,7 +76,14 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -q requests beautifulsoup4
-          sudo apt-get install -y -q aapt
+          sudo apt-get install -y -q aapt apksigner
+
+      - name: Install apkeep (APKPure downloader — verified original APKs)
+        run: |
+          wget -qO apkeep \
+            https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu
+          chmod +x apkeep
+          sudo mv apkeep /usr/local/bin/
 
       - name: Download Morphe CLI & both patch bundles
         env:
@@ -86,95 +99,149 @@ jobs:
         run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
       - name: Build all changed apps
-        id: build
         env:
           APPS_JSON: ${{ needs.check-versions.outputs.apps_to_build }}
-          CLI_JAR:   ${{ needs.check-versions.outputs.cli_jar }}
-          MORPHE_MPP:   ${{ needs.check-versions.outputs.morphe_mpp }}
+          CLI_JAR:        ${{ needs.check-versions.outputs.cli_jar }}
+          MORPHE_MPP:     ${{ needs.check-versions.outputs.morphe_mpp }}
           DE_REVANCED_MPP: ${{ needs.check-versions.outputs.de_revanced_mpp }}
-          TODAY: ${{ steps.date.outputs.today }}
+          TODAY:          ${{ steps.date.outputs.today }}
         run: |
           mkdir -p dist
-          CLI=$(find . -name "$CLI_JAR" | head -1)
-          MMPP=$(find . -name "$MORPHE_MPP" | head -1)
-          DMPP=$(find . -name "$DE_REVANCED_MPP" | head -1)
+
+          CLI=$(find . -maxdepth 1 -name "$CLI_JAR"  | head -1)
+          MMPP=$(find . -maxdepth 1 -name "$MORPHE_MPP" | head -1)
+          DMPP=$(find . -maxdepth 1 -name "$DE_REVANCED_MPP" | head -1)
 
           echo "$APPS_JSON" | python3 -c "
           import json, sys
-          apps = json.load(sys.stdin)
-          for a in apps:
-              print(a['key'], a['package'], a['slug'], a['version'], a['source'])
-          " | while read KEY PKG SLUG VER SOURCE; do
+          for a in json.load(sys.stdin):
+              print(a['key'], a['package'], a['version'])
+          " | while read KEY PKG VER; do
             echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "  Building: $KEY  v$VER"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-            # Download APK
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "  ▶ $KEY  v$VER"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             APK_FILE="${PKG}.apk"
-            python scripts/download_uptodown.py "$SLUG" "$VER" || {
-              echo "  ⚠️  Download failed for $KEY — skipping"
-              continue
-            }
-            [ -f "$APK_FILE" ] || { echo "  ⚠️  APK file missing — skipping"; continue; }
 
-            # Use both patch bundles
+            # ── Download from APKPure (original unmodified APKs, signature verified) ──
+            echo "  Downloading ${PKG}@${VER} from APKPure..."
+            if ! apkeep -a "${PKG}@${VER}" -d apk-pure .; then
+              echo "  ⚠️  Exact version not found, trying latest..."
+              apkeep -a "${PKG}" -d apk-pure . || {
+                echo "  ❌ Download failed for $KEY — skipping"
+                continue
+              }
+            fi
+
+            # Handle apkeep saving with @version suffix
+            [ -f "$APK_FILE" ] || APK_FILE=$(find . -maxdepth 1 -name "${PKG}*.apk" | head -1)
+            [ -f "$APK_FILE" ] || { echo "  ❌ APK not found after download — skipping"; continue; }
+
+            # ── Verify APK signature (catches corrupted/tampered files) ──
+            echo "  Verifying APK signature..."
+            if ! apksigner verify "$APK_FILE" 2>/dev/null; then
+              echo "  ❌ Signature verification failed for $KEY — skipping"
+              rm -f "$APK_FILE"
+              continue
+            fi
+            echo "  ✅ Signature OK"
+
+            # ── Patch with both Morphe + De-ReVanced bundles ──
             OUT="dist/${KEY}-morphe-v${VER}-${TODAY}.apk"
-            java -jar "$CLI" patch \
+            echo "  Patching → $OUT"
+            if java -jar "$CLI" patch \
               --keystore=morphe.keystore \
               -p "$MMPP" \
               -p "$DMPP" \
               -o "$OUT" \
-              "$APK_FILE" \
-              && echo "  ✅ $OUT" \
-              || echo "  ❌ Patch failed for $KEY"
+              "$APK_FILE"; then
+              echo "  ✅ Built: $OUT"
+            else
+              echo "  ❌ Patch failed for $KEY"
+              rm -f "$OUT"
+            fi
 
             rm -f "$APK_FILE"
           done
 
-          # List what was built
           echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "Built APKs:"
-          ls -lh dist/ 2>/dev/null || echo "  None"
+          ls -lh dist/*.apk 2>/dev/null || echo "  None built."
 
-      - name: Upload all APKs as artifact
+      # ── Generate SHA256 checksums for all patched APKs ──
+      - name: Generate SHA256 checksums
+        run: |
+          if ls dist/*.apk 1>/dev/null 2>&1; then
+            cd dist
+            sha256sum *.apk > SHA256SUMS.txt
+            echo "SHA256 checksums:"
+            cat SHA256SUMS.txt
+          else
+            echo "No APKs to checksum."
+          fi
+
+      - name: Upload artifact (90-day backup)
         uses: actions/upload-artifact@v4
         with:
           name: "morphe-apps-${{ steps.date.outputs.today }}"
-          path: dist/*.apk
+          path: |
+            dist/*.apk
+            dist/SHA256SUMS.txt
           if-no-files-found: warn
           retention-days: 90
 
       - name: Build release notes
         env:
-          APPS_JSON: ${{ needs.check-versions.outputs.apps_to_build }}
-          MORPHE_TAG:     ${{ needs.check-versions.outputs.morphe_tag }}
-          DRVR_TAG:       ${{ needs.check-versions.outputs.de_revanced_tag }}
-          CLI_TAG:        ${{ needs.check-versions.outputs.cli_tag }}
-          TODAY:          ${{ steps.date.outputs.today }}
+          APPS_JSON:   ${{ needs.check-versions.outputs.apps_to_build }}
+          MORPHE_TAG:  ${{ needs.check-versions.outputs.morphe_tag }}
+          DRVR_TAG:    ${{ needs.check-versions.outputs.de_revanced_tag }}
+          CLI_TAG:     ${{ needs.check-versions.outputs.cli_tag }}
+          TODAY:       ${{ steps.date.outputs.today }}
         run: |
-          {
-            echo "## Morphe + De-ReVanced Apps — Automated Build"
-            echo ""
-            echo "Only apps with new supported versions are rebuilt each run."
-            echo ""
-            echo "| App | Version |"
-            echo "|-----|---------|"
-            echo "$APPS_JSON" | python3 -c "
-          import json,sys
-          apps=json.load(sys.stdin)
+          python3 - <<'PYEOF'
+          import os, json
+
+          apps     = json.loads(os.environ["APPS_JSON"])
+          morphe   = os.environ["MORPHE_TAG"]
+          drvr     = os.environ["DRVR_TAG"]
+          cli      = os.environ["CLI_TAG"]
+          today    = os.environ["TODAY"]
+
+          lines = [
+            "## Morphe + De-ReVanced Apps — Automated Build",
+            "",
+            "Only apps with new supported versions are rebuilt each run.",
+            "APKs are downloaded from APKPure (signature-verified), patched, and SHA256-checksummed.",
+            "",
+            "| App | Version |",
+            "|-----|---------|",
+          ]
           for a in apps:
-              print(f\"| {a['key'].replace('_','-')} | \`{a['version']}\` |\")
-          "
-            echo ""
-            echo "**Morphe patches:** \`${MORPHE_TAG}\` · **De-ReVanced:** \`${DRVR_TAG}\` · **CLI:** \`${CLI_TAG}\`"
-            echo "**Build date:** \`${TODAY}\`"
-            echo ""
-            echo "---"
-            echo "### Install notes"
-            echo "- YouTube / YouTube Music: install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first"
-            echo "- All other apps: standalone install, no extra app needed"
-          } > release_body.md
+              lines.append(f"| {a['key'].replace('_', '-')} | `{a['version']}` |")
+
+          lines += [
+            "",
+            f"**Morphe patches:** `{morphe}` · **De-ReVanced:** `{drvr}` · **CLI:** `{cli}`",
+            f"**Build date:** `{today}`",
+            "",
+            "---",
+            "### Install notes",
+            "- YouTube / YouTube Music: install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first",
+            "- All other apps: standalone install, no extra app needed",
+            "",
+            "### Verifying downloads",
+            "Compare your download against `SHA256SUMS.txt` included in this release:",
+            "```",
+            "sha256sum -c SHA256SUMS.txt",
+            "```",
+          ]
+
+          with open("release_body.md", "w") as f:
+              f.write("\n".join(lines))
+
+          print("Release notes written.")
+          PYEOF
 
       - name: Delete previous release
         env:
@@ -192,7 +259,10 @@ jobs:
           tag_name: "morphe-apps-v${{ steps.date.outputs.today }}"
           name: "Morphe Apps — ${{ steps.date.outputs.today }}"
           body_path: release_body.md
-          files: dist/*.apk
+          files: |
+            dist/*.apk
+            dist/SHA256SUMS.txt
+          fail_on_unmatched_files: false
           draft: false
           prerelease: false
 

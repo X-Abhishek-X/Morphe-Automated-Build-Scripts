@@ -4,10 +4,68 @@ on:
   schedule:
     - cron: "0 6 */2 * *"   # Every 2 days at 06:00 UTC
   workflow_dispatch:
+    inputs:
+      app:
+        description: "App to build (or 'all' for auto-detection)"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - youtube
+          - music
+          - reddit
+          - tiktok
+          - tiktok_jp
+          - twitch
+          - facebook
+          - messenger
+          - threads
+          - disney_plus
+          - soundcloud
+          - strava
+          - tumblr
+          - amazon_shop
+          - amazon_music
+          - google_photos
+          - google_news
+          - google_rec
+          - proton_mail
+          - ms_lens
+          - viber
+          - letterboxd
+          - pixiv
+          - cricbuzz
+          - bandcamp
+          - rar
+          - photomath
+          - peacock_tv
+          - nothing_x
+          - inshorts
+          - icon_studio
+          - hex_editor
+          - gmx_mail
+          - angulus
+          - irplus
+          - photoshop_mix
+          - nu_nl
+      version_override:
+        description: "Force a specific version (e.g. 19.16.39) — leave empty for latest supported"
+        required: false
+        default: ""
+      arch:
+        description: "Target architecture"
+        required: true
+        default: "arm64-v8a"
+        type: choice
+        options:
+          - arm64-v8a
+          - armeabi-v7a
+          - universal
 
 jobs:
   # ─────────────────────────────────────────────────────────────
-  # JOB 1: Detect which apps have a new supported version
+  # JOB 1: Detect which apps need a build
   # ─────────────────────────────────────────────────────────────
   check-versions:
     name: "🔍 Check for new supported versions"
@@ -24,6 +82,7 @@ jobs:
       morphe_mpp:       ${{ steps.check.outputs.morphe_mpp }}
       de_revanced_mpp:  ${{ steps.check.outputs.de_revanced_mpp }}
       cli_jar:          ${{ steps.check.outputs.cli_jar }}
+      target_arch:      ${{ steps.check.outputs.target_arch }}
 
     steps:
       - uses: actions/checkout@v4
@@ -38,11 +97,14 @@ jobs:
       - name: Run version check
         id: check
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SKIP_CLEANUP: "true"
+          GITHUB_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
+          SKIP_CLEANUP:     "true"
+          MANUAL_APP:       ${{ github.event.inputs.app || 'all' }}
+          MANUAL_VERSION:   ${{ github.event.inputs.version_override || '' }}
+          TARGET_ARCH:      ${{ github.event.inputs.arch || 'arm64-v8a' }}
         run: python scripts/check_updates.py
 
-      - name: Apps queued for rebuild
+      - name: Apps queued for build
         run: |
           echo '${{ steps.check.outputs.apps_to_build }}' \
             | python3 -c "
@@ -56,7 +118,7 @@ jobs:
           "
 
   # ─────────────────────────────────────────────────────────────
-  # JOB 2: Build only changed apps and publish one release
+  # JOB 2: Build changed apps and publish release
   # ─────────────────────────────────────────────────────────────
   build-and-release:
     name: "🔨 Build & Release"
@@ -78,17 +140,20 @@ jobs:
           pip install -q requests beautifulsoup4
           sudo apt-get install -y -q aapt apksigner
 
-      - name: Install apkeep (APKPure downloader — verified original APKs)
+      - name: Install apkeep (APKPure downloader)
         run: |
           wget -qO apkeep \
             https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu
           chmod +x apkeep
           sudo mv apkeep /usr/local/bin/
 
-      - name: Download Morphe CLI & both patch bundles
+      - name: Download Morphe CLI & patch bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SKIP_CLEANUP: "true"
+          MANUAL_APP:   ${{ github.event.inputs.app || 'all' }}
+          MANUAL_VERSION: ${{ github.event.inputs.version_override || '' }}
+          TARGET_ARCH:  ${{ github.event.inputs.arch || 'arm64-v8a' }}
         run: python scripts/check_updates.py
 
       - name: Decode keystore
@@ -98,18 +163,19 @@ jobs:
         id: date
         run: echo "today=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
-      - name: Build all changed apps
+      - name: Build all queued apps
         env:
-          APPS_JSON: ${{ needs.check-versions.outputs.apps_to_build }}
-          CLI_JAR:        ${{ needs.check-versions.outputs.cli_jar }}
-          MORPHE_MPP:     ${{ needs.check-versions.outputs.morphe_mpp }}
-          DE_REVANCED_MPP: ${{ needs.check-versions.outputs.de_revanced_mpp }}
-          TODAY:          ${{ steps.date.outputs.today }}
+          APPS_JSON:        ${{ needs.check-versions.outputs.apps_to_build }}
+          CLI_JAR:          ${{ needs.check-versions.outputs.cli_jar }}
+          MORPHE_MPP:       ${{ needs.check-versions.outputs.morphe_mpp }}
+          DE_REVANCED_MPP:  ${{ needs.check-versions.outputs.de_revanced_mpp }}
+          TARGET_ARCH:      ${{ needs.check-versions.outputs.target_arch }}
+          TODAY:            ${{ steps.date.outputs.today }}
         run: |
           mkdir -p dist
 
-          CLI=$(find . -maxdepth 1 -name "$CLI_JAR"  | head -1)
-          MMPP=$(find . -maxdepth 1 -name "$MORPHE_MPP" | head -1)
+          CLI=$(find . -maxdepth 1 -name "$CLI_JAR"   | head -1)
+          MMPP=$(find . -maxdepth 1 -name "$MORPHE_MPP"     | head -1)
           DMPP=$(find . -maxdepth 1 -name "$DE_REVANCED_MPP" | head -1)
 
           echo "$APPS_JSON" | python3 -c "
@@ -119,11 +185,11 @@ jobs:
           " | while read KEY PKG VER; do
             echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "  ▶ $KEY  v$VER"
+            echo "  ▶ $KEY  v$VER  [arch: ${TARGET_ARCH}]"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             APK_FILE="${PKG}.apk"
 
-            # ── Download from APKPure (original unmodified APKs, signature verified) ──
+            # ── Download from APKPure ──
             echo "  Downloading ${PKG}@${VER} from APKPure..."
             if ! apkeep -a "${PKG}@${VER}" -d apk-pure .; then
               echo "  ⚠️  Exact version not found, trying latest..."
@@ -133,11 +199,10 @@ jobs:
               }
             fi
 
-            # Handle apkeep saving with @version suffix
             [ -f "$APK_FILE" ] || APK_FILE=$(find . -maxdepth 1 -name "${PKG}*.apk" | head -1)
             [ -f "$APK_FILE" ] || { echo "  ❌ APK not found after download — skipping"; continue; }
 
-            # ── Verify APK signature (catches corrupted/tampered files) ──
+            # ── Verify APK signature ──
             echo "  Verifying APK signature..."
             if ! apksigner verify "$APK_FILE" 2>/dev/null; then
               echo "  ❌ Signature verification failed for $KEY — skipping"
@@ -146,15 +211,23 @@ jobs:
             fi
             echo "  ✅ Signature OK"
 
-            # ── Patch with both Morphe + De-ReVanced bundles ──
-            OUT="dist/${KEY}-morphe-v${VER}-${TODAY}.apk"
+            # ── Detect architecture from APK ──
+            DETECTED_ARCH=$(aapt dump badging "$APK_FILE" 2>/dev/null \
+              | grep "native-code" \
+              | grep -oP "'\K[^']+" \
+              | head -1 || echo "universal")
+            ARCH_LABEL=${DETECTED_ARCH:-universal}
+            echo "  Detected arch: $ARCH_LABEL"
+
+            # ── Patch ──
+            OUT="dist/${KEY}-morphe-v${VER}-${ARCH_LABEL}-${TODAY}.apk"
             echo "  Patching → $OUT"
             if java -jar "$CLI" patch \
-              --keystore=morphe.keystore \
-              -p "$MMPP" \
-              -p "$DMPP" \
-              -o "$OUT" \
-              "$APK_FILE"; then
+                --keystore=morphe.keystore \
+                -p "$MMPP" \
+                -p "$DMPP" \
+                -o "$OUT" \
+                "$APK_FILE"; then
               echo "  ✅ Built: $OUT"
             else
               echo "  ❌ Patch failed for $KEY"
@@ -169,14 +242,11 @@ jobs:
           echo "Built APKs:"
           ls -lh dist/*.apk 2>/dev/null || echo "  None built."
 
-      # ── Generate SHA256 checksums for all patched APKs ──
       - name: Generate SHA256 checksums
         run: |
           if ls dist/*.apk 1>/dev/null 2>&1; then
-            cd dist
-            sha256sum *.apk > SHA256SUMS.txt
-            echo "SHA256 checksums:"
-            cat SHA256SUMS.txt
+            cd dist && sha256sum *.apk > SHA256SUMS.txt
+            echo "SHA256 checksums:"; cat SHA256SUMS.txt
           else
             echo "No APKs to checksum."
           fi
@@ -198,27 +268,40 @@ jobs:
           DRVR_TAG:    ${{ needs.check-versions.outputs.de_revanced_tag }}
           CLI_TAG:     ${{ needs.check-versions.outputs.cli_tag }}
           TODAY:       ${{ steps.date.outputs.today }}
+          TRIGGER:     ${{ github.event_name }}
+          MANUAL_APP:  ${{ github.event.inputs.app || 'all' }}
         run: |
           python3 - <<'PYEOF'
-          import os, json
+          import os, json, glob
 
-          apps     = json.loads(os.environ["APPS_JSON"])
-          morphe   = os.environ["MORPHE_TAG"]
-          drvr     = os.environ["DRVR_TAG"]
-          cli      = os.environ["CLI_TAG"]
-          today    = os.environ["TODAY"]
+          apps    = json.loads(os.environ["APPS_JSON"])
+          morphe  = os.environ["MORPHE_TAG"]
+          drvr    = os.environ["DRVR_TAG"]
+          cli     = os.environ["CLI_TAG"]
+          today   = os.environ["TODAY"]
+          trigger = os.environ["TRIGGER"]
+          manual  = os.environ.get("MANUAL_APP", "all")
+
+          trigger_line = "🕐 Scheduled auto-build" if trigger == "schedule" else f"🖐 Manual build ({manual})"
 
           lines = [
-            "## Morphe + De-ReVanced Apps — Automated Build",
+            "## Morphe + De-ReVanced Apps",
             "",
-            "Only apps with new supported versions are rebuilt each run.",
-            "APKs are downloaded from APKPure (signature-verified), patched, and SHA256-checksummed.",
+            trigger_line,
+            "APKs downloaded from APKPure (signature-verified), patched with Morphe + De-ReVanced, SHA256-checksummed.",
             "",
-            "| App | Version |",
-            "|-----|---------|",
+            "| App | Version | Arch |",
+            "|-----|---------|------|",
           ]
-          for a in apps:
-              lines.append(f"| {a['key'].replace('_', '-')} | `{a['version']}` |")
+
+          for apk in sorted(glob.glob("dist/*.apk")):
+            fname = os.path.basename(apk)
+            parts = fname.replace(".apk","").split("-")
+            arch = parts[-2] if len(parts) >= 3 else "unknown"
+            for a in apps:
+              if fname.startswith(a["key"]):
+                lines.append(f"| {a['key'].replace('_','-')} | `{a['version']}` | `{arch}` |")
+                break
 
           lines += [
             "",
@@ -230,20 +313,19 @@ jobs:
             "- YouTube / YouTube Music: install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first",
             "- All other apps: standalone install, no extra app needed",
             "",
-            "### Verifying downloads",
-            "Compare your download against `SHA256SUMS.txt` included in this release:",
+            "### Verify downloads",
             "```",
             "sha256sum -c SHA256SUMS.txt",
             "```",
           ]
 
           with open("release_body.md", "w") as f:
-              f.write("\n".join(lines))
-
+            f.write("\n".join(lines))
           print("Release notes written.")
           PYEOF
 
-      - name: Delete previous release
+      - name: Delete previous auto-build releases (scheduled only)
+        if: github.event_name == 'schedule'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -256,17 +338,18 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "morphe-apps-v${{ steps.date.outputs.today }}"
-          name: "Morphe Apps — ${{ steps.date.outputs.today }}"
+          tag_name: "morphe-apps-v${{ steps.date.outputs.today }}${{ github.event_name == 'workflow_dispatch' && format('-manual-{0}', github.event.inputs.app) || '' }}"
+          name: "Morphe Apps — ${{ steps.date.outputs.today }}${{ github.event_name == 'workflow_dispatch' && format(' (manual: {0})', github.event.inputs.app) || '' }}"
           body_path: release_body.md
           files: |
             dist/*.apk
             dist/SHA256SUMS.txt
           fail_on_unmatched_files: false
           draft: false
-          prerelease: false
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Save updated state
+        if: github.event_name == 'schedule' || github.event.inputs.app == 'all'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update built versions state [skip ci]"

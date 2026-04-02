@@ -74,7 +74,6 @@ def version_key(v):
     return parts
 
 def get_compatible_versions(cli_jar, mpp_files, package_name):
-    """Return sorted list of all compatible versions for a package."""
     p_flags = []
     for f in mpp_files:
         p_flags += ["-p", f]
@@ -121,17 +120,21 @@ def set_output(key, value):
     print(f"  → {key}={value}")
 
 def main():
+    manual_app  = os.environ.get("MANUAL_APP",  "all").strip()
+    manual_ver  = os.environ.get("MANUAL_VERSION", "").strip()
+    target_arch = os.environ.get("TARGET_ARCH", "arm64-v8a").strip()
+
     # ── Fetch releases ──────────────────────────────────────────
-    cli_rel = get_latest_release(REPO_CLI)
-    mor_rel = get_latest_release(REPO_MORPHE)
+    cli_rel  = get_latest_release(REPO_CLI)
+    mor_rel  = get_latest_release(REPO_MORPHE)
     drvr_rel = get_latest_release(REPO_DE_REVANCED)
 
     cli_tag  = cli_rel["tag_name"]
     mor_tag  = mor_rel["tag_name"]
     drvr_tag = drvr_rel["tag_name"]
 
-    cli_jar  = next(a for a in cli_rel["assets"] if a["name"].endswith(".jar"))
-    mor_mpp  = next(a for a in mor_rel["assets"] if a["name"].endswith(".mpp"))
+    cli_jar  = next(a for a in cli_rel["assets"]  if a["name"].endswith(".jar"))
+    mor_mpp  = next(a for a in mor_rel["assets"]  if a["name"].endswith(".mpp"))
     drvr_mpp = next(a for a in drvr_rel["assets"] if a["name"].endswith(".mpp"))
 
     print(f"Morphe CLI:       {cli_tag}  ({cli_jar['name']})")
@@ -142,21 +145,62 @@ def main():
     if not os.path.exists(mor_mpp["name"]):  download_file(mor_mpp["url"],  mor_mpp["name"])
     if not os.path.exists(drvr_mpp["name"]): download_file(drvr_mpp["url"], drvr_mpp["name"])
 
-    # ── Check versions per app ──────────────────────────────────
+    mpp_list = [mor_mpp["name"], drvr_mpp["name"]]
+
+    # ── Manual build for a single app — bypass state check ─────
+    if manual_app and manual_app != "all":
+        print(f"\nManual build requested: {manual_app} (version_override='{manual_ver}', arch={target_arch})")
+        info = APPS.get(manual_app)
+        if not info:
+            print(f"ERROR: Unknown app '{manual_app}'. Valid keys: {', '.join(APPS)}")
+            sys.exit(1)
+
+        if manual_ver:
+            version = manual_ver
+            print(f"  Using forced version: {version}")
+        else:
+            versions = get_compatible_versions(cli_jar["name"], mpp_list, info["package"])
+            version  = versions[-1] if versions else ""
+            print(f"  Latest supported version: {version or 'NONE'}")
+
+        if not version:
+            print(f"ERROR: No compatible version found for {manual_app}")
+            sys.exit(1)
+
+        apps_to_build = [{
+            "key":     manual_app,
+            "name":    manual_app.replace("_", "-"),
+            "package": info["package"],
+            "slug":    info["slug"],
+            "version": version,
+            "source":  info["source"],
+        }]
+
+        set_output("any_needs_build",  "true")
+        set_output("apps_to_build",    json.dumps(apps_to_build))
+        set_output("morphe_tag",       mor_tag)
+        set_output("de_revanced_tag",  drvr_tag)
+        set_output("cli_tag",          cli_tag)
+        set_output("morphe_mpp",       mor_mpp["name"])
+        set_output("de_revanced_mpp",  drvr_mpp["name"])
+        set_output("cli_jar",          cli_jar["name"])
+        set_output("target_arch",      target_arch)
+        return
+
+    # ── Auto mode: check versions for all apps ─────────────────
     last    = load_state()
     current = {"cli_tag": cli_tag, "morphe_tag": mor_tag, "de_revanced_tag": drvr_tag}
 
     apps_to_build = []
     for key, info in APPS.items():
-        mpp_list = [mor_mpp["name"], drvr_mpp["name"]]  # pass both to every query
         versions = get_compatible_versions(cli_jar["name"], mpp_list, info["package"])
         latest   = versions[-1] if versions else ""
         current[key] = latest
 
-        morphe_changed   = last.get("morphe_tag")     != mor_tag
-        drvr_changed     = last.get("de_revanced_tag") != drvr_tag
-        ver_changed      = last.get(key) != latest
-        patch_changed    = morphe_changed if info["source"] == "morphe" else drvr_changed
+        morphe_changed = last.get("morphe_tag")      != mor_tag
+        drvr_changed   = last.get("de_revanced_tag") != drvr_tag
+        ver_changed    = last.get(key) != latest
+        patch_changed  = morphe_changed if info["source"] == "morphe" else drvr_changed
 
         needs = bool(latest) and (ver_changed or patch_changed)
         if needs:
@@ -183,12 +227,11 @@ def main():
     set_output("morphe_mpp",       mor_mpp["name"])
     set_output("de_revanced_mpp",  drvr_mpp["name"])
     set_output("cli_jar",          cli_jar["name"])
+    set_output("target_arch",      target_arch)
 
     if not os.getenv("SKIP_CLEANUP"):
         for f in [cli_jar["name"], mor_mpp["name"], drvr_mpp["name"]]:
             if os.path.exists(f): os.remove(f)
-    else:
-        print("Skipping cleanup.")
 
 if __name__ == "__main__":
     main()

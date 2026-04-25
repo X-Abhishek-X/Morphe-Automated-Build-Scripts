@@ -74,32 +74,43 @@ def version_key(v):
     return parts
 
 def get_compatible_versions(cli_jar, mpp_files, package_name):
-    p_flags = []
+    # Morphe CLI v1.7.0+ : patches go via --patches=<file>; -p is now --with-packages and -v is --with-versions.
+    cmd = ["java", "-jar", cli_jar, "list-patches"]
     for f in mpp_files:
-        p_flags += ["-p", f]
-    cmd = ["java", "-jar", cli_jar, "list-patches"] + p_flags + ["-f", package_name, "-v"]
+        cmd.append(f"--patches={f}")
+    cmd += ["-f", package_name, "-p", "-v"]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     except Exception as e:
         print(f"  CLI error for {package_name}: {e}")
         return []
+    if result.returncode != 0:
+        print(f"  CLI exit {result.returncode} for {package_name}: {result.stderr.strip()[:200]}")
+        return []
     all_versions = set()
+    cur_pkg = None
     in_versions = False
-    for line in result.stdout.splitlines():
-        s = line.strip()
+    for raw in result.stdout.splitlines():
+        s = raw.strip()
+        if not s:
+            in_versions = False
+            continue
+        if s.startswith("Package name:"):
+            cur_pkg = s.split(":", 1)[1].strip()
+            in_versions = False
+            continue
         if s.startswith("Compatible versions:"):
-            in_versions = True
+            in_versions = (cur_pkg == package_name)
             inline = s.split(":", 1)[1].strip()
-            if inline and inline.lower() not in ("any", "none"):
+            if in_versions and inline and inline.lower() not in ("any", "none"):
                 for v in inline.split(","):
                     v = v.strip().lstrip("-").strip()
                     if v: all_versions.add(v)
-        elif in_versions:
-            if ":" in s and not s.startswith("-") and not s.startswith(" "):
-                in_versions = False
-            elif s:
-                v = s.lstrip("-").strip()
-                if v: all_versions.add(v)
+            continue
+        if in_versions and re.match(r"^[\d.]", s):
+            all_versions.add(s.lstrip("-").strip())
+        elif in_versions and ":" in s:
+            in_versions = False
     return sorted(all_versions, key=version_key)
 
 def load_state():

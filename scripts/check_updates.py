@@ -59,8 +59,14 @@ def get_latest_release(repo):
     return r.json()
 
 def download_file(url, filename):
+    # Use browser_download_url (CDN, no API quota) and pass token so authenticated
+    # 5000/hr quota applies if a release asset URL ever sneaks through.
     print(f"  Downloading {filename}...")
-    with requests.get(url, stream=True) as r:
+    headers = {"Accept": "application/octet-stream"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"token {token}"
+    with requests.get(url, stream=True, headers=headers, allow_redirects=True) as r:
         r.raise_for_status()
         with open(filename, "wb") as f:
             for chunk in r.iter_content(8192):
@@ -152,9 +158,9 @@ def main():
     print(f"Morphe patches:   {mor_tag}  ({mor_mpp['name']})")
     print(f"De-ReVanced:      {drvr_tag} ({drvr_mpp['name']})")
 
-    if not os.path.exists(cli_jar["name"]):  download_file(cli_jar["url"],  cli_jar["name"])
-    if not os.path.exists(mor_mpp["name"]):  download_file(mor_mpp["url"],  mor_mpp["name"])
-    if not os.path.exists(drvr_mpp["name"]): download_file(drvr_mpp["url"], drvr_mpp["name"])
+    if not os.path.exists(cli_jar["name"]):  download_file(cli_jar["browser_download_url"],  cli_jar["name"])
+    if not os.path.exists(mor_mpp["name"]):  download_file(mor_mpp["browser_download_url"],  mor_mpp["name"])
+    if not os.path.exists(drvr_mpp["name"]): download_file(drvr_mpp["browser_download_url"], drvr_mpp["name"])
 
     mpp_list = [mor_mpp["name"], drvr_mpp["name"]]
 

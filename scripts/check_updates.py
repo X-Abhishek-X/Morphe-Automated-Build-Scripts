@@ -150,9 +150,18 @@ def main():
     mor_tag  = mor_rel["tag_name"]
     drvr_tag = drvr_rel["tag_name"]
 
-    cli_jar  = next(a for a in cli_rel["assets"]  if a["name"].endswith(".jar"))
-    mor_mpp  = next(a for a in mor_rel["assets"]  if a["name"].endswith(".mpp"))
-    drvr_mpp = next(a for a in drvr_rel["assets"] if a["name"].endswith(".mpp"))
+    cli_jar  = next((a for a in cli_rel["assets"]  if a["name"].endswith(".jar")), None)
+    mor_mpp  = next((a for a in mor_rel["assets"]  if a["name"].endswith(".mpp")), None)
+    drvr_mpp = next((a for a in drvr_rel["assets"] if a["name"].endswith(".mpp")), None)
+    if not cli_jar:
+        print(f"ERROR: No .jar asset in {REPO_CLI} release {cli_rel['tag_name']}")
+        sys.exit(1)
+    if not mor_mpp:
+        print(f"ERROR: No .mpp asset in {REPO_MORPHE} release {mor_rel['tag_name']}")
+        sys.exit(1)
+    if not drvr_mpp:
+        print(f"ERROR: No .mpp asset in {REPO_DE_REVANCED} release {drvr_rel['tag_name']}")
+        sys.exit(1)
 
     print(f"Morphe CLI:       {cli_tag}  ({cli_jar['name']})")
     print(f"Morphe patches:   {mor_tag}  ({mor_mpp['name']})")

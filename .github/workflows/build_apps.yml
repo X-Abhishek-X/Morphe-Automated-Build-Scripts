@@ -187,20 +187,42 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "  ▶ $KEY  v$VER  [arch: ${TARGET_ARCH}]"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            APK_FILE="${PKG}.apk"
+            # ── Multi-source download with fallback (apkeep) ──
+            # APKPure is currently rate-limiting GHA runners; try multiple sources.
+            APK_FILE=""
+            for SRC in aptoide apk-pure apk-mirror; do
+              echo "  Trying $SRC for ${PKG}@${VER}..."
+              # Clear any leftover candidates from a previous source
+              rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
+              apkeep -a "${PKG}@${VER}" -d "$SRC" . 2>&1 || true
+              CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
+              if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
+                APK_FILE="$CANDIDATE"
+                echo "  ✅ Downloaded from $SRC: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
+                break
+              fi
+              echo "  ⚠️  $SRC produced no file for ${PKG}@${VER}"
+            done
 
-            # ── Download from APKPure ──
-            echo "  Downloading ${PKG}@${VER} from APKPure..."
-            if ! apkeep -a "${PKG}@${VER}" -d apk-pure .; then
-              echo "  ⚠️  Exact version not found, trying latest..."
-              apkeep -a "${PKG}" -d apk-pure . || {
-                echo "  ❌ Download failed for $KEY — skipping"
-                continue
-              }
+            # If versioned download failed across all sources, try latest version as last resort
+            if [ -z "$APK_FILE" ]; then
+              echo "  ⚠️  Exact v${VER} not found anywhere, trying latest version..."
+              for SRC in aptoide apk-pure apk-mirror; do
+                rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
+                apkeep -a "${PKG}" -d "$SRC" . 2>&1 || true
+                CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
+                if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
+                  APK_FILE="$CANDIDATE"
+                  echo "  ✅ Latest from $SRC: $APK_FILE"
+                  break
+                fi
+              done
             fi
 
-            [ -f "$APK_FILE" ] || APK_FILE=$(find . -maxdepth 1 -name "${PKG}*.apk" | head -1)
-            [ -f "$APK_FILE" ] || { echo "  ❌ APK not found after download — skipping"; continue; }
+            if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
+              echo "  ❌ All download sources failed for $KEY — skipping"
+              continue
+            fi
 
             # ── Verify APK signature ──
             echo "  Verifying APK signature..."
@@ -241,6 +263,18 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "Built APKs:"
           ls -lh dist/*.apk 2>/dev/null || echo "  None built."
+
+      - name: Fail loudly if zero APKs produced
+        env:
+          APPS_JSON: ${{ needs.check-versions.outputs.apps_to_build }}
+        run: |
+          BUILT=$(ls dist/*.apk 2>/dev/null | wc -l)
+          EXPECTED=$(echo "$APPS_JSON" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))")
+          echo "Expected: $EXPECTED apps  |  Built: $BUILT APKs"
+          if [ "$BUILT" = "0" ] && [ "$EXPECTED" != "0" ]; then
+            echo "::error::Build silently failed — $EXPECTED apps queued, 0 APKs produced. Refusing to publish empty release."
+            exit 1
+          fi
 
       - name: Generate SHA256 checksums
         run: |

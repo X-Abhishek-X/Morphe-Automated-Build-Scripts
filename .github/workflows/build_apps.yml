@@ -137,7 +137,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -q requests beautifulsoup4
+          pip install -q requests beautifulsoup4 'curl_cffi>=0.7'
           sudo apt-get install -y -q aapt apksigner
 
       - name: Install apkeep (APKPure downloader)
@@ -204,10 +204,20 @@ jobs:
               echo "  ⚠️  $SRC produced no file for ${PKG}@${VER}"
             done
 
+            # ── Deeper fallback: Uptodown scraper for exact-version downloads ──
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
-              echo "  ❌ Exact version v${VER} not available on apkeep sources (aptoide / apk-pure / apk-mirror) for $KEY — skipping"
-              echo "      Morphe patches require this specific version; downloading latest would patch-fail."
-              echo "      To fix: refactor workflow to also try scripts/downloader_src/uptodown.py (Uptodown scraper) as a deeper fallback."
+              echo "  ⚠️  apkeep sources exhausted, trying Uptodown scraper..."
+              UPTODOWN_OUT="${PKG}.apk"
+              if python scripts/uptodown_dl.py                   --name "$KEY"                   --package "$PKG"                   --version "$VER"                   --output "$UPTODOWN_OUT" 2>&1; then
+                if [ -s "$UPTODOWN_OUT" ]; then
+                  APK_FILE="$UPTODOWN_OUT"
+                  echo "  ✅ Downloaded from Uptodown: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
+                fi
+              fi
+            fi
+
+            if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
+              echo "  ❌ Exact version v${VER} not available on any source (aptoide / apk-pure / apk-mirror / uptodown) for $KEY — skipping"
               continue
             fi
 

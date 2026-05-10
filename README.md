@@ -1,6 +1,6 @@
 # Morphe-Automated-Build-Scripts
 
-[![Build Status](https://github.com/X-Abhishek-X/ReVanced-Automated-Build-Scripts/actions/workflows/build_apps.yml/badge.svg)](https://github.com/X-Abhishek-X/ReVanced-Automated-Build-Scripts/actions)
+[![Build Status](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions/workflows/build_apps.yml/badge.svg)](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions)
 
 GitHub Actions suite that monitors for new app versions and automatically builds patched APKs using [Morphe](https://github.com/MorpheApp) and [De-ReVanced](https://github.com/RookieEnough/De-ReVanced) patches. Checks every 2 days — only rebuilds apps whose supported version has changed.
 
@@ -36,7 +36,7 @@ GitHub Actions suite that monitors for new app versions and automatically builds
 1. Runs on a schedule every 2 days
 2. Fetches latest `morphe-cli`, `morphe-patches`, and `de-revanced-patches`
 3. Checks which of the 37 supported apps has a new compatible version
-4. Downloads only the changed apps' APKs from Uptodown and patches them
+4. Downloads only the changed apps' APKs from APKPure and patches them
 5. Signs with a secure keystore and publishes all rebuilt APKs to a GitHub Release
 
 ### Download

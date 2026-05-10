@@ -357,8 +357,7 @@ jobs:
           print("Release notes written.")
           PYEOF
 
-      - name: Delete previous auto-build releases (scheduled only)
-        if: github.event_name == 'schedule'
+      - name: Delete previous auto-build releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

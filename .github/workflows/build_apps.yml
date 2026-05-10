@@ -204,23 +204,10 @@ jobs:
               echo "  ⚠️  $SRC produced no file for ${PKG}@${VER}"
             done
 
-            # If versioned download failed across all sources, try latest version as last resort
-            if [ -z "$APK_FILE" ]; then
-              echo "  ⚠️  Exact v${VER} not found anywhere, trying latest version..."
-              for SRC in aptoide apk-pure apk-mirror; do
-                rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
-                apkeep -a "${PKG}" -d "$SRC" . 2>&1 || true
-                CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
-                if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
-                  APK_FILE="$CANDIDATE"
-                  echo "  ✅ Latest from $SRC: $APK_FILE"
-                  break
-                fi
-              done
-            fi
-
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
-              echo "  ❌ All download sources failed for $KEY — skipping"
+              echo "  ❌ Exact version v${VER} not available on apkeep sources (aptoide / apk-pure / apk-mirror) for $KEY — skipping"
+              echo "      Morphe patches require this specific version; downloading latest would patch-fail."
+              echo "      To fix: refactor workflow to also try scripts/downloader_src/uptodown.py (Uptodown scraper) as a deeper fallback."
               continue
             fi
 

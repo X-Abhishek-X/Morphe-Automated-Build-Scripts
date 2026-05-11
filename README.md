@@ -25,4 +25,12 @@ Amazon Music · Amazon Shopping · Angulus · Bandcamp · Cricbuzz · Disney+ ·
 
 ## Disclaimer
 
-Not affiliated with Google, Meta, Twitter/X, TikTok, Twitch, or any app developer. Use at your own risk.
+This project is provided for educational and personal use only. I am not affiliated with, endorsed by, or in any way associated with Google, Meta, Twitter/X, TikTok, Twitch, Amazon, Adobe, or any other app developer or company whose apps appear here. All patches are sourced from independent open-source projects (Morphe, De-ReVanced, Piko, hoo-dles) — I did not create them and take no credit for them.
+
+I am not responsible for:
+- Any account bans, suspensions, or restrictions resulting from using patched APKs
+- Any damage to your device
+- Any data loss or security issues
+- Any violations of an app's Terms of Service
+
+Use entirely at your own risk. By downloading anything from this repository you accept full responsibility for what you do with it.

@@ -1,4 +1,4 @@
-name: Build Morphe + De-ReVanced Apps (37 apps)
+﻿name: Build Morphe + De-ReVanced Apps (55 apps)
 
 on:
   schedule:
@@ -49,6 +49,24 @@ on:
           - irplus
           - photoshop_mix
           - nu_nl
+          - twitter
+          - instagram
+          - adguard
+          - prime_video
+          - duolingo
+          - myfitnesspal
+          - nova_launcher
+          - solid_explorer
+          - xodo_pdf
+          - ibis_paint
+          - wps_office
+          - camscanner
+          - fotmob
+          - pandora
+          - podcast_addict
+          - proton_vpn
+          - windy
+          - sofascore
       version_override:
         description: "Force a specific version (e.g. 19.16.39) — leave empty for latest supported"
         required: false
@@ -68,7 +86,7 @@ jobs:
   # JOB 1: Detect which apps need a build
   # ─────────────────────────────────────────────────────────────
   check-versions:
-    name: "🔍 Check for new supported versions"
+    name: "Check for new supported versions"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -78,9 +96,13 @@ jobs:
       apps_to_build:    ${{ steps.check.outputs.apps_to_build }}
       morphe_tag:       ${{ steps.check.outputs.morphe_tag }}
       de_revanced_tag:  ${{ steps.check.outputs.de_revanced_tag }}
+      piko_tag:         ${{ steps.check.outputs.piko_tag }}
+      hoodles_tag:      ${{ steps.check.outputs.hoodles_tag }}
       cli_tag:          ${{ steps.check.outputs.cli_tag }}
       morphe_mpp:       ${{ steps.check.outputs.morphe_mpp }}
       de_revanced_mpp:  ${{ steps.check.outputs.de_revanced_mpp }}
+      piko_mpp:         ${{ steps.check.outputs.piko_mpp }}
+      hoodles_mpp:      ${{ steps.check.outputs.hoodles_mpp }}
       cli_jar:          ${{ steps.check.outputs.cli_jar }}
       target_arch:      ${{ steps.check.outputs.target_arch }}
 
@@ -121,7 +143,7 @@ jobs:
   # JOB 2: Build changed apps and publish release
   # ─────────────────────────────────────────────────────────────
   build-and-release:
-    name: "🔨 Build & Release"
+    name: "Build & Release"
     needs: check-versions
     if: needs.check-versions.outputs.any_needs_build == 'true'
     runs-on: ubuntu-latest
@@ -147,7 +169,7 @@ jobs:
           chmod +x apkeep
           sudo mv apkeep /usr/local/bin/
 
-      - name: Download Morphe CLI & patch bundles
+      - name: Download CLI & all patch bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SKIP_CLEANUP: "true"
@@ -169,14 +191,18 @@ jobs:
           CLI_JAR:          ${{ needs.check-versions.outputs.cli_jar }}
           MORPHE_MPP:       ${{ needs.check-versions.outputs.morphe_mpp }}
           DE_REVANCED_MPP:  ${{ needs.check-versions.outputs.de_revanced_mpp }}
+          PIKO_MPP:         ${{ needs.check-versions.outputs.piko_mpp }}
+          HOODLES_MPP:      ${{ needs.check-versions.outputs.hoodles_mpp }}
           TARGET_ARCH:      ${{ needs.check-versions.outputs.target_arch }}
           TODAY:            ${{ steps.date.outputs.today }}
         run: |
           mkdir -p dist
 
-          CLI=$(find . -maxdepth 1 -name "$CLI_JAR"   | head -1)
+          CLI=$(find . -maxdepth 1 -name "$CLI_JAR"        | head -1)
           MMPP=$(find . -maxdepth 1 -name "$MORPHE_MPP"     | head -1)
           DMPP=$(find . -maxdepth 1 -name "$DE_REVANCED_MPP" | head -1)
+          PMPP=$(find . -maxdepth 1 -name "$PIKO_MPP"       | head -1)
+          HMPP=$(find . -maxdepth 1 -name "$HOODLES_MPP"    | head -1)
 
           echo "$APPS_JSON" | python3 -c "
           import json, sys
@@ -187,52 +213,47 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "  ▶ $KEY  v$VER  [arch: ${TARGET_ARCH}]"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            # ── Multi-source download with fallback (apkeep) ──
-            # APKPure is currently rate-limiting GHA runners; try multiple sources.
             APK_FILE=""
             for SRC in apk-pure; do
               echo "  Trying $SRC for ${PKG}@${VER}..."
-              # Clear any leftover candidates from a previous source
               rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
               apkeep -a "${PKG}@${VER}" -d "$SRC" . 2>&1 || true
               CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
               if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
                 APK_FILE="$CANDIDATE"
-                echo "  ✅ Downloaded from $SRC: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
+                echo "  Downloaded from $SRC: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
                 break
               fi
-              echo "  ⚠️  $SRC produced no file for ${PKG}@${VER}"
+              echo "  $SRC produced no file for ${PKG}@${VER}"
             done
 
-            # ── Deeper fallback: Uptodown scraper for exact-version downloads ──
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
-              echo "  ⚠️  apkeep sources exhausted, trying Uptodown scraper..."
+              echo "  Trying Uptodown scraper..."
               UPTODOWN_OUT="${PKG}.apk"
-              if python scripts/uptodown_dl.py                   --name "$KEY"                   --package "$PKG"                   --version "$VER"                   --output "$UPTODOWN_OUT" 2>&1; then
+              if python scripts/uptodown_dl.py \
+                  --name "$KEY" \
+                  --package "$PKG" \
+                  --version "$VER" \
+                  --output "$UPTODOWN_OUT" 2>&1; then
                 if [ -s "$UPTODOWN_OUT" ]; then
                   APK_FILE="$UPTODOWN_OUT"
-                  echo "  ✅ Downloaded from Uptodown: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
+                  echo "  Downloaded from Uptodown: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
                 fi
               fi
             fi
 
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
-              echo "  ❌ Exact version v${VER} not available on any source (aptoide / apk-pure / apk-mirror / uptodown) for $KEY — skipping"
+              echo "  No source found for $KEY v${VER} — skipping"
               continue
             fi
 
-            # ── Verify APK signature (advisory only) ──
-            # APKPure / aptoide often serve repackaged APKs that fail apksigner verify.
-            # Since Morphe CLI re-signs the patched APK with our keystore later,
-            # this check is informational, not fatal.
             echo "  Verifying APK signature..."
             if apksigner verify "$APK_FILE" 2>/dev/null; then
-              echo "  ✅ Original signature OK"
+              echo "  Original signature OK"
             else
-              echo "  ⚠️  Original signature mismatch (mirror repackaging) — proceeding; will re-sign after patch"
+              echo "  Original signature mismatch (mirror repackaging) — will re-sign after patch"
             fi
 
-            # ── Detect architecture from APK ──
             DETECTED_ARCH=$(aapt dump badging "$APK_FILE" 2>/dev/null \
               | grep "native-code" \
               | grep -oP "'\K[^']+" \
@@ -240,19 +261,20 @@ jobs:
             ARCH_LABEL=${DETECTED_ARCH:-universal}
             echo "  Detected arch: $ARCH_LABEL"
 
-            # ── Patch ──
             OUT="dist/${KEY}-morphe-v${VER}-${ARCH_LABEL}-${TODAY}.apk"
-            echo "  Patching → $OUT"
+            echo "  Patching -> $OUT"
             if java -jar "$CLI" patch \
                 --continue-on-error \
                 --keystore=morphe.keystore \
                 -p "$MMPP" \
                 -p "$DMPP" \
+                -p "$PMPP" \
+                -p "$HMPP" \
                 -o "$OUT" \
                 "$APK_FILE"; then
-              echo "  ✅ Built: $OUT"
+              echo "  Built: $OUT"
             else
-              echo "  ❌ Patch failed for $KEY"
+              echo "  Patch failed for $KEY"
               rm -f "$OUT"
             fi
 
@@ -272,7 +294,7 @@ jobs:
           EXPECTED=$(echo "$APPS_JSON" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))")
           echo "Expected: $EXPECTED apps  |  Built: $BUILT APKs"
           if [ "$BUILT" = "0" ] && [ "$EXPECTED" != "0" ]; then
-            echo "::error::Build silently failed — $EXPECTED apps queued, 0 APKs produced. Refusing to publish empty release."
+            echo "::error::Build silently failed — $EXPECTED apps queued, 0 APKs produced."
             exit 1
           fi
 
@@ -297,13 +319,15 @@ jobs:
 
       - name: Build release notes
         env:
-          APPS_JSON:   ${{ needs.check-versions.outputs.apps_to_build }}
-          MORPHE_TAG:  ${{ needs.check-versions.outputs.morphe_tag }}
-          DRVR_TAG:    ${{ needs.check-versions.outputs.de_revanced_tag }}
-          CLI_TAG:     ${{ needs.check-versions.outputs.cli_tag }}
-          TODAY:       ${{ steps.date.outputs.today }}
-          TRIGGER:     ${{ github.event_name }}
-          MANUAL_APP:  ${{ github.event.inputs.app || 'all' }}
+          APPS_JSON:    ${{ needs.check-versions.outputs.apps_to_build }}
+          MORPHE_TAG:   ${{ needs.check-versions.outputs.morphe_tag }}
+          DRVR_TAG:     ${{ needs.check-versions.outputs.de_revanced_tag }}
+          PIKO_TAG:     ${{ needs.check-versions.outputs.piko_tag }}
+          HOODLES_TAG:  ${{ needs.check-versions.outputs.hoodles_tag }}
+          CLI_TAG:      ${{ needs.check-versions.outputs.cli_tag }}
+          TODAY:        ${{ steps.date.outputs.today }}
+          TRIGGER:      ${{ github.event_name }}
+          MANUAL_APP:   ${{ github.event.inputs.app || 'all' }}
         run: |
           python3 - <<'PYEOF'
           import os, json, glob
@@ -311,18 +335,19 @@ jobs:
           apps    = json.loads(os.environ["APPS_JSON"])
           morphe  = os.environ["MORPHE_TAG"]
           drvr    = os.environ["DRVR_TAG"]
+          piko    = os.environ["PIKO_TAG"]
+          hoodles = os.environ["HOODLES_TAG"]
           cli     = os.environ["CLI_TAG"]
           today   = os.environ["TODAY"]
           trigger = os.environ["TRIGGER"]
           manual  = os.environ.get("MANUAL_APP", "all")
 
-          trigger_line = "🕐 Scheduled auto-build" if trigger == "schedule" else f"🖐 Manual build ({manual})"
+          trigger_line = "Scheduled auto-build" if trigger == "schedule" else f"Manual build ({manual})"
 
           lines = [
             "## Morphe + De-ReVanced Apps",
             "",
             trigger_line,
-            "APKs downloaded from APKPure (signature-verified), patched with Morphe + De-ReVanced, SHA256-checksummed.",
             "",
             "| App | Version | Arch |",
             "|-----|---------|------|",
@@ -339,7 +364,7 @@ jobs:
 
           lines += [
             "",
-            f"**Morphe patches:** `{morphe}` · **De-ReVanced:** `{drvr}` · **CLI:** `{cli}`",
+            f"**Morphe:** `{morphe}` · **De-ReVanced:** `{drvr}` · **Piko:** `{piko}` · **hoo-dles:** `{hoodles}` · **CLI:** `{cli}`",
             f"**Build date:** `{today}`",
             "",
             "---",
@@ -355,7 +380,6 @@ jobs:
 
           with open("release_body.md", "w") as f:
             f.write("\n".join(lines))
-          print("Release notes written.")
           PYEOF
 
       - name: Delete previous auto-build releases

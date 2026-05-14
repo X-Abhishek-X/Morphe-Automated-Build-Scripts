@@ -2,9 +2,9 @@
 
 [![Build Status](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions/workflows/build_apps.yml/badge.svg)](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions)
 [![Latest Release](https://img.shields.io/github/v/release/X-Abhishek-X/Morphe-Automated-Build-Scripts?label=latest)](../../releases/latest)
-[![Total Apps](https://img.shields.io/badge/apps-55-blue)](#supported-apps)
+[![Total Apps](https://img.shields.io/badge/apps-32-blue)](#supported-apps)
 
-Automatically patched APKs for **55 Android apps**, rebuilt every 2 days. Patches sourced from [Morphe](https://github.com/MorpheApp), [De-ReVanced](https://github.com/RookieEnough/De-ReVanced), [Piko](https://github.com/crimera/piko), and [hoo-dles](https://github.com/hoo-dles/morphe-patches).
+Automatically patched APKs for **32 Android apps**, rebuilt every 2 days. Patches sourced from [Morphe](https://github.com/MorpheApp), [De-ReVanced](https://github.com/RookieEnough/De-ReVanced), [Piko](https://github.com/crimera/piko), and [hoo-dles](https://github.com/hoo-dles/morphe-patches).
 
 ## Download
 
@@ -20,15 +20,15 @@ Automatically patched APKs for **55 Android apps**, rebuilt every 2 days. Patche
 |---|---|
 | **Morphe** | YouTube, YouTube Music, Reddit |
 | **Piko** | Twitter/X, Instagram |
-| **hoo-dles** | AdGuard, Amazon Prime Video, CamScanner, Duolingo, FotMob, ibis Paint X, MyFitnessPal, Nova Launcher, Pandora, Podcast Addict, ProtonVPN, SofaScore, Solid Explorer, Windy, WPS Office, Xodo PDF |
-| **De-ReVanced** | Amazon Music, Amazon Shopping, Angulus, Bandcamp, Cricbuzz, Disney+, Facebook, GMX Mail, Google News, Google Photos, Google Recorder, Hex Editor, Icon Pack Studio, Inshorts, irplus, Letterboxd, Messenger, Microsoft Lens, Nothing X, NU.nl, Peacock TV, Photomath, Photoshop Mix, Pixiv, Proton Mail, RAR, SoundCloud, Strava, Threads, TikTok, TikTok (JP), Tumblr, Twitch, Viber |
+| **hoo-dles** | AdGuard, Amazon Prime Video, CamScanner, Duolingo, FotMob, ibis Paint X, MyFitnessPal, Nova Launcher, Podcast Addict, ProtonVPN, SofaScore, Solid Explorer, Windy, WPS Office, Xodo PDF |
+| **De-ReVanced** | Cricbuzz, Facebook, Google News, Icon Pack Studio, Pixiv, Proton Mail, SoundCloud, Threads, TikTok, TikTok (JP), Twitch, Viber |
 
 ## How It Works
 
 1. Every 2 days, a GitHub Actions workflow checks for new supported app versions
 2. Changed apps are downloaded from APKPure, signature-verified, and patched
 3. Unchanged apps are carried over from the previous release automatically
-4. Every release always contains all 55 apps
+4. Every release always contains all 32 apps
 
 ## Request an App
 

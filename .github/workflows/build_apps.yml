@@ -1,4 +1,4 @@
-﻿name: Build Morphe + De-ReVanced Apps (55 apps)
+﻿name: Build Morphe + De-ReVanced Apps (32 apps)
 
 on:
   schedule:
@@ -19,36 +19,14 @@ on:
           - tiktok_jp
           - twitch
           - facebook
-          - messenger
           - threads
-          - disney_plus
           - soundcloud
-          - strava
-          - tumblr
-          - amazon_shop
-          - amazon_music
-          - google_photos
           - google_news
-          - google_rec
           - proton_mail
-          - ms_lens
           - viber
-          - letterboxd
           - pixiv
           - cricbuzz
-          - bandcamp
-          - rar
-          - photomath
-          - peacock_tv
-          - nothing_x
-          - inshorts
           - icon_studio
-          - hex_editor
-          - gmx_mail
-          - angulus
-          - irplus
-          - photoshop_mix
-          - nu_nl
           - twitter
           - instagram
           - adguard
@@ -62,7 +40,6 @@ on:
           - wps_office
           - camscanner
           - fotmob
-          - pandora
           - podcast_addict
           - proton_vpn
           - windy

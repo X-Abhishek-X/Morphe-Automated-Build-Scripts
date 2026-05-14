@@ -1,0 +1,56 @@
+name: App Request
+description: Request a new app to be added to the build pipeline
+title: "[App Request] "
+labels: ["app-request"]
+body:
+  - type: input
+    id: app_name
+    attributes:
+      label: App Name
+      placeholder: e.g. Spotify
+    validations:
+      required: true
+
+  - type: input
+    id: package_name
+    attributes:
+      label: Package Name
+      description: Find it on APKPure or Play Store URL
+      placeholder: e.g. com.spotify.music
+    validations:
+      required: true
+
+  - type: dropdown
+    id: patch_source
+    attributes:
+      label: Patch Source
+      description: Which patch bundle supports this app?
+      options:
+        - Morphe (MorpheApp/morphe-patches)
+        - De-ReVanced (RookieEnough/De-ReVanced)
+        - Piko (crimera/piko)
+        - hoo-dles (hoo-dles/morphe-patches)
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_it_removes
+    attributes:
+      label: What does patching remove/add?
+      description: Ads, paywalls, subscription requirements, etc.
+      placeholder: e.g. Removes ads and enables offline downloads without premium
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the app is available on APKPure
+          required: true
+        - label: I confirmed a patch for this app exists in one of the supported patch bundles
+          required: true
+        - label: This app is not already in the build list
+          required: true

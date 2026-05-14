@@ -1,36 +1,41 @@
 # Morphe-Automated-Build-Scripts
 
 [![Build Status](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions/workflows/build_apps.yml/badge.svg)](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions)
+[![Latest Release](https://img.shields.io/github/v/release/X-Abhishek-X/Morphe-Automated-Build-Scripts?label=latest)](../../releases/latest)
+[![Total Apps](https://img.shields.io/badge/apps-55-blue)](#supported-apps)
 
-Automatically patched APKs for 55 Android apps, built every 2 days using [Morphe](https://github.com/MorpheApp), [De-ReVanced](https://github.com/RookieEnough/De-ReVanced), [Piko](https://github.com/crimera/piko), and [hoo-dles](https://github.com/hoo-dles/morphe-patches) patches.
+Automatically patched APKs for **55 Android apps**, rebuilt every 2 days. Patches sourced from [Morphe](https://github.com/MorpheApp), [De-ReVanced](https://github.com/RookieEnough/De-ReVanced), [Piko](https://github.com/crimera/piko), and [hoo-dles](https://github.com/hoo-dles/morphe-patches).
 
 ## Download
 
-Get the latest APKs from [Releases](../../releases).
+**[→ Latest Release](../../releases/latest)**
 
 - **YouTube / YouTube Music** — install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first
 - **Everything else** — install directly, no extras needed
+- SHA256 checksums included in every release
 
-## Supported apps
+## Supported Apps
 
-**YouTube, YouTube Music, Reddit** — Morphe
+| Patch Source | Apps |
+|---|---|
+| **Morphe** | YouTube, YouTube Music, Reddit |
+| **Piko** | Twitter/X, Instagram |
+| **hoo-dles** | AdGuard, Amazon Prime Video, CamScanner, Duolingo, FotMob, ibis Paint X, MyFitnessPal, Nova Launcher, Pandora, Podcast Addict, ProtonVPN, SofaScore, Solid Explorer, Windy, WPS Office, Xodo PDF |
+| **De-ReVanced** | Amazon Music, Amazon Shopping, Angulus, Bandcamp, Cricbuzz, Disney+, Facebook, GMX Mail, Google News, Google Photos, Google Recorder, Hex Editor, Icon Pack Studio, Inshorts, irplus, Letterboxd, Messenger, Microsoft Lens, Nothing X, NU.nl, Peacock TV, Photomath, Photoshop Mix, Pixiv, Proton Mail, RAR, SoundCloud, Strava, Threads, TikTok, TikTok (JP), Tumblr, Twitch, Viber |
 
-**Twitter/X, Instagram** — Piko
+## How It Works
 
-**AdGuard, Amazon Prime Video, CamScanner, Duolingo, FotMob, ibis Paint X, MyFitnessPal, Nova Launcher, Pandora, Podcast Addict, ProtonVPN, SofaScore, Solid Explorer, Windy, WPS Office, Xodo PDF** — hoo-dles
+1. Every 2 days, a GitHub Actions workflow checks for new supported app versions
+2. Changed apps are downloaded from APKPure, signature-verified, and patched
+3. Unchanged apps are carried over from the previous release automatically
+4. Every release always contains all 55 apps
 
-**+ 34 more via De-ReVanced:**
+## Request an App
 
-Amazon Music · Amazon Shopping · Angulus · Bandcamp · Cricbuzz · Disney+ · Facebook · GMX Mail · Google News · Google Photos · Google Recorder · Hex Editor · Icon Pack Studio · Inshorts · irplus · Letterboxd · Messenger · Microsoft Lens · Nothing X · NU.nl · Peacock TV · Photomath · Photoshop Mix · Pixiv · Proton Mail · RAR · Reddit · SoundCloud · Strava · Threads · TikTok · TikTok (JP) · Tumblr · Twitch · Viber
+Open an [App Request issue](../../issues/new?template=app_request.yml) — if the app is supported by one of the patch bundles above, I'll add it.
 
 ## Disclaimer
 
-This project is provided for educational and personal use only. I am not affiliated with, endorsed by, or in any way associated with Google, Meta, Twitter/X, TikTok, Twitch, Amazon, Adobe, or any other app developer or company whose apps appear here. All patches are sourced from independent open-source projects (Morphe, De-ReVanced, Piko, hoo-dles) — I did not create them and take no credit for them.
+Not affiliated with, endorsed by, or associated with any app developer or company whose apps appear here. All patches are from independent open-source projects — I did not create them.
 
-I am not responsible for:
-- Any account bans, suspensions, or restrictions resulting from using patched APKs
-- Any damage to your device
-- Any data loss or security issues
-- Any violations of an app's Terms of Service
-
-Use entirely at your own risk. By downloading anything from this repository you accept full responsibility for what you do with it.
+**Not responsible for:** account bans, device damage, data loss, or ToS violations. Use at your own risk.

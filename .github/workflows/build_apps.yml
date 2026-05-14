@@ -298,6 +298,46 @@ jobs:
             exit 1
           fi
 
+      - name: Carry over unchanged APKs from previous release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPS_JSON:    ${{ needs.check-versions.outputs.apps_to_build }}
+        run: |
+          PREV_TAG=$(gh release list --json tagName,isDraft \
+            -q '.[] | select(.isDraft == false) | .tagName' \
+            | grep "^morphe-apps-v[0-9]" | head -1)
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous release found — nothing to carry over."
+            exit 0
+          fi
+          echo "Carrying over from: $PREV_TAG"
+
+          BUILT_KEYS=$(echo "$APPS_JSON" | python3 -c "
+          import json, sys
+          apps = json.load(sys.stdin)
+          print('\n'.join(a['key'].replace('_','-') for a in apps))
+          ")
+
+          gh release view "$PREV_TAG" --json assets -q '.assets[].name' | while read fname; do
+            [[ "$fname" == "SHA256SUMS.txt" ]] && continue
+            [[ "$fname" == *.apk ]] || continue
+            KEY=$(echo "$fname" | sed 's/-morphe-.*//')
+            if echo "$BUILT_KEYS" | grep -qx "$KEY"; then
+              echo "  ⏭  $fname (newly built — skip)"
+            elif [ -f "dist/$fname" ]; then
+              echo "  ✅ $fname (already in dist)"
+            else
+              echo "  ↩  Carrying over: $fname"
+              gh release download "$PREV_TAG" -p "$fname" -D dist/ 2>/dev/null \
+                || echo "  ⚠️  Failed to carry over $fname"
+            fi
+          done
+
+          echo ""
+          echo "dist/ after carry-over ($(ls dist/*.apk 2>/dev/null | wc -l) APKs total):"
+          ls dist/*.apk 2>/dev/null | sed 's|dist/||'
+
       - name: Generate SHA256 checksums
         run: |
           if ls dist/*.apk 1>/dev/null 2>&1; then
@@ -342,25 +382,35 @@ jobs:
           trigger = os.environ["TRIGGER"]
           manual  = os.environ.get("MANUAL_APP", "all")
 
+          import re
           trigger_line = "Scheduled auto-build" if trigger == "schedule" else f"Manual build ({manual})"
+          built_keys = {a["key"].replace("_", "-") for a in apps}
+          pat = re.compile(
+            r"^(.+?)-morphe-v(.+?)-(arm64-v8a|armeabi-v7a|universal|x86_64|x86)-\d{4}\.\d{2}\.\d{2}\.apk$"
+          )
+
+          rows = []
+          for apk in sorted(glob.glob("dist/*.apk")):
+            fname = os.path.basename(apk)
+            m = pat.match(fname)
+            if not m:
+              continue
+            key_h, version, arch = m.group(1), m.group(2), m.group(3)
+            marker = "🆕" if key_h in built_keys else "↩"
+            rows.append((key_h, version, arch, marker))
 
           lines = [
             "## Morphe + De-ReVanced Apps",
             "",
             trigger_line,
+            "🆕 = newly built this run · ↩ = carried over (no change)",
             "",
-            "| App | Version | Arch |",
-            "|-----|---------|------|",
+            "| App | Version | Arch | |",
+            "|-----|---------|------|--|",
           ]
 
-          for apk in sorted(glob.glob("dist/*.apk")):
-            fname = os.path.basename(apk)
-            parts = fname.replace(".apk","").split("-")
-            arch = parts[-2] if len(parts) >= 3 else "unknown"
-            for a in apps:
-              if fname.startswith(a["key"]):
-                lines.append(f"| {a['key'].replace('_','-')} | `{a['version']}` | `{arch}` |")
-                break
+          for key_h, version, arch, marker in rows:
+            lines.append(f"| {key_h} | `{version}` | `{arch}` | {marker} |")
 
           lines += [
             "",

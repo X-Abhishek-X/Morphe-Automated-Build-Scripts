@@ -2,9 +2,9 @@
 
 [![Build Status](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions/workflows/build_apps.yml/badge.svg)](https://github.com/X-Abhishek-X/Morphe-Automated-Build-Scripts/actions)
 [![Latest Release](https://img.shields.io/github/v/release/X-Abhishek-X/Morphe-Automated-Build-Scripts?label=latest)](../../releases/latest)
-[![Total Apps](https://img.shields.io/badge/apps-32-blue)](#supported-apps)
+[![Total Apps](https://img.shields.io/badge/apps-23-blue)](#supported-apps)
 
-Automatically patched APKs for **32 Android apps**, rebuilt every 2 days. Patches sourced from [Morphe](https://github.com/MorpheApp), [De-ReVanced](https://github.com/RookieEnough/De-ReVanced), [Piko](https://github.com/crimera/piko), and [hoo-dles](https://github.com/hoo-dles/morphe-patches).
+Automatically patched APKs for **23 Android apps**, rebuilt every 2 days. Patches sourced from [Morphe](https://github.com/MorpheApp), [De-ReVanced](https://github.com/RookieEnough/De-ReVanced), [Piko](https://github.com/crimera/piko), and [hoo-dles](https://github.com/hoo-dles/morphe-patches).
 
 ## Download
 
@@ -18,17 +18,17 @@ Automatically patched APKs for **32 Android apps**, rebuilt every 2 days. Patche
 
 | Patch Source | Apps |
 |---|---|
-| **Morphe** | YouTube, YouTube Music, Reddit |
-| **Piko** | Twitter/X, Instagram |
-| **hoo-dles** | AdGuard, Amazon Prime Video, CamScanner, Duolingo, FotMob, ibis Paint X, MyFitnessPal, Nova Launcher, Podcast Addict, ProtonVPN, SofaScore, Solid Explorer, Windy, WPS Office, Xodo PDF |
-| **De-ReVanced** | Cricbuzz, Facebook, Google News, Icon Pack Studio, Pixiv, Proton Mail, SoundCloud, Threads, TikTok, TikTok (JP), Twitch, Viber |
+| **Morphe** | YouTube, Reddit |
+| **Piko** | Instagram |
+| **hoo-dles** | Amazon Prime Video, CamScanner, Duolingo, FotMob, Nova Launcher, Podcast Addict, ProtonVPN, SofaScore, Solid Explorer, Windy, WPS Office, Xodo PDF |
+| **De-ReVanced** | Cricbuzz, Facebook, Icon Pack Studio, Pixiv, Proton Mail, SoundCloud, Threads, TikTok |
 
 ## How It Works
 
 1. Every 2 days, a GitHub Actions workflow checks for new supported app versions
 2. Changed apps are downloaded from APKPure, signature-verified, and patched
 3. Unchanged apps are carried over from the previous release automatically
-4. Every release always contains all 32 apps
+4. Every release always contains all 23 apps
 
 ## Request an App
 

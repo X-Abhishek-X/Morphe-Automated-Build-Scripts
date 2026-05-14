@@ -322,7 +322,7 @@ jobs:
           gh release view "$PREV_TAG" --json assets -q '.assets[].name' | while read fname; do
             [[ "$fname" == "SHA256SUMS.txt" ]] && continue
             [[ "$fname" == *.apk ]] || continue
-            KEY=$(echo "$fname" | sed 's/-morphe-.*//')
+            KEY=$(echo "$fname" | sed 's/-morphe-.*//' | tr '_' '-')
             if echo "$BUILT_KEYS" | grep -qx "$KEY"; then
               echo "  ⏭  $fname (newly built — skip)"
             elif [ -f "dist/$fname" ]; then

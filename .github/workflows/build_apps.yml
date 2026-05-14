@@ -1,4 +1,4 @@
-﻿name: Build Morphe + De-ReVanced Apps (32 apps)
+﻿name: Build Morphe + De-ReVanced Apps
 
 on:
   schedule:
@@ -19,14 +19,36 @@ on:
           - tiktok_jp
           - twitch
           - facebook
+          - messenger
           - threads
+          - disney_plus
           - soundcloud
+          - strava
+          - tumblr
+          - amazon_shop
+          - amazon_music
+          - google_photos
           - google_news
+          - google_rec
           - proton_mail
+          - ms_lens
           - viber
+          - letterboxd
           - pixiv
           - cricbuzz
+          - bandcamp
+          - rar
+          - photomath
+          - peacock_tv
+          - nothing_x
+          - inshorts
           - icon_studio
+          - hex_editor
+          - gmx_mail
+          - angulus
+          - irplus
+          - photoshop_mix
+          - nu_nl
           - twitter
           - instagram
           - adguard
@@ -40,6 +62,7 @@ on:
           - wps_office
           - camscanner
           - fotmob
+          - pandora
           - podcast_addict
           - proton_vpn
           - windy
@@ -315,22 +338,11 @@ jobs:
           echo "dist/ after carry-over ($(ls dist/*.apk 2>/dev/null | wc -l) APKs total):"
           ls dist/*.apk 2>/dev/null | sed 's|dist/||'
 
-      - name: Generate SHA256 checksums
-        run: |
-          if ls dist/*.apk 1>/dev/null 2>&1; then
-            cd dist && sha256sum *.apk > SHA256SUMS.txt
-            echo "SHA256 checksums:"; cat SHA256SUMS.txt
-          else
-            echo "No APKs to checksum."
-          fi
-
       - name: Upload artifact (90-day backup)
         uses: actions/upload-artifact@v4
         with:
           name: "morphe-apps-${{ steps.date.outputs.today }}"
-          path: |
-            dist/*.apk
-            dist/SHA256SUMS.txt
+          path: dist/*.apk
           if-no-files-found: warn
           retention-days: 90
 
@@ -398,11 +410,6 @@ jobs:
             "### Install notes",
             "- YouTube / YouTube Music: install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first",
             "- All other apps: standalone install, no extra app needed",
-            "",
-            "### Verify downloads",
-            "```",
-            "sha256sum -c SHA256SUMS.txt",
-            "```",
           ]
 
           with open("release_body.md", "w") as f:
@@ -425,9 +432,7 @@ jobs:
           tag_name: "morphe-apps-v${{ steps.date.outputs.today }}${{ github.event_name == 'workflow_dispatch' && format('-manual-{0}', github.event.inputs.app) || '' }}"
           name: "Morphe Apps — ${{ steps.date.outputs.today }}${{ github.event_name == 'workflow_dispatch' && format(' (manual: {0})', github.event.inputs.app) || '' }}"
           body_path: release_body.md
-          files: |
-            dist/*.apk
-            dist/SHA256SUMS.txt
+          files: dist/*.apk
           fail_on_unmatched_files: false
           draft: false
           prerelease: false

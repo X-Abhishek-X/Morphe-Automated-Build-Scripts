@@ -137,6 +137,26 @@ def get_compatible_versions(cli_jar, mpp_files, package_name):
             in_versions = False
     return sorted(all_versions, key=version_key)
 
+def get_apkpure_latest_version(slug, package):
+    """Fallback: scrape APKPure for the latest available version when patches have no version constraint."""
+    try:
+        from bs4 import BeautifulSoup
+        url = f"https://apkpure.com/{slug}/{package}/versions"
+        headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
+        r = requests.get(url, headers=headers, timeout=20)
+        if r.status_code != 200:
+            return ""
+        soup = BeautifulSoup(r.text, "html.parser")
+        # APKPure lists versions in <a class="ver_download_link"> or similar
+        for tag in soup.find_all(["a", "span", "p"]):
+            text = tag.get_text(strip=True)
+            m = re.match(r"^[\d]+\.[\d][\d.]*", text)
+            if m:
+                return m.group(0)
+    except Exception as e:
+        print(f"  APKPure version scrape failed: {e}")
+    return ""
+
 def load_state():
     if os.path.exists(STATE_FILE):
         try:
@@ -211,6 +231,9 @@ def main():
         else:
             versions = get_compatible_versions(cli_jar["name"], mpp_list, info["package"])
             version  = versions[-1] if versions else ""
+            if not version:
+                print(f"  No pinned versions from CLI (patches work on any version) — falling back to APKPure latest")
+                version = get_apkpure_latest_version(info["slug"], info["package"])
             print(f"  Latest supported version: {version or 'NONE'}")
 
         if not version:
@@ -252,6 +275,8 @@ def main():
     for key, info in APPS.items():
         versions = get_compatible_versions(cli_jar["name"], mpp_list, info["package"])
         latest   = versions[-1] if versions else ""
+        if not latest:
+            latest = get_apkpure_latest_version(info["slug"], info["package"])
         current[key] = latest
 
         patch_changed = {

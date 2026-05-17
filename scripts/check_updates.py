@@ -138,25 +138,42 @@ def get_compatible_versions(cli_jar, mpp_files, package_name):
     return sorted(all_versions, key=version_key)
 
 def get_apkpure_latest_version(slug, package):
-    """Fallback: get latest version from APKPure main page when patches have no version constraint."""
+    """Fallback: get latest version when patches have no version constraint.
+    Tries Google Play Store first (accessible from CI), then APKPure."""
+    headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
+
+    # 1. Google Play Store — reliably accessible from CI runners
+    try:
+        url = f"https://play.google.com/store/apps/details?id={package}&hl=en_US&gl=US"
+        r = requests.get(url, headers=headers, timeout=20)
+        if r.status_code == 200:
+            # Play Store embeds version history in the page; grab the highest
+            versions = re.findall(r'"(\d+\.\d[\d.]{3,})"', r.text)
+            if versions:
+                best = sorted(versions, key=version_key)[-1]
+                print(f"  Play Store version: {best}")
+                return best
+        print(f"  Play Store returned HTTP {r.status_code}")
+    except Exception as e:
+        print(f"  Play Store scrape failed: {e}")
+
+    # 2. APKPure main page (works from local, may 403 from CI)
     try:
         url = f"https://apkpure.com/{slug}/{package}"
-        headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
         r = requests.get(url, headers=headers, timeout=20)
-        if r.status_code != 200:
-            print(f"  APKPure returned HTTP {r.status_code}")
-            return ""
-        # Version is in the page JSON blob as "versionName":"x.y.z"
-        m = re.search(r'"versionName"\s*:\s*"([\d]+\.[\d][\d.]*)"', r.text)
-        if m:
-            return m.group(1)
-        # Fallback: look for version in a one-line span
-        m = re.search(r'version one-line">([\d]+\.[\d][\d.]*)<', r.text)
-        if m:
-            return m.group(1)
-        print(f"  APKPure: no version string found in page")
+        if r.status_code == 200:
+            m = re.search(r'"versionName"\s*:\s*"([\d]+\.[\d][\d.]*)"', r.text)
+            if m:
+                print(f"  APKPure version: {m.group(1)}")
+                return m.group(1)
+            m = re.search(r'version one-line">([\d]+\.[\d][\d.]*)<', r.text)
+            if m:
+                print(f"  APKPure version: {m.group(1)}")
+                return m.group(1)
+        print(f"  APKPure returned HTTP {r.status_code}")
     except Exception as e:
-        print(f"  APKPure version scrape failed: {e}")
+        print(f"  APKPure scrape failed: {e}")
+
     return ""
 
 def load_state():

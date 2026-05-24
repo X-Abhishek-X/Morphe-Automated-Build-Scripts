@@ -162,13 +162,6 @@ jobs:
           pip install -q requests beautifulsoup4 'curl_cffi>=0.7'
           sudo apt-get install -y -q aapt apksigner
 
-      - name: Install apkeep (APK downloader)
-        run: |
-          wget -qO apkeep \
-            https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu
-          chmod +x apkeep
-          sudo mv apkeep /usr/local/bin/
-
       - name: Download CLI & all patch bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -214,19 +207,22 @@ jobs:
             echo "  ▶ $KEY  v$VER  [arch: ${TARGET_ARCH}]"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             APK_FILE=""
-            for SRC in aptoide; do
-              echo "  Trying $SRC for ${PKG}@${VER}..."
-              rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
-              apkeep -a "${PKG}@${VER}" -d "$SRC" . 2>&1 || true
-              CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
-              if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
-                APK_FILE="$CANDIDATE"
-                echo "  Downloaded from $SRC: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
-                break
-              fi
-              echo "  $SRC produced no file for ${PKG}@${VER}"
-            done
 
+            # Source 1: APKMirror (publisher-verified, no user submissions)
+            echo "  Trying APKMirror for ${PKG}@${VER}..."
+            APKMIRROR_OUT="${PKG}.apk"
+            if python scripts/apkmirror_dl.py \
+                --package "$PKG" \
+                --version "$VER" \
+                --arch "${TARGET_ARCH}" \
+                --output "$APKMIRROR_OUT" 2>&1; then
+              if [ -s "$APKMIRROR_OUT" ]; then
+                APK_FILE="$APKMIRROR_OUT"
+                echo "  Downloaded from APKMirror: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
+              fi
+            fi
+
+            # Source 2: Uptodown fallback
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
               echo "  Trying Uptodown scraper..."
               UPTODOWN_OUT="${PKG}.apk"

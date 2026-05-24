@@ -214,7 +214,7 @@ jobs:
             echo "  ▶ $KEY  v$VER  [arch: ${TARGET_ARCH}]"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             APK_FILE=""
-            for SRC in apk-combo aptoide; do
+            for SRC in apk-mirror apk-combo; do
               echo "  Trying $SRC for ${PKG}@${VER}..."
               rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
               apkeep -a "${PKG}@${VER}" -d "$SRC" . 2>&1 || true

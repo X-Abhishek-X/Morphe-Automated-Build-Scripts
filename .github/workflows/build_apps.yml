@@ -162,6 +162,13 @@ jobs:
           pip install -q requests beautifulsoup4 'curl_cffi>=0.7'
           sudo apt-get install -y -q aapt apksigner
 
+      - name: Install apkeep (APKPure fallback downloader)
+        run: |
+          wget -qO apkeep \
+            https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu
+          chmod +x apkeep
+          sudo mv apkeep /usr/local/bin/
+
       - name: Download CLI & all patch bundles
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -235,6 +242,18 @@ jobs:
                   APK_FILE="$UPTODOWN_OUT"
                   echo "  Downloaded from Uptodown: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
                 fi
+              fi
+            fi
+
+            # Source 3: APKPure last resort (signature check below will abort if tampered)
+            if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
+              echo "  Trying APKPure (last resort, signature-verified below)..."
+              rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
+              apkeep -a "${PKG}@${VER}" -d apk-pure . 2>&1 || true
+              CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
+              if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
+                APK_FILE="$CANDIDATE"
+                echo "  Downloaded from APKPure: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
               fi
             fi
 

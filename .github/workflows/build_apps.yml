@@ -266,11 +266,20 @@ jobs:
             VERIFY_FILE="$APK_FILE"
             XAPK_EXTRACTED=""
             if [[ "$APK_FILE" == *.xapk ]]; then
-              BASE_APK_NAME=$(unzip -Z1 "$APK_FILE" 2>/dev/null | grep "^base\.apk$" | head -1)
+              echo "  XAPK entries: $(unzip -Z1 "$APK_FILE" 2>/dev/null | grep -i "\.apk" | tr '\n' ' ')"
+              # Match base.apk at root or in any subdirectory (e.g. apks/base.apk)
+              BASE_APK_NAME=$(unzip -Z1 "$APK_FILE" 2>/dev/null | grep -E "(^|/)base\.apk$" | head -1)
+              if [ -z "$BASE_APK_NAME" ]; then
+                # Fallback: first non-config/non-split APK in archive
+                BASE_APK_NAME=$(unzip -Z1 "$APK_FILE" 2>/dev/null | grep -E "\.apk$" | grep -vE "(config|split_config)\." | head -1)
+              fi
               if [ -n "$BASE_APK_NAME" ]; then
                 unzip -p "$APK_FILE" "$BASE_APK_NAME" > "${PKG}_base_verify.apk" 2>/dev/null
                 VERIFY_FILE="${PKG}_base_verify.apk"
                 XAPK_EXTRACTED="$VERIFY_FILE"
+                echo "  Extracted '$BASE_APK_NAME' ($(du -h "$VERIFY_FILE" | cut -f1))"
+              else
+                echo "  WARNING: no base APK found inside XAPK — verifying outer file directly"
               fi
             fi
             if apksigner verify "$VERIFY_FILE" 2>/dev/null; then

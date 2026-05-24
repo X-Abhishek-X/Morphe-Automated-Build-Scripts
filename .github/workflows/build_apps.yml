@@ -263,11 +263,22 @@ jobs:
             fi
 
             echo "  Verifying APK signature..."
-            if apksigner verify "$APK_FILE" 2>/dev/null; then
+            VERIFY_FILE="$APK_FILE"
+            XAPK_EXTRACTED=""
+            if [[ "$APK_FILE" == *.xapk ]]; then
+              BASE_APK_NAME=$(unzip -Z1 "$APK_FILE" 2>/dev/null | grep "^base\.apk$" | head -1)
+              if [ -n "$BASE_APK_NAME" ]; then
+                unzip -p "$APK_FILE" "$BASE_APK_NAME" > "${PKG}_base_verify.apk" 2>/dev/null
+                VERIFY_FILE="${PKG}_base_verify.apk"
+                XAPK_EXTRACTED="$VERIFY_FILE"
+              fi
+            fi
+            if apksigner verify "$VERIFY_FILE" 2>/dev/null; then
               echo "  Original signature OK"
+              rm -f "$XAPK_EXTRACTED"
             else
               echo "  ERROR: APK signature invalid for $KEY — possible tampered APK from mirror. Skipping."
-              rm -f "$APK_FILE"
+              rm -f "$APK_FILE" "$XAPK_EXTRACTED"
               continue
             fi
 

@@ -1,0 +1,98 @@
+name: Update Patch Notes in README
+
+on:
+  schedule:
+    - cron: "0 7 * * *"   # Daily at 07:00 UTC
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    name: "Fetch latest patch notes and update README"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch latest release notes from all patch sources
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import subprocess, json, re, datetime
+
+          def gh_release(repo):
+              result = subprocess.run(
+                  ["gh", "api", f"repos/{repo}/releases/latest",
+                   "--jq", "{tag: .tag_name, body: .body, url: .html_url}"],
+                  capture_output=True, text=True
+              )
+              if result.returncode != 0:
+                  return None
+              return json.loads(result.stdout)
+
+          sources = [
+              ("Morphe",      "MorpheApp/morphe-patches",       "https://github.com/MorpheApp/morphe-patches"),
+              ("De-ReVanced", "RookieEnough/De-ReVanced",        "https://github.com/RookieEnough/De-ReVanced"),
+              ("Piko",        "crimera/piko",                    "https://github.com/crimera/piko"),
+              ("hoo-dles",    "hoo-dles/morphe-patches",         "https://github.com/hoo-dles/morphe-patches"),
+          ]
+
+          def extract_bullets(body, max_lines=8):
+              if not body:
+                  return ["_No release notes available._"]
+              lines = body.splitlines()
+              bullets = []
+              for line in lines:
+                  line = line.strip()
+                  # Keep feature/fix bullet lines only
+                  if re.match(r"^[*\-]\s+\*\*", line) or re.match(r"^[*\-]\s+\w", line):
+                      # Strip commit hashes like ([abc1234](...))
+                      clean = re.sub(r"\s*\(\[[\w]+\]\([^)]+\)\)", "", line)
+                      clean = re.sub(r"\s*\(#\d+\)", "", clean)
+                      bullets.append(clean)
+                  if len(bullets) >= max_lines:
+                      break
+              return bullets if bullets else ["_No changes listed._"]
+
+          today = datetime.date.today().strftime("%Y-%m-%d")
+          section = [f"_Last checked: {today}_\n"]
+
+          for name, repo, base_url in sources:
+              rel = gh_release(repo)
+              if not rel:
+                  section.append(f"### {name}\n_Could not fetch release info._\n")
+                  continue
+              tag = rel["tag"]
+              url = rel["url"]
+              bullets = extract_bullets(rel.get("body", ""))
+              section.append(f"### [{name} {tag}]({url})")
+              for b in bullets:
+                  section.append(b)
+              section.append("")
+
+          block = "\n".join(section)
+
+          with open("README.md", "r") as f:
+              content = f.read()
+
+          new_content = re.sub(
+              r"<!-- PATCH-UPDATES-START -->.*?<!-- PATCH-UPDATES-END -->",
+              f"<!-- PATCH-UPDATES-START -->\n{block}\n<!-- PATCH-UPDATES-END -->",
+              content,
+              flags=re.DOTALL
+          )
+
+          with open("README.md", "w") as f:
+              f.write(new_content)
+
+          print("README updated.")
+          PYEOF
+
+      - name: Commit if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update patch notes in README [skip ci]"
+          branch: master
+          file_pattern: "README.md"

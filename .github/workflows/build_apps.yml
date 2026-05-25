@@ -291,33 +291,7 @@ jobs:
               echo "  Original signature OK"
               rm -f "$XAPK_EXTRACTED"
               CERT_FP=$(apksigner verify --print-certs "$VERIFY_FILE" 2>/dev/null | grep "Signer #1 certificate SHA-256 digest" | awk '{print $NF}')
-              export PKG KEY CERT_FP
-              python3 - <<PYEOF
-import json, os, sys
-pins_file = ".github/cert_pins.json"
-try:
-    with open(pins_file) as f:
-        pins = json.load(f)
-except Exception:
-    pins = {}
-pkg = os.environ["PKG"]
-key = os.environ["KEY"]
-fp  = os.environ["CERT_FP"].strip()
-if not fp:
-    print("  WARNING: could not extract cert fingerprint for", key)
-    sys.exit(0)
-if pkg not in pins:
-    pins[pkg] = fp
-    os.makedirs(os.path.dirname(pins_file), exist_ok=True)
-    with open(pins_file, "w") as f:
-        json.dump(pins, f, indent=2)
-    print(f"  New cert pinned for {key}: {fp[:16]}...")
-elif pins[pkg] == fp:
-    print(f"  Cert pin OK")
-else:
-    print(f"::error::CERT MISMATCH for {key} — pinned cert does not match. Possible re-signed APK!")
-    sys.exit(42)
-PYEOF
+              CERT_PKG="$PKG" CERT_KEY="$KEY" CERT_FP="$CERT_FP" python3 scripts/cert_pin.py
               CERT_EXIT=$?
               if [ "$CERT_EXIT" = "42" ]; then
                 rm -f "$APK_FILE"

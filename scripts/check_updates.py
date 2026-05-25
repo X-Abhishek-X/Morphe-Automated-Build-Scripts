@@ -69,12 +69,21 @@ APPS = {
     "sofascore":      {"package": "com.sofascore.results",                    "slug": "sofascore",            "source": "hoodles"},
 }
 
-def get_latest_release(repo):
-    url = f"https://api.github.com/repos/{repo}/releases/latest"
+def get_latest_release(repo, include_prerelease=False):
     headers = {"Accept": "application/vnd.github.v3+json"}
     token = os.environ.get("GITHUB_TOKEN")
     if token:
         headers["Authorization"] = f"token {token}"
+    if include_prerelease:
+        # /releases/latest skips pre-releases; list all and take the first
+        url = f"https://api.github.com/repos/{repo}/releases?per_page=10"
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()
+        releases = r.json()
+        if not releases:
+            raise ValueError(f"No releases found for {repo}")
+        return releases[0]
+    url = f"https://api.github.com/repos/{repo}/releases/latest"
     r = requests.get(url, headers=headers)
     r.raise_for_status()
     return r.json()
@@ -202,7 +211,7 @@ def main():
     cli_rel     = get_latest_release(REPO_CLI)
     mor_rel     = get_latest_release(REPO_MORPHE)
     drvr_rel    = get_latest_release(REPO_DE_REVANCED)
-    piko_rel    = get_latest_release(REPO_PIKO)
+    piko_rel    = get_latest_release(REPO_PIKO, include_prerelease=True)
     hoodles_rel = get_latest_release(REPO_HOODLES)
 
     cli_tag     = cli_rel["tag_name"]

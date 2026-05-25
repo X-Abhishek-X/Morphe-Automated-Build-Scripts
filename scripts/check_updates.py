@@ -75,18 +75,27 @@ def get_latest_release(repo, include_prerelease=False):
     if token:
         headers["Authorization"] = f"token {token}"
     if include_prerelease:
-        # /releases/latest skips pre-releases; list all and take the first
-        url = f"https://api.github.com/repos/{repo}/releases?per_page=10"
+        # /releases/latest skips pre-releases; list all and pick newest with a .mpp asset,
+        # falling back to the latest stable if no pre-release has the required asset
+        url = f"https://api.github.com/repos/{repo}/releases?per_page=20"
         r = requests.get(url, headers=headers)
         r.raise_for_status()
         releases = r.json()
         if not releases:
             raise ValueError(f"No releases found for {repo}")
-        return releases[0]
+        pre = next((rel for rel in releases if rel["prerelease"] and any(a["name"].endswith(".mpp") for a in rel["assets"])), None)
+        stable = next((rel for rel in releases if not rel["prerelease"] and any(a["name"].endswith(".mpp") for a in rel["assets"])), None)
+        chosen = pre if pre else stable
+        if not chosen:
+            raise ValueError(f"No release with .mpp asset found for {repo}")
+        chosen["_used_prerelease"] = chosen["prerelease"]
+        return chosen
     url = f"https://api.github.com/repos/{repo}/releases/latest"
     r = requests.get(url, headers=headers)
     r.raise_for_status()
-    return r.json()
+    rel = r.json()
+    rel["_used_prerelease"] = False
+    return rel
 
 def download_file(url, filename):
     print(f"  Downloading {filename}...")
@@ -217,7 +226,7 @@ def main():
     cli_tag     = cli_rel["tag_name"]
     mor_tag     = mor_rel["tag_name"]
     drvr_tag    = drvr_rel["tag_name"]
-    piko_tag    = piko_rel["tag_name"]
+    piko_tag    = piko_rel["tag_name"] + (" (pre-release)" if piko_rel.get("_used_prerelease") else "")
     hoodles_tag = hoodles_rel["tag_name"]
 
     cli_jar     = next((a for a in cli_rel["assets"]     if a["name"].endswith(".jar")), None)

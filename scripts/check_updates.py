@@ -29,7 +29,6 @@ APPS = {
     "google_news":    {"package": "com.google.android.apps.magazines",        "slug": "google-news",          "source": "de_revanced"},
     "google_rec":     {"package": "com.google.android.apps.recorder",         "slug": "google-recorder",      "source": "de_revanced"},
     "proton_mail":    {"package": "ch.protonmail.android",                    "slug": "protonmail",           "source": "de_revanced"},
-    "ms_lens":        {"package": "com.microsoft.office.officelens",          "slug": "microsoft-lens",       "source": "de_revanced"},
     "viber":          {"package": "com.viber.voip",                           "slug": "viber",                "source": "de_revanced"},
     "letterboxd":     {"package": "com.letterboxd.letterboxd",                "slug": "letterboxd",           "source": "de_revanced"},
     "pixiv":          {"package": "jp.pxv.android",                           "slug": "pixiv",                "source": "de_revanced"},
@@ -45,7 +44,6 @@ APPS = {
     "gmx_mail":       {"package": "de.gmx.mobile.android.mail",               "slug": "gmx",                  "source": "de_revanced"},
     "angulus":        {"package": "com.drinkplusplus.angulus",                "slug": "angulus",              "source": "de_revanced"},
     "irplus":         {"package": "net.binarymode.android.irplus",            "slug": "irplus",               "source": "de_revanced"},
-    "photoshop_mix":  {"package": "com.adobe.photoshopmix",                   "slug": "photoshop-mix",        "source": "de_revanced"},
     "nu_nl":          {"package": "nl.sanomamedia.android.nu",                "slug": "nu-nl",                "source": "de_revanced"},
     # ── Piko patches ───────────────────────────────────────────
     "twitter":        {"package": "com.twitter.android",                      "slug": "twitter-x",            "source": "piko"},

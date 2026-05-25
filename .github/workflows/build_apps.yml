@@ -31,7 +31,6 @@ on:
           - google_news
           - google_rec
           - proton_mail
-          - ms_lens
           - viber
           - letterboxd
           - pixiv
@@ -47,7 +46,6 @@ on:
           - gmx_mail
           - angulus
           - irplus
-          - photoshop_mix
           - nu_nl
           - twitter
           - instagram
@@ -197,6 +195,8 @@ jobs:
           TODAY:            ${{ steps.date.outputs.today }}
         run: |
           mkdir -p dist
+          SUMMARY_FILE="build_summary.md"
+          printf "| App | Version | Source | Status |\n|-----|---------|--------|--------|\n" > "$SUMMARY_FILE"
 
           CLI=$(find . -maxdepth 1 -name "$CLI_JAR"        | head -1)
           MMPP=$(find . -maxdepth 1 -name "$MORPHE_MPP"     | head -1)
@@ -214,6 +214,7 @@ jobs:
             echo "  ▶ $KEY  v$VER  [arch: ${TARGET_ARCH}]"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             APK_FILE=""
+            APK_SOURCE=""
 
             # Source 1: APKMirror (publisher-verified, no user submissions)
             echo "  Trying APKMirror for ${PKG}@${VER}..."
@@ -225,6 +226,7 @@ jobs:
                 --output "$APKMIRROR_OUT" 2>&1; then
               if [ -s "$APKMIRROR_OUT" ]; then
                 APK_FILE="$APKMIRROR_OUT"
+                APK_SOURCE="APKMirror"
                 echo "  Downloaded from APKMirror: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
               fi
             fi
@@ -240,6 +242,7 @@ jobs:
                   --output "$UPTODOWN_OUT" 2>&1; then
                 if [ -s "$UPTODOWN_OUT" ]; then
                   APK_FILE="$UPTODOWN_OUT"
+                  APK_SOURCE="Uptodown"
                   echo "  Downloaded from Uptodown: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
                 fi
               fi
@@ -253,12 +256,14 @@ jobs:
               CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
               if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
                 APK_FILE="$CANDIDATE"
+                APK_SOURCE="APKPure"
                 echo "  Downloaded from APKPure: $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
               fi
             fi
 
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
-              echo "  No source found for $KEY v${VER} — skipping"
+              echo "::warning::No source found for $KEY v${VER} — skipping (no APKMirror/Uptodown/APKPure result)"
+              printf "| %s | \`%s\` | none | ⚠️ no source |\n" "$KEY" "$VER" >> "$SUMMARY_FILE"
               continue
             fi
 
@@ -285,6 +290,40 @@ jobs:
             if apksigner verify "$VERIFY_FILE" 2>/dev/null; then
               echo "  Original signature OK"
               rm -f "$XAPK_EXTRACTED"
+              CERT_FP=$(apksigner verify --print-certs "$VERIFY_FILE" 2>/dev/null | grep "Signer #1 certificate SHA-256 digest" | awk '{print $NF}')
+              export PKG KEY CERT_FP
+              python3 - <<PYEOF
+import json, os, sys
+pins_file = ".github/cert_pins.json"
+try:
+    with open(pins_file) as f:
+        pins = json.load(f)
+except Exception:
+    pins = {}
+pkg = os.environ["PKG"]
+key = os.environ["KEY"]
+fp  = os.environ["CERT_FP"].strip()
+if not fp:
+    print("  WARNING: could not extract cert fingerprint for", key)
+    sys.exit(0)
+if pkg not in pins:
+    pins[pkg] = fp
+    os.makedirs(os.path.dirname(pins_file), exist_ok=True)
+    with open(pins_file, "w") as f:
+        json.dump(pins, f, indent=2)
+    print(f"  New cert pinned for {key}: {fp[:16]}...")
+elif pins[pkg] == fp:
+    print(f"  Cert pin OK")
+else:
+    print(f"::error::CERT MISMATCH for {key} — pinned cert does not match. Possible re-signed APK!")
+    sys.exit(42)
+PYEOF
+              CERT_EXIT=$?
+              if [ "$CERT_EXIT" = "42" ]; then
+                rm -f "$APK_FILE"
+                printf "| %s | \`%s\` | %s | ❌ cert mismatch |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
+                continue
+              fi
             else
               echo "  ERROR: APK signature invalid for $KEY — possible tampered APK from mirror. Skipping."
               rm -f "$APK_FILE" "$XAPK_EXTRACTED"
@@ -310,8 +349,10 @@ jobs:
                 -o "$OUT" \
                 "$APK_FILE"; then
               echo "  Built: $OUT"
+              printf "| %s | \`%s\` | %s | ✅ built |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
             else
-              echo "  Patch failed for $KEY"
+              echo "::warning::Patch failed for $KEY v${VER}"
+              printf "| %s | \`%s\` | %s | ❌ patch failed |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
               rm -f "$OUT"
             fi
 
@@ -334,6 +375,12 @@ jobs:
             echo "::error::Build silently failed — $EXPECTED apps queued, 0 APKs produced."
             exit 1
           fi
+
+      - name: Write step summary
+        if: always()
+        run: |
+          echo "## Build results" >> $GITHUB_STEP_SUMMARY
+          cat build_summary.md >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
 
       - name: Carry over unchanged APKs from previous release
         env:
@@ -480,4 +527,4 @@ jobs:
         with:
           commit_message: "chore: update built versions state [skip ci]"
           branch: master
-          file_pattern: ".github/last_built_versions.json"
+          file_pattern: ".github/last_built_versions.json .github/cert_pins.json"

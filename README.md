@@ -125,7 +125,35 @@ Messaging, streaming, utility, and social media clients.
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Updated automatically — check back after the next scheduled run._
+_Last checked: 2026-05-27_
+
+### [Morphe v1.29.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.29.0)
+* **Reddit:** Spoof installation source
+* **YouTube - Open channel of live avatar:** deprecate match with translations ([#1511](https://github.com/MorpheApp/morphe-patches/issues/1511))
+* **YouTube - Open channel of live avatar:** Fixed null exception after tap on some shorts player buttons ([#1497](https://github.com/MorpheApp/morphe-patches/issues/1497))
+* **YouTube - PlayerOverlayButton:** Improved containers handling
+* **YouTube - Remove background playback restrictions:** Disable client flag that interferes with player overlay buttons
+* **Reddit:** Add experimental support for `2026.20.0`
+
+### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
+* avoid forcing Photos frictionless login
+* release v1.0.4 (Photos account persistence + TikTok defaults)
+* stabilize Google Photos GmsCore support
+* Enable **all** TikTok patches by default on **43.6.2** and **43.8.3**.
+* Keep **Settings** + **Enable Open Debug** as **43.6.2-only** (not compatible with 43.8.3).
+
+### [Piko v3.4.0](https://github.com/crimera/piko/releases/tag/v3.4.0)
+* **Twitter:** Added warning during `Disunify xchat system` patch failure
+* **Instagram - Translations:** Added `Japanese` Translation ([#1143](https://github.com/crimera/piko/issues/1143))
+* **Instagram - Translations:** Added `Portuguese` Translation ([#1145](https://github.com/crimera/piko/issues/1145))
+* **Twitter:** Partial support to 11.91.xx
+
+### [hoo-dles v1.33.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.33.0)
+* **Hello Chinese:** Bump version compatibility to 7.10.20
+* **MacroFactor:** Bump version compatibility to v5.7.8
+* **Meme Generator:** Update patch logic to support v4.6826
+* **Windy:** Update patch logic to support v50.0.2
+
 <!-- PATCH-UPDATES-END -->
 
 ---

@@ -125,7 +125,7 @@ Messaging, streaming, utility, and social media clients.
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-05-27_
+_Last checked: 2026-05-28_
 
 ### [Morphe v1.29.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.29.0)
 * **Reddit:** Spoof installation source

@@ -1,4 +1,9 @@
 {
   "com.instagram.android": "5f3e50f435583c9ae626302a71f7340044087a7e2c60adacfc254205a993e305",
-  "com.nis.app": "9a3f08de3ba80c178b5c7d213e8f14285cc84e170b5cbfcb18112ce4ec5a3b07"
+  "com.nis.app": "9a3f08de3ba80c178b5c7d213e8f14285cc84e170b5cbfcb18112ce4ec5a3b07",
+  "com.amazon.avod.thirdpartyclient": "2f19adeb284eb36f7f07786152b9a1d14b21653203ad0b04ebbf9c73ab6d7625",
+  "com.teslacoilsw.launcher": "47f8423082f390616c1809262aa6df3a11449a7bd05800cedc3da6774bd4ee9b",
+  "com.xodo.pdf.reader": "4b64ff7b9eabd688754309e19167b3db49cd327577f37081c9bcbf19deab10a3",
+  "com.bambuna.podcastaddict": "1cf0c0697b5d56a9b45c302dd038ff1d3ef53aefcf17c36e41f816afe66acc9c",
+  "ch.protonvpn.android": "dcc9439ec1a6c6a8d0203f3423ee42bcc8b970628e53cb73a0393f398dd5b853"
 }

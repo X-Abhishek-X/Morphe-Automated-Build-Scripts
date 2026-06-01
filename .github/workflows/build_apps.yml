@@ -292,7 +292,11 @@ jobs:
                 echo "  WARNING: no base APK found inside ZIP — verifying outer file directly"
               fi
             fi
-            if apksigner verify "$VERIFY_FILE" 2>/dev/null; then
+            echo "  Verifying original signature..."
+            if ! apksigner verify "$VERIFY_FILE"; then
+              echo "  ERROR: apksigner verification failed for $KEY"
+            fi
+            if apksigner verify "$VERIFY_FILE" &>/dev/null; then
               echo "  Original signature OK"
               rm -f "$XAPK_EXTRACTED"
               CERT_FP=$(apksigner verify --print-certs "$VERIFY_FILE" 2>/dev/null | grep "Signer #1 certificate SHA-256 digest" | awk '{print $NF}')

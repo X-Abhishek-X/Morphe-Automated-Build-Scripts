@@ -331,7 +331,7 @@ jobs:
             EXTRA_FLAGS=()
             if [ "$KEY" = "google_photos" ]; then
               echo "  Forcing inclusion of: Enable DCIM folders backup control"
-              EXTRA_FLAGS+=(--include "Enable DCIM folders backup control")
+              EXTRA_FLAGS+=(--enable "Enable DCIM folders backup control")
             fi
 
             OUT="dist/${KEY}-morphe-v${VER}-${ARCH_LABEL}-${TODAY}.apk"

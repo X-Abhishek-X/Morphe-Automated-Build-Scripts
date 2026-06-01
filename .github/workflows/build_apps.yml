@@ -1,6 +1,9 @@
 name: Build Morphe + De-ReVanced Apps
 
 on:
+  push:
+    branches:
+      - master
   schedule:
     - cron: "0 6 */2 * *"   # Every 2 days at 06:00 UTC
   workflow_dispatch:
@@ -270,8 +273,10 @@ jobs:
             echo "  Verifying APK signature..."
             VERIFY_FILE="$APK_FILE"
             XAPK_EXTRACTED=""
-            if [[ "$APK_FILE" == *.xapk ]]; then
-              echo "  XAPK entries: $(unzip -Z1 "$APK_FILE" 2>/dev/null | grep -i "\.apk" | tr '\n' ' ')"
+            XAPK_EXTRACTED=""
+            if [[ "$APK_FILE" == *.xapk ]] || (unzip -Z1 "$APK_FILE" 2>/dev/null | grep -qE "(^|/)base\.apk$"); then
+              echo "  Detected split APK/XAPK bundle. Extracting base APK..."
+              echo "  Archive entries: $(unzip -Z1 "$APK_FILE" 2>/dev/null | grep -i "\.apk" | tr '\n' ' ')"
               # Match base.apk at root or in any subdirectory (e.g. apks/base.apk)
               BASE_APK_NAME=$(unzip -Z1 "$APK_FILE" 2>/dev/null | grep -E "(^|/)base\.apk$" | head -1)
               if [ -z "$BASE_APK_NAME" ]; then
@@ -284,7 +289,7 @@ jobs:
                 XAPK_EXTRACTED="$VERIFY_FILE"
                 echo "  Extracted '$BASE_APK_NAME' ($(du -h "$VERIFY_FILE" | cut -f1))"
               else
-                echo "  WARNING: no base APK found inside XAPK — verifying outer file directly"
+                echo "  WARNING: no base APK found inside ZIP — verifying outer file directly"
               fi
             fi
             if apksigner verify "$VERIFY_FILE" 2>/dev/null; then

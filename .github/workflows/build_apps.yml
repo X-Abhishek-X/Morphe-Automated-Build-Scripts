@@ -319,12 +319,19 @@ jobs:
               hoodles)      PATCH_FILE="$HMPP" ;;
             esac
 
+            EXTRA_FLAGS=()
+            if [ "$KEY" = "google_photos" ]; then
+              echo "  Forcing inclusion of: Enable DCIM folders backup control"
+              EXTRA_FLAGS+=(--include "Enable DCIM folders backup control")
+            fi
+
             OUT="dist/${KEY}-morphe-v${VER}-${ARCH_LABEL}-${TODAY}.apk"
             echo "  Patching -> $OUT (using patches from source: $SRC)"
             if java -jar "$CLI" patch \
                 --continue-on-error \
                 --keystore=morphe.keystore \
                 -p "$PATCH_FILE" \
+                "${EXTRA_FLAGS[@]}" \
                 -o "$OUT" \
                 "$APK_FILE"; then
               echo "  Built: $OUT"

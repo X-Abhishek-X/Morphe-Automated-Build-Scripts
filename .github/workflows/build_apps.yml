@@ -1,4 +1,4 @@
-﻿name: Build Morphe + De-ReVanced Apps
+name: Build Morphe + De-ReVanced Apps
 
 on:
   schedule:
@@ -207,8 +207,8 @@ jobs:
           echo "$APPS_JSON" | python3 -c "
           import json, sys
           for a in json.load(sys.stdin):
-              print(a['key'], a['package'], a['version'])
-          " | while read KEY PKG VER; do
+              print(a['key'], a['package'], a['version'], a['source'])
+          " | while read KEY PKG VER SRC; do
             echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "  ▶ $KEY  v$VER  [arch: ${TARGET_ARCH}]"
@@ -311,15 +311,20 @@ jobs:
             ARCH_LABEL=${DETECTED_ARCH:-universal}
             echo "  Detected arch: $ARCH_LABEL"
 
+            PATCH_FILE=""
+            case "$SRC" in
+              morphe)       PATCH_FILE="$MMPP" ;;
+              de_revanced)  PATCH_FILE="$DMPP" ;;
+              piko)         PATCH_FILE="$PMPP" ;;
+              hoodles)      PATCH_FILE="$HMPP" ;;
+            esac
+
             OUT="dist/${KEY}-morphe-v${VER}-${ARCH_LABEL}-${TODAY}.apk"
-            echo "  Patching -> $OUT"
+            echo "  Patching -> $OUT (using patches from source: $SRC)"
             if java -jar "$CLI" patch \
                 --continue-on-error \
                 --keystore=morphe.keystore \
-                -p "$MMPP" \
-                -p "$DMPP" \
-                -p "$PMPP" \
-                -p "$HMPP" \
+                -p "$PATCH_FILE" \
                 -o "$OUT" \
                 "$APK_FILE"; then
               echo "  Built: $OUT"

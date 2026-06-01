@@ -1,4 +1,4 @@
-﻿import os, requests, re, subprocess, sys, json
+import os, requests, re, subprocess, sys, json
 
 REPO_CLI         = "MorpheApp/morphe-cli"
 REPO_MORPHE      = "MorpheApp/morphe-patches"
@@ -250,7 +250,12 @@ def main():
         if not os.path.exists(asset["name"]):
             download_file(asset["browser_download_url"], asset["name"])
 
-    mpp_list = [mor_mpp["name"], drvr_mpp["name"], piko_mpp["name"], hoodles_mpp["name"]]
+    source_to_mpp = {
+        "morphe": mor_mpp["name"],
+        "de_revanced": drvr_mpp["name"],
+        "piko": piko_mpp["name"],
+        "hoodles": hoodles_mpp["name"]
+    }
 
     # ── Manual build ───────────────────────────────────────────
     if manual_app and manual_app != "all":
@@ -264,7 +269,8 @@ def main():
             version = manual_ver
             print(f"  Using forced version: {version}")
         else:
-            versions = get_compatible_versions(cli_jar["name"], mpp_list, info["package"])
+            mpp_file = source_to_mpp.get(info["source"])
+            versions = get_compatible_versions(cli_jar["name"], [mpp_file], info["package"])
             version  = versions[-1] if versions else ""
             if not version:
                 print(f"  No pinned versions from CLI (patches work on any version) — falling back to APKPure latest")
@@ -308,7 +314,8 @@ def main():
 
     apps_to_build = []
     for key, info in APPS.items():
-        versions = get_compatible_versions(cli_jar["name"], mpp_list, info["package"])
+        mpp_file = source_to_mpp.get(info["source"])
+        versions = get_compatible_versions(cli_jar["name"], [mpp_file], info["package"])
         latest   = versions[-1] if versions else ""
         if not latest:
             latest = get_apkpure_latest_version(info["slug"], info["package"])
@@ -354,7 +361,11 @@ def main():
 
     if not os.getenv("SKIP_CLEANUP"):
         for asset in [cli_jar, mor_mpp, drvr_mpp, piko_mpp, hoodles_mpp]:
-            if os.path.exists(asset["name"]): os.remove(asset["name"])
+            if os.path.exists(asset["name"]):
+                try:
+                    os.remove(asset["name"])
+                except Exception as e:
+                    print(f"Warning: could not clean up {asset['name']}: {e}")
 
 if __name__ == "__main__":
     main()

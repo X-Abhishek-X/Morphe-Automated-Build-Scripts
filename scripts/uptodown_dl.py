@@ -112,13 +112,14 @@ def find_download_url(slug: str, version: str, timeout=15):
 
 
 def download_to(url: str, path: Path, timeout=120):
-    r = sess.get(url, stream=True, timeout=timeout)
-    r.raise_for_status()
+    import subprocess
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open('wb') as f:
-        for chunk in r.iter_content(chunk_size=8192):
-            if chunk:
-                f.write(chunk)
+    cmd = ["curl", "-L", "-o", str(path), url]
+    try:
+        subprocess.run(cmd, check=True)
+    except Exception as e:
+        print(f"curl download failed: {e}", file=sys.stderr)
+        raise e
     return path
 
 

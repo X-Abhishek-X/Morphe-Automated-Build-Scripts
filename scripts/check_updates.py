@@ -3,6 +3,7 @@ import os, requests, re, subprocess, sys, json
 REPO_CLI         = "MorpheApp/morphe-cli"
 REPO_MORPHE      = "MorpheApp/morphe-patches"
 REPO_DE_REVANCED = "RookieEnough/De-ReVanced"
+REPO_DE_VANCED   = "RookieEnough/De-Vanced"
 REPO_PIKO        = "crimera/piko"
 REPO_HOODLES     = "hoo-dles/morphe-patches"
 STATE_FILE       = ".github/last_built_versions.json"
@@ -25,7 +26,7 @@ APPS = {
     "tumblr":         {"package": "com.tumblr",                               "slug": "tumblr",               "source": "de_revanced"},
     "amazon_shop":    {"package": "com.amazon.mShop.android.shopping",        "slug": "amazon-shopping",      "source": "de_revanced"},
     "amazon_music":   {"package": "com.amazon.mp3",                           "slug": "amazon-music",         "source": "de_revanced"},
-    "google_photos":  {"package": "com.google.android.apps.photos",           "slug": "google-photos",        "source": "de_revanced"},
+    "google_photos":  {"package": "com.google.android.apps.photos",           "slug": "google-photos",        "source": "de_vanced"},
     "google_news":    {"package": "com.google.android.apps.magazines",        "slug": "google-news",          "source": "de_revanced"},
     "google_rec":     {"package": "com.google.android.apps.recorder",         "slug": "google-recorder",      "source": "de_revanced"},
     "proton_mail":    {"package": "ch.protonmail.android",                    "slug": "protonmail",           "source": "de_revanced"},
@@ -218,24 +219,27 @@ def main():
     cli_rel     = get_latest_release(REPO_CLI)
     mor_rel     = get_latest_release(REPO_MORPHE)
     drvr_rel    = get_latest_release(REPO_DE_REVANCED)
+    dvcd_rel    = get_latest_release(REPO_DE_VANCED)
     piko_rel    = get_latest_release(REPO_PIKO, include_prerelease=True)
     hoodles_rel = get_latest_release(REPO_HOODLES)
 
     cli_tag     = cli_rel["tag_name"]
     mor_tag     = mor_rel["tag_name"]
     drvr_tag    = drvr_rel["tag_name"]
+    dvcd_tag    = dvcd_rel["tag_name"]
     piko_tag    = piko_rel["tag_name"] + (" (pre-release)" if piko_rel.get("_used_prerelease") else "")
     hoodles_tag = hoodles_rel["tag_name"]
 
     cli_jar     = next((a for a in cli_rel["assets"]     if a["name"].endswith(".jar")), None)
     mor_mpp     = next((a for a in mor_rel["assets"]     if a["name"].endswith(".mpp")), None)
     drvr_mpp    = next((a for a in drvr_rel["assets"]    if a["name"].endswith(".mpp")), None)
+    dvcd_mpp    = next((a for a in dvcd_rel["assets"]    if a["name"].endswith(".mpp")), None)
     piko_mpp    = next((a for a in piko_rel["assets"]    if a["name"].endswith(".mpp")), None)
     hoodles_mpp = next((a for a in hoodles_rel["assets"] if a["name"].endswith(".mpp")), None)
 
     for label, asset in [("CLI jar", cli_jar), ("Morphe mpp", mor_mpp),
-                         ("De-ReVanced mpp", drvr_mpp), ("Piko mpp", piko_mpp),
-                         ("hoo-dles mpp", hoodles_mpp)]:
+                         ("De-ReVanced mpp", drvr_mpp), ("De-Vanced mpp", dvcd_mpp),
+                         ("Piko mpp", piko_mpp), ("hoo-dles mpp", hoodles_mpp)]:
         if not asset:
             print(f"ERROR: No asset found for {label}")
             sys.exit(1)
@@ -243,18 +247,20 @@ def main():
     print(f"Morphe CLI:       {cli_tag}  ({cli_jar['name']})")
     print(f"Morphe patches:   {mor_tag}  ({mor_mpp['name']})")
     print(f"De-ReVanced:      {drvr_tag} ({drvr_mpp['name']})")
+    print(f"De-Vanced:        {dvcd_tag} ({dvcd_mpp['name']})")
     print(f"Piko:             {piko_tag} ({piko_mpp['name']})")
     print(f"hoo-dles:         {hoodles_tag} ({hoodles_mpp['name']})")
 
-    for asset in [cli_jar, mor_mpp, drvr_mpp, piko_mpp, hoodles_mpp]:
+    for asset in [cli_jar, mor_mpp, drvr_mpp, dvcd_mpp, piko_mpp, hoodles_mpp]:
         if not os.path.exists(asset["name"]):
             download_file(asset["browser_download_url"], asset["name"])
 
     source_to_mpp = {
-        "morphe": mor_mpp["name"],
+        "morphe":      mor_mpp["name"],
         "de_revanced": drvr_mpp["name"],
-        "piko": piko_mpp["name"],
-        "hoodles": hoodles_mpp["name"]
+        "de_vanced":   dvcd_mpp["name"],
+        "piko":        piko_mpp["name"],
+        "hoodles":     hoodles_mpp["name"]
     }
 
     # ── Manual build ───────────────────────────────────────────
@@ -294,11 +300,13 @@ def main():
         set_output("apps_to_build",    json.dumps(apps_to_build))
         set_output("morphe_tag",       mor_tag)
         set_output("de_revanced_tag",  drvr_tag)
+        set_output("de_vanced_tag",    dvcd_tag)
         set_output("piko_tag",         piko_tag)
         set_output("hoodles_tag",      hoodles_tag)
         set_output("cli_tag",          cli_tag)
         set_output("morphe_mpp",       mor_mpp["name"])
         set_output("de_revanced_mpp",  drvr_mpp["name"])
+        set_output("de_vanced_mpp",    dvcd_mpp["name"])
         set_output("piko_mpp",         piko_mpp["name"])
         set_output("hoodles_mpp",      hoodles_mpp["name"])
         set_output("cli_jar",          cli_jar["name"])
@@ -309,7 +317,8 @@ def main():
     last    = load_state()
     current = {
         "cli_tag": cli_tag, "morphe_tag": mor_tag,
-        "de_revanced_tag": drvr_tag, "piko_tag": piko_tag, "hoodles_tag": hoodles_tag,
+        "de_revanced_tag": drvr_tag, "de_vanced_tag": dvcd_tag,
+        "piko_tag": piko_tag, "hoodles_tag": hoodles_tag,
     }
 
     apps_to_build = []
@@ -324,6 +333,7 @@ def main():
         patch_changed = {
             "morphe":      last.get("morphe_tag")      != mor_tag,
             "de_revanced": last.get("de_revanced_tag") != drvr_tag,
+            "de_vanced":   last.get("de_vanced_tag")   != dvcd_tag,
             "piko":        last.get("piko_tag")         != piko_tag,
             "hoodles":     last.get("hoodles_tag")      != hoodles_tag,
         }[info["source"]]
@@ -349,18 +359,20 @@ def main():
     set_output("apps_to_build",    json.dumps(apps_to_build))
     set_output("morphe_tag",       mor_tag)
     set_output("de_revanced_tag",  drvr_tag)
+    set_output("de_vanced_tag",    dvcd_tag)
     set_output("piko_tag",         piko_tag)
     set_output("hoodles_tag",      hoodles_tag)
     set_output("cli_tag",          cli_tag)
     set_output("morphe_mpp",       mor_mpp["name"])
     set_output("de_revanced_mpp",  drvr_mpp["name"])
+    set_output("de_vanced_mpp",    dvcd_mpp["name"])
     set_output("piko_mpp",         piko_mpp["name"])
     set_output("hoodles_mpp",      hoodles_mpp["name"])
     set_output("cli_jar",          cli_jar["name"])
     set_output("target_arch",      target_arch)
 
     if not os.getenv("SKIP_CLEANUP"):
-        for asset in [cli_jar, mor_mpp, drvr_mpp, piko_mpp, hoodles_mpp]:
+        for asset in [cli_jar, mor_mpp, drvr_mpp, dvcd_mpp, piko_mpp, hoodles_mpp]:
             if os.path.exists(asset["name"]):
                 try:
                     os.remove(asset["name"])

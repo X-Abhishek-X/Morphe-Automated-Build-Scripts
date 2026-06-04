@@ -97,11 +97,13 @@ jobs:
       apps_to_build:    ${{ steps.check.outputs.apps_to_build }}
       morphe_tag:       ${{ steps.check.outputs.morphe_tag }}
       de_revanced_tag:  ${{ steps.check.outputs.de_revanced_tag }}
+      de_vanced_tag:    ${{ steps.check.outputs.de_vanced_tag }}
       piko_tag:         ${{ steps.check.outputs.piko_tag }}
       hoodles_tag:      ${{ steps.check.outputs.hoodles_tag }}
       cli_tag:          ${{ steps.check.outputs.cli_tag }}
       morphe_mpp:       ${{ steps.check.outputs.morphe_mpp }}
       de_revanced_mpp:  ${{ steps.check.outputs.de_revanced_mpp }}
+      de_vanced_mpp:    ${{ steps.check.outputs.de_vanced_mpp }}
       piko_mpp:         ${{ steps.check.outputs.piko_mpp }}
       hoodles_mpp:      ${{ steps.check.outputs.hoodles_mpp }}
       cli_jar:          ${{ steps.check.outputs.cli_jar }}
@@ -192,6 +194,7 @@ jobs:
           CLI_JAR:          ${{ needs.check-versions.outputs.cli_jar }}
           MORPHE_MPP:       ${{ needs.check-versions.outputs.morphe_mpp }}
           DE_REVANCED_MPP:  ${{ needs.check-versions.outputs.de_revanced_mpp }}
+          DE_VANCED_MPP:    ${{ needs.check-versions.outputs.de_vanced_mpp }}
           PIKO_MPP:         ${{ needs.check-versions.outputs.piko_mpp }}
           HOODLES_MPP:      ${{ needs.check-versions.outputs.hoodles_mpp }}
           TARGET_ARCH:      ${{ needs.check-versions.outputs.target_arch }}
@@ -204,6 +207,7 @@ jobs:
           CLI=$(find . -maxdepth 1 -name "$CLI_JAR"        | head -1)
           MMPP=$(find . -maxdepth 1 -name "$MORPHE_MPP"     | head -1)
           DMPP=$(find . -maxdepth 1 -name "$DE_REVANCED_MPP" | head -1)
+          DVMPP=$(find . -maxdepth 1 -name "$DE_VANCED_MPP"  | head -1)
           PMPP=$(find . -maxdepth 1 -name "$PIKO_MPP"       | head -1)
           HMPP=$(find . -maxdepth 1 -name "$HOODLES_MPP"    | head -1)
 
@@ -322,15 +326,18 @@ jobs:
 
             PATCH_FILE=""
             case "$SRC" in
-              morphe)       PATCH_FILE="$MMPP" ;;
-              de_revanced)  PATCH_FILE="$DMPP" ;;
-              piko)         PATCH_FILE="$PMPP" ;;
-              hoodles)      PATCH_FILE="$HMPP" ;;
+              morphe)       PATCH_FILE="$MMPP"  ;;
+              de_revanced)  PATCH_FILE="$DMPP"  ;;
+              de_vanced)    PATCH_FILE="$DVMPP" ;;
+              piko)         PATCH_FILE="$PMPP"  ;;
+              hoodles)      PATCH_FILE="$HMPP"  ;;
             esac
 
             EXTRA_FLAGS=()
             if [ "$KEY" = "google_photos" ]; then
-              echo "  Forcing inclusion of: Enable DCIM folders backup control"
+              echo "  Forcing inclusion of all Google Photos patches"
+              EXTRA_FLAGS+=(--enable "GmsCore support")
+              EXTRA_FLAGS+=(--enable "Spoof features")
               EXTRA_FLAGS+=(--enable "Enable DCIM folders backup control")
             fi
 

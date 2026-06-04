@@ -339,6 +339,7 @@ jobs:
               EXTRA_FLAGS+=(--enable "GmsCore support")
               EXTRA_FLAGS+=(--enable "Spoof features")
               EXTRA_FLAGS+=(--enable "Enable DCIM folders backup control")
+              EXTRA_FLAGS+=(--package-name "app.revanced.android.photos")
             fi
 
             OUT="dist/${KEY}-morphe-v${VER}-${ARCH_LABEL}-${TODAY}.apk"

@@ -177,6 +177,9 @@ def get_apkpure_latest_version(slug, package):
         if r.status_code == 200:
             # Play Store embeds version history in the page; grab the highest
             versions = re.findall(r'"(\d+\.\d[\d.]{3,})"', r.text)
+            # Exclude float versionCodes (e.g. 4.314935684204102) — Play Store
+            # can embed these but they are not resolvable by any APK mirror.
+            versions = [v for v in versions if not _is_versioncode_float(v)]
             if versions:
                 best = sorted(versions, key=version_key)[-1]
                 print(f"  Play Store version: {best}")

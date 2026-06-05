@@ -342,6 +342,13 @@ def main():
         latest   = versions[-1] if versions else ""
         if not latest:
             latest = get_apkpure_latest_version(info["slug"], info["package"])
+        # When no real version can be resolved (patch bundle only has float
+        # versionCodes AND Play Store returns nothing usable), queue the app
+        # with a sentinel so the build step can download the latest APKPure
+        # release without version pinning.
+        if not latest:
+            latest = "apkpure-latest"
+            print(f"  NOTE: {key} — no real version found; queuing as apkpure-latest")
         current[key] = latest
 
         patch_changed = {

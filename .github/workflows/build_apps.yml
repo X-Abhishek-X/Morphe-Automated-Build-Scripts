@@ -273,6 +273,21 @@ jobs:
               fi
             fi
 
+            # Source 4: APKPure version-free (catches apps where exact version is not indexed)
+            if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
+              if [ "$VER" != "apkpure-latest" ]; then
+                echo "  Trying APKPure (version-free fallback)..."
+                rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
+                apkeep -a "${PKG}" -d apk-pure . 2>&1 || true
+                CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
+                if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
+                  APK_FILE="$CANDIDATE"
+                  APK_SOURCE="APKPure-latest"
+                  echo "  Downloaded (APKPure latest): $APK_FILE ($(du -h "$APK_FILE" | cut -f1))"
+                fi
+              fi
+            fi
+
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
               echo "::warning::No source found for $KEY v${VER} — skipping (no APKMirror/Uptodown/APKPure result)"
               printf "| %s | \`%s\` | none | ⚠️ no source |\n" "$KEY" "$VER" >> "$SUMMARY_FILE"
@@ -534,4 +549,4 @@ jobs:
         with:
           commit_message: "chore: update built versions state [skip ci]"
           branch: master
-          file_pattern: ".github/last_built_versions.json .github/cert_pins.json"
+          file_pattern: ".github/last_built_versions.json .github/cert_pins.json"SHA: d9a3f6fb207cd6169c9c5dc36a24ff7bd77902a1

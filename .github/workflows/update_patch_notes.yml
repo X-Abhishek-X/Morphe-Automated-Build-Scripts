@@ -35,6 +35,7 @@ jobs:
           sources = [
               ("Morphe",      "MorpheApp/morphe-patches",       "https://github.com/MorpheApp/morphe-patches"),
               ("De-ReVanced", "RookieEnough/De-ReVanced",        "https://github.com/RookieEnough/De-ReVanced"),
+              ("De-Vanced",   "RookieEnough/De-Vanced",          "https://github.com/RookieEnough/De-Vanced"),
               ("Piko",        "crimera/piko",                    "https://github.com/crimera/piko"),
               ("hoo-dles",    "hoo-dles/morphe-patches",         "https://github.com/hoo-dles/morphe-patches"),
           ]

@@ -259,7 +259,13 @@ jobs:
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
               echo "  Trying APKPure (last resort, signature-verified below)..."
               rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
-              apkeep -a "${PKG}@${VER}" -d apk-pure . 2>&1 || true
+              # For float versionCodes or apkpure-latest sentinel, drop version pin
+              if [ "$VER" = "apkpure-latest" ] || python3 -c "v='$VER'; p=v.split('.'); exit(0 if len(p)==2 and len(p[1])>=9 else 1)" 2>/dev/null; then
+                echo "  (no version pin — downloading latest from APKPure)"
+                apkeep -a "${PKG}" -d apk-pure . 2>&1 || true
+              else
+                apkeep -a "${PKG}@${VER}" -d apk-pure . 2>&1 || true
+              fi
               CANDIDATE=$(find . -maxdepth 1 \( -name "${PKG}*.apk" -o -name "${PKG}*.xapk" \) | head -1)
               if [ -n "$CANDIDATE" ] && [ -s "$CANDIDATE" ]; then
                 APK_FILE="$CANDIDATE"
@@ -529,4 +535,4 @@ jobs:
         with:
           commit_message: "chore: update built versions state [skip ci]"
           branch: master
-          file_pattern: ".github/last_built_versions.json .github/cert_pins.json"
+          file_pattern: ".github/last_built_versions.json .github/cert_pins.json"SHA: 2e63d3ff9071faa49edd85f2da3eaf5cf6e83a86

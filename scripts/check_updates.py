@@ -115,6 +115,13 @@ def version_key(v):
         parts.append(int(m.group(1)) if m else 0)
     return parts
 
+def _is_versioncode_float(v):
+    """Return True for de_revanced float versionCodes like 4.314935684204102.
+    These are Android versionCodes expressed as floats and are not valid
+    APK versionNames — no download source can resolve them."""
+    parts = str(v).split(".")
+    return len(parts) == 2 and len(parts[1]) >= 9
+
 def get_compatible_versions(cli_jar, mpp_files, package_name):
     cmd = ["java", "-jar", cli_jar, "list-patches"]
     for f in mpp_files:
@@ -152,7 +159,11 @@ def get_compatible_versions(cli_jar, mpp_files, package_name):
             all_versions.add(s.lstrip("-").strip())
         elif in_versions and ":" in s:
             in_versions = False
-    return sorted(all_versions, key=version_key)
+    usable = [v for v in all_versions if not _is_versioncode_float(v)]
+    if len(usable) < len(all_versions):
+        dropped = [v for v in all_versions if _is_versioncode_float(v)]
+        print(f"  NOTE: {package_name} — patch bundle reports float versionCode(s) {dropped[:3]}, treating as unconstrained (will use latest store version)")
+    return sorted(usable, key=version_key)
 
 def get_apkpure_latest_version(slug, package):
     """Fallback: get latest version when patches have no version constraint.

@@ -4,119 +4,109 @@
 [![Latest Release](https://img.shields.io/github/v/release/X-Abhishek-X/Morphe-Automated-Build-Scripts?label=latest)](../../releases/latest)
 [![Total Apps](https://img.shields.io/badge/apps-53-blue)](#supported-applications)
 
-Pre-compiled, ad-free versions of 53 Android apps, rebuilt automatically every two days. You do not need to install patchers, run command lines, or compile anything yourself. 
+53 Android apps, patched and rebuilt every two days. No setup, no command line, just grab the APK and install it.
 
 > [!IMPORTANT]
-> **Legal disclaimer**
-> - **Non-affiliation:** This project is a personal compilation pipeline. It has no connection with Google, YouTube, Meta, Amazon, ByteDance, or any other trademark owner.
-> - **Use at your own risk:** You are responsible for your own device and accounts. The author is not liable for bans, device issues, or terms of service violations.
+> Personal build pipeline, no affiliation with Google, YouTube, Meta, Amazon, ByteDance, or anyone else. Use at your own risk — account bans, device issues, and ToS violations are your problem, not mine.
 
 ---
 
 ## Quick start
 
-### 1. Install GmsCore (For Google/YouTube apps only)
-If you want to use **YouTube**, **YouTube Music**, or **Google Photos**, you must install [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) first. This lets you sign into your Google account and keeps the apps from crashing.
+### 1. Install GmsCore — YouTube, YouTube Music, Google Photos only
+All three spoof Google services internally. [ReVanced GmsCore](https://github.com/ReVanced/GmsCore/releases/latest) has to be on your phone first or sign-in will break.
 
-### 2. Download your apps
-Go to the **[Latest Release](../../releases/latest)** page, find the APK file for the app you want, download it, and install it on your phone.
+### 2. Download
+[Latest Release](../../releases/latest) — find the APK you want, download it, install it.
 
 ---
 
 ## Supported applications
 
-Here is the full list of all 53 apps. Expand any section to see package names and modified features.
+53 apps across four patch sources. Expand a section to see package names and what got changed.
 
 <details>
 <summary><b>1. Morphe patches (3 apps)</b></summary>
 
-Patches focused on interfaces, ad-blocking, and media player enhancements.
-
-| App | Package name | Core modifications |
+| App | Package | Changes |
 |---|---|---|
-| YouTube | `com.google.android.youtube` | Blocks ads, enables background playback, integrates SponsorBlock, and allows layout customisation. |
-| YouTube Music | `com.google.android.apps.youtube.music` | Blocks ads, enables background playback, and unlocks premium audio player controls. |
-| Reddit | `com.reddit.frontpage` | Blocks ads, adds media downloader options, and removes tracking. |
+| YouTube | `com.google.android.youtube` | Ad blocking, background play, SponsorBlock, layout customisation |
+| YouTube Music | `com.google.android.apps.youtube.music` | Ad blocking, background play, premium audio controls |
+| Reddit | `com.reddit.frontpage` | Ad blocking, media downloader, tracking removed |
 
 </details>
 
 <details>
 <summary><b>2. Piko patches (2 apps)</b></summary>
 
-UI customisation and privacy-focused tweaks.
-
-| App | Package name | Core modifications |
+| App | Package | Changes |
 |---|---|---|
-| Instagram | `com.instagram.android` | Blocks ads, adds AMOLED theme, enables anonymous DM and story viewing, disables reels auto-scrolling, and adds high-fidelity media downloads. |
-| Twitter / X | `com.twitter.android` | Blocks ads, removes telemetry trackers, and adds login token import/export. |
+| Instagram | `com.instagram.android` | Ad blocking, AMOLED theme, anonymous story/DM viewing, reels auto-scroll off, high-res downloads |
+| Twitter / X | `com.twitter.android` | Ad blocking, telemetry removed, login token import/export |
 
 </details>
 
 <details>
 <summary><b>3. hoo-dles patches (16 apps)</b></summary>
 
-Utility, productivity, and subscription feature unlocks.
-
-| App | Package name | Core modifications |
+| App | Package | Changes |
 |---|---|---|
-| AdGuard | `com.adguard.android` | Unlocks subscription tier features. |
-| Amazon Prime Video | `com.amazon.avod.thirdpartyclient` | Blocks trackers and refines the interface. |
-| Duolingo | `com.duolingo` | Unlocks Super Duolingo features (unlimited hearts, ad-blocking). |
-| MyFitnessPal | `com.myfitnesspal.android` | Unlocks premium features. |
-| Nova Launcher | `com.teslacoilsw.launcher` | Unlocks Nova Prime launcher features. |
-| Solid Explorer | `pl.solidexplorer2` | Removes trial limitations. |
-| Xodo PDF | `com.xodo.pdf.reader` | Unlocks premium PDF tools. |
-| Ibis Paint X | `jp.ne.ibis.ibispaintx.app` | Unlocks premium drawing tools. |
-| WPS Office | `cn.wps.moffice_eng` | Unlocks premium tools. |
-| CamScanner | `com.intsig.camscanner` | Blocks ads, unlocks premium processing, and enables clean exports. |
-| FotMob | `com.mobilefootie.wc2010` | Blocks ads and unlocks premium features. |
-| Pandora | `com.pandora.android` | Enables premium audio playback. |
-| Podcast Addict | `com.bambuna.podcastaddict` | Unlocks premium ad-free features. |
-| ProtonVPN | `ch.protonvpn.android` | Unlocks subscription features. |
-| Windy | `com.windyty.android` | Unlocks premium weather tools. |
-| SofaScore | `com.sofascore.results` | Blocks ads and removes tracking. |
+| AdGuard | `com.adguard.android` | Subscription features unlocked |
+| Amazon Prime Video | `com.amazon.avod.thirdpartyclient` | Tracker blocking, interface cleanup |
+| Duolingo | `com.duolingo` | Super Duolingo features, unlimited hearts, ad blocking |
+| MyFitnessPal | `com.myfitnesspal.android` | Premium features unlocked |
+| Nova Launcher | `com.teslacoilsw.launcher` | Nova Prime features unlocked |
+| Solid Explorer | `pl.solidexplorer2` | Trial limitations removed |
+| Xodo PDF | `com.xodo.pdf.reader` | Premium PDF tools unlocked |
+| Ibis Paint X | `jp.ne.ibis.ibispaintx.app` | Premium drawing tools unlocked |
+| WPS Office | `cn.wps.moffice_eng` | Premium tools unlocked |
+| CamScanner | `com.intsig.camscanner` | Ad blocking, premium processing, clean exports |
+| FotMob | `com.mobilefootie.wc2010` | Ad blocking, premium features |
+| Pandora | `com.pandora.android` | Premium audio playback |
+| Podcast Addict | `com.bambuna.podcastaddict` | Premium ad-free mode |
+| ProtonVPN | `ch.protonvpn.android` | Subscription features unlocked |
+| Windy | `com.windyty.android` | Premium weather tools |
+| SofaScore | `com.sofascore.results` | Ad blocking, tracking removed |
 
 </details>
 
 <details>
-<summary><b>4. De-ReVanced patches (32 apps)</b></summary>
+<summary><b>4. De-ReVanced / De-Vanced patches (32 apps)</b></summary>
 
-Messaging, streaming, utility, and social media clients.
-
-| App | Package name | Core modifications |
+| App | Package | Changes |
 |---|---|---|
-| TikTok | `com.zhiliaoapp.musically` | Blocks ads, removes download watermarks, enables the seek bar, and allows auto-scrolling reels. |
-| TikTok JP | `com.ss.android.ugc.trill` | Blocks ads and removes watermarks on downloaded videos. |
-| Twitch | `tv.twitch.android.app` | Blocks live stream ads, claims channel points automatically, adds playback speed controls, and enables chat customisation. |
-| Facebook | `com.facebook.katana` | Blocks feed and story ads, adds video downloading, and strips telemetry trackers. |
-| Messenger | `com.facebook.orca` | Blocks ads in the chat list and removes tracking data. |
-| Threads | `com.instagram.barcelona` | Blocks ads, strips tracking parameters, and allows direct media downloads. |
-| Disney+ | `com.disney.disneyplus` | Blocks analytics and built-in trackers. |
-| SoundCloud | `com.soundcloud.android` | Blocks ads, enables background play, and removes skipping limits. |
-| Strava | `com.strava` | Blocks ads and displays additional stats. |
-| Tumblr | `com.tumblr` | Blocks dashboard ads and tracking. |
-| Amazon Shopping | `com.amazon.mShop.android.shopping` | Blocks ads and strips telemetry tracking. |
-| Amazon Music | `com.amazon.mp3` | Blocks ads and enables background playback. |
-| Google Photos | `com.google.android.apps.photos` | Enables unlimited backup by spoofing Pixel devices, unlocks DCIM backup controls, and bypasses signature checks for GmsCore. |
-| Google News | `com.google.android.apps.magazines` | Blocks ads and removes premium source overlays. |
-| Google Recorder | `com.google.android.apps.recorder` | Enables offline transcription and installs on non-Pixel phones. |
-| ProtonMail | `ch.protonmail.android` | Unlocks Plus plan features and blocks tracking. |
-| Viber | `com.viber.voip` | Blocks ads and removes telemetry. |
-| Letterboxd | `com.letterboxd.letterboxd` | Blocks ads and unlocks premium app features. |
-| Pixiv | `jp.pxv.android` | Blocks ads and unlocks high-resolution illustration searches. |
-| Cricbuzz | `com.cricbuzz.android` | Blocks ads and unlocks premium subscription features. |
-| Bandcamp | `com.bandcamp.android` | Unlocks premium play features and adds media downloading. |
-| RAR | `com.rarlab.rar` | Blocks ads and unlocks premium tool options. |
-| Photomath | `com.microblink.photomath` | Unlocks Plus features including detailed step-by-step math solutions. |
-| Peacock TV | `com.peacocktv.peacockandroid` | Blocks tracking and reduces ad loads. |
-| Nothing X | `com.nothing.smartcenter` | Unlocks Nothing device features for non-Nothing Android devices. |
-| Inshorts | `com.nis.app` | Blocks ads and unlocks premium features. |
-| Icon Pack Studio | `ginlemon.iconpackstudio` | Unlocks Pro tier features. |
-| Hex Editor | `com.myprog.hexedit` | Blocks ads and unlocks Pro features. |
-| GMX Mail | `de.gmx.mobile.android.mail` | Blocks ads and strips tracking data. |
-| Angulus | `com.drinkplusplus.angulus` | Unlocks premium features. |
-| IRplus | `net.binarymode.android.irplus` | Blocks ads and unlocks Pro features. |
-| NU.nl | `nl.sanomamedia.android.nu` | Blocks ads and strips tracking. |
+| TikTok | `com.zhiliaoapp.musically` | Ad blocking, no download watermarks, seek bar enabled, reels auto-scroll |
+| TikTok JP | `com.ss.android.ugc.trill` | Ad blocking, no watermarks |
+| Twitch | `tv.twitch.android.app` | Live ad blocking, auto channel point claims, playback speed, chat customisation |
+| Facebook | `com.facebook.katana` | Feed/story ad blocking, video downloading, telemetry removed |
+| Messenger | `com.facebook.orca` | Ad blocking, tracking removed |
+| Threads | `com.instagram.barcelona` | Ad blocking, tracking params stripped, media downloads |
+| Disney+ | `com.disney.disneyplus` | Analytics and tracker blocking |
+| SoundCloud | `com.soundcloud.android` | Ad blocking, background play, skip limits removed |
+| Strava | `com.strava` | Ad blocking, extra stats visible |
+| Tumblr | `com.tumblr` | Dashboard ad blocking, tracking removed |
+| Amazon Shopping | `com.amazon.mShop.android.shopping` | Ad blocking, telemetry removed |
+| Amazon Music | `com.amazon.mp3` | Ad blocking, background play |
+| Google Photos | `com.google.android.apps.photos` | Unlimited backup via Pixel spoof, DCIM backup controls, GmsCore support |
+| Google News | `com.google.android.apps.magazines` | Ad blocking, premium overlays removed |
+| Google Recorder | `com.google.android.apps.recorder` | Offline transcription, installs on non-Pixel devices |
+| ProtonMail | `ch.protonmail.android` | Plus features unlocked, tracking removed |
+| Viber | `com.viber.voip` | Ad blocking, telemetry removed |
+| Letterboxd | `com.letterboxd.letterboxd` | Ad blocking, premium features |
+| Pixiv | `jp.pxv.android` | Ad blocking, high-res illustration search |
+| Cricbuzz | `com.cricbuzz.android` | Ad blocking, premium features |
+| Bandcamp | `com.bandcamp.android` | Premium play, media downloading |
+| RAR | `com.rarlab.rar` | Ad blocking, premium tools |
+| Photomath | `com.microblink.photomath` | Plus features, detailed step-by-step solutions |
+| Peacock TV | `com.peacocktv.peacockandroid` | Tracker blocking, reduced ad load |
+| Nothing X | `com.nothing.smartcenter` | Nothing device features on non-Nothing phones |
+| Inshorts | `com.nis.app` | Ad blocking, premium features |
+| Icon Pack Studio | `ginlemon.iconpackstudio` | Pro tier unlocked |
+| Hex Editor | `com.myprog.hexedit` | Ad blocking, Pro features |
+| GMX Mail | `de.gmx.mobile.android.mail` | Ad blocking, tracking removed |
+| Angulus | `com.drinkplusplus.angulus` | Premium features unlocked |
+| IRplus | `net.binarymode.android.irplus` | Ad blocking, Pro features |
+| NU.nl | `nl.sanomamedia.android.nu` | Ad blocking, tracking removed |
 
 </details>
 
@@ -137,7 +127,7 @@ _Last checked: 2026-06-05_
 * **YouTube - PlayerFlyoutMenuComponentsFilter:** filtering divider for overflow menu ([#1576](https://github.com/MorpheApp/morphe-patches/issues/1576))
 * **YouTube - Reload video:** Allow reloading video that has not finished starting
 
-### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
+### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-ReVanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login
 * release v1.0.4 (Photos account persistence + TikTok defaults)
 * stabilize Google Photos GmsCore support
@@ -158,32 +148,22 @@ _Last checked: 2026-06-05_
 
 ---
 
-## Technical details (For developers)
+## How it works
 
-This build pipeline contains several layers to keep the compilation process secure and reliable:
-
-- **Automated scheduling:** Checks for compatible upstream updates and triggers rebuilds every 2 days using GitHub Actions.
-- **Multi-mirror scraper:** Scrapes and downloads official APKs from verified sources (APKMirror, Uptodown, and APKPure) using custom Python scripts.
-- **Signature verification and certificate pinning:** The pipeline validates the signature of every downloaded package using `apksigner`. It then cross-references the SHA-256 fingerprint with [.github/cert_pins.json](.github/cert_pins.json) before patching. If a package has a modified or mismatching signature, the build aborts immediately to protect against tampered upstream files.
-- **Delta carry-over:** Carries over unchanged applications from the previous release. This saves build resources while keeping each release fully populated with the complete list of supported applications.
-
-### Pipeline execution flow
+Runs every 48 hours. When a patch bundle updates, the pipeline downloads the affected APKs from APKMirror, Uptodown, or APKPure, in that order. If none of them have the exact version indexed, it falls back to a version-free pull from APKPure. Before anything gets patched, every APK goes through `apksigner` and SHA-256 cert pinning against [.github/cert_pins.json](.github/cert_pins.json). Fail either check and it gets dropped. Unchanged apps carry over from the last release so you always get all 53.
 
 ```mermaid
 graph TD
-    A[Cron trigger / 48 hrs] --> B[Check upstream patch compatibility]
-    B --> C[Resolve latest target versions]
-    C --> D[Scrape APK mirror sources]
-    D --> E[apksigner verification]
-    E -->|Signature OK| F[Cert pinning check]
-    E -->|Tampered / Invalid| X[Abort build]
-    F -->|Pin verified| G[Compile via morphe-cli]
-    F -->|Pin mismatch| X
-    G --> H[Carry over unchanged APKs]
-    H --> I[Generate release notes]
-    I --> J[Publish to GitHub releases]
+    A[Cron / 48 hrs] --> B[Check patch bundle versions]
+    B --> C[Resolve APK versions]
+    C --> D[Download from mirrors]
+    D --> E[apksigner + cert pin check]
+    E -->|Pass| F[Patch via morphe-cli]
+    E -->|Fail| X[Drop — not patched]
+    F --> G[Carry over unchanged APKs]
+    G --> H[Publish release]
 ```
 
 ## Requesting an app
 
-To request a new application in the build sequence, open an [App Request Issue](../../issues/new?template=app_request.yml). The app will be added if it is supported by any of the four integrated patch bundles.
+Open an [App Request Issue](../../issues/new?template=app_request.yml). Gets added if it's supported by one of the four patch bundles.

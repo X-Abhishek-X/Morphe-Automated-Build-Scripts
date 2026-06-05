@@ -259,9 +259,10 @@ jobs:
             if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
               echo "  Trying APKPure (last resort, signature-verified below)..."
               rm -f "${PKG}"*.apk "${PKG}"*.xapk 2>/dev/null || true
-              # For float versionCodes or apkpure-latest sentinel, drop version pin
-              if [ "$VER" = "apkpure-latest" ] || python3 -c "v='$VER'; p=v.split('.'); exit(0 if len(p)==2 and len(p[1])>=9 else 1)" 2>/dev/null; then
-                echo "  (no version pin — downloading latest from APKPure)"
+              # Float versionCodes (e.g. 4.314935684204102) and apkpure-latest
+              # sentinel: download latest from APKPure without version pin.
+              if [ "$VER" = "apkpure-latest" ] || [[ "$VER" =~ ^[0-9]+\.[0-9]{9,}$ ]]; then
+                echo "  (no version pin - downloading latest from APKPure)"
                 apkeep -a "${PKG}" -d apk-pure . 2>&1 || true
               else
                 apkeep -a "${PKG}@${VER}" -d apk-pure . 2>&1 || true

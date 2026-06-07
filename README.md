@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-06_
+_Last checked: 2026-06-07_
 
 ### [Morphe v1.30.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.30.0)
 * **YouTube - DRC audio patch:** Add support for 21.19 and higher ([#1561](https://github.com/MorpheApp/morphe-patches/issues/1561))

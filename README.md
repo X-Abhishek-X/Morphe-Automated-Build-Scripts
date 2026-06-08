@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-07_
+_Last checked: 2026-06-08_
 
 ### [Morphe v1.30.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.30.0)
 * **YouTube - DRC audio patch:** Add support for 21.19 and higher ([#1561](https://github.com/MorpheApp/morphe-patches/issues/1561))
-* **YouTube - Hide ads:** Fix player crash
-* **YouTube - Hide mix playlists:** improved filtering ([#1526](https://github.com/MorpheApp/morphe-patches/issues/1526))
 * **YouTube - Hide Shorts components:** Hide new type of Shorts in search results
-* **YouTube - Open channel of live avatar:** deprecated old WEB_REMIX client in favour of ANDROID_REELS ([#1519](https://github.com/MorpheApp/morphe-patches/issues/1519))
-* **YouTube - Open channel of live avatar:** Improved check to exclude the live avatar in the channel header ([#1544](https://github.com/MorpheApp/morphe-patches/issues/1544))
 * **YouTube - PlayerFlyoutMenuComponentsFilter:** filtering divider for overflow menu ([#1576](https://github.com/MorpheApp/morphe-patches/issues/1576))
 * **YouTube - Reload video:** Allow reloading video that has not finished starting
+* **YouTube - Sanitize sharing links:** Sanitize system share sheet ([#1536](https://github.com/MorpheApp/morphe-patches/issues/1536))
+* **YouTube - Theme:** Apply "Material You" to notification dot ([#1489](https://github.com/MorpheApp/morphe-patches/issues/1489))
+* **Custom branding:** Add icon previews to branding selectors and new play black icon ([#1522](https://github.com/MorpheApp/morphe-patches/issues/1522))
+* **Settings:** Add haptic feedback to settings toggles ([#1575](https://github.com/MorpheApp/morphe-patches/issues/1575))
 
 ### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login

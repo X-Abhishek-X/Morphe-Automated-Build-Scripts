@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-08_
+_Last checked: 2026-06-09_
 
 ### [Morphe v1.30.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.30.0)
 * **YouTube - DRC audio patch:** Add support for 21.19 and higher ([#1561](https://github.com/MorpheApp/morphe-patches/issues/1561))
@@ -147,9 +147,10 @@ _Last checked: 2026-06-08_
 * **Instagram - Translations:** Added `Portuguese` Translation ([#1145](https://github.com/crimera/piko/issues/1145))
 * **Twitter:** Partial support to 11.91.xx
 
-### [hoo-dles v1.34.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.34.0)
-* **MacroFactor Workouts:** Bump version compatibility
-* **Sleep as Android:** Add `Enable Premium` patch
+### [hoo-dles v1.35.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.35.0)
+* **Duolingo:** Update patches to support 6.82.3
+* **Niagara Launcher:** Add package signature and install source spoofing
+* **Showly:** Add `Enable Premium` patch
 
 <!-- PATCH-UPDATES-END -->
 

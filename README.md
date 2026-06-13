@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-12_
+_Last checked: 2026-06-13_
 
-### [Morphe v1.30.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.30.0)
-* **YouTube - DRC audio patch:** Add support for 21.19 and higher ([#1561](https://github.com/MorpheApp/morphe-patches/issues/1561))
-* **YouTube - Hide Shorts components:** Hide new type of Shorts in search results
-* **YouTube - PlayerFlyoutMenuComponentsFilter:** filtering divider for overflow menu ([#1576](https://github.com/MorpheApp/morphe-patches/issues/1576))
-* **YouTube - Reload video:** Allow reloading video that has not finished starting
-* **YouTube - Sanitize sharing links:** Sanitize system share sheet ([#1536](https://github.com/MorpheApp/morphe-patches/issues/1536))
-* **YouTube - Theme:** Apply "Material You" to notification dot ([#1489](https://github.com/MorpheApp/morphe-patches/issues/1489))
-* **Custom branding:** Add icon previews to branding selectors and new play black icon ([#1522](https://github.com/MorpheApp/morphe-patches/issues/1522))
-* **Settings:** Add haptic feedback to settings toggles ([#1575](https://github.com/MorpheApp/morphe-patches/issues/1575))
+### [Morphe v1.31.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.31.0)
+* **Reddit - Hide Ask button:** Update patch to support experimental app targets ([#1623](https://github.com/MorpheApp/morphe-patches/issues/1623))
+* **Reddit - Hide Trending Today shelf:** Hide "Trending" header ([#1622](https://github.com/MorpheApp/morphe-patches/issues/1622))
+* **YouTube - Exit fullscreen mode:** Shorts regular player does not exit fullscreen mode
+* **YouTube - Hide layout components:** Allow partial matches for "Enable Library / You bottom menu filter" setting
+* **YouTube - Links shortening:** Exclude post links from shortening
+* **YouTube - Miniplayer:** Restore play/pause icons for minimal miniplayer on 21.17+ ([#1644](https://github.com/MorpheApp/morphe-patches/issues/1644))
+* **YouTube - Remove background playback restrictions:** Fix Shorts background playback not working ([#1629](https://github.com/MorpheApp/morphe-patches/issues/1629))
+* **YouTube - Remove viewer discretion dialog:** Dialog cannot be dismissed ([#1710](https://github.com/MorpheApp/morphe-patches/issues/1710))
 
 ### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login
@@ -147,10 +147,8 @@ _Last checked: 2026-06-12_
 * **Instagram - Translations:** Added `Portuguese` Translation ([#1145](https://github.com/crimera/piko/issues/1145))
 * **Twitter:** Partial support to 11.91.xx
 
-### [hoo-dles v1.35.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.35.0)
-* **Duolingo:** Update patches to support 6.82.3
-* **Niagara Launcher:** Add package signature and install source spoofing
-* **Showly:** Add `Enable Premium` patch
+### [hoo-dles v1.35.1](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.35.1)
+* **MyFitnessPal:** Update patch to support 26.21.1
 
 <!-- PATCH-UPDATES-END -->
 

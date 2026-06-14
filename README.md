@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-13_
+_Last checked: 2026-06-14_
 
 ### [Morphe v1.31.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.31.0)
 * **Reddit - Hide Ask button:** Update patch to support experimental app targets ([#1623](https://github.com/MorpheApp/morphe-patches/issues/1623))
@@ -147,8 +147,8 @@ _Last checked: 2026-06-13_
 * **Instagram - Translations:** Added `Portuguese` Translation ([#1145](https://github.com/crimera/piko/issues/1145))
 * **Twitter:** Partial support to 11.91.xx
 
-### [hoo-dles v1.35.1](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.35.1)
-* **MyFitnessPal:** Update patch to support 26.21.1
+### [hoo-dles v1.36.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.36.0)
+* **RP Hypertrophy:** Add `Enable Premium` patch
 
 <!-- PATCH-UPDATES-END -->
 

@@ -115,14 +115,14 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-15_
+_Last checked: 2026-06-16_
 
 ### [Morphe v1.31.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.31.0)
 * **Reddit - Hide Ask button:** Update patch to support experimental app targets ([#1623](https://github.com/MorpheApp/morphe-patches/issues/1623))
 * **Reddit - Hide Trending Today shelf:** Hide "Trending" header ([#1622](https://github.com/MorpheApp/morphe-patches/issues/1622))
 * **YouTube - Exit fullscreen mode:** Shorts regular player does not exit fullscreen mode
 * **YouTube - Hide layout components:** Allow partial matches for "Enable Library / You bottom menu filter" setting
-* **YouTube - Links shortening:** Exclude post links from shortening
+* **YouTube - Sanitize sharing links:** Exclude post links from shortening
 * **YouTube - Miniplayer:** Restore play/pause icons for minimal miniplayer on 21.17+ ([#1644](https://github.com/MorpheApp/morphe-patches/issues/1644))
 * **YouTube - Remove background playback restrictions:** Fix Shorts background playback not working ([#1629](https://github.com/MorpheApp/morphe-patches/issues/1629))
 * **YouTube - Remove viewer discretion dialog:** Dialog cannot be dismissed ([#1710](https://github.com/MorpheApp/morphe-patches/issues/1710))

@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-16_
+_Last checked: 2026-06-17_
 
 ### [Morphe v1.31.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.31.0)
 * **Reddit - Hide Ask button:** Update patch to support experimental app targets ([#1623](https://github.com/MorpheApp/morphe-patches/issues/1623))
@@ -141,11 +141,15 @@ _Last checked: 2026-06-16_
 * Enable **all** TikTok patches by default on **43.6.2** and **43.8.3**.
 * Keep **Settings** + **Enable Open Debug** as **43.6.2-only** (not compatible with 43.8.3).
 
-### [Piko v3.4.0](https://github.com/crimera/piko/releases/tag/v3.4.0)
-* **Twitter:** Added warning during `Disunify xchat system` patch failure
-* **Instagram - Translations:** Added `Japanese` Translation ([#1143](https://github.com/crimera/piko/issues/1143))
-* **Instagram - Translations:** Added `Portuguese` Translation ([#1145](https://github.com/crimera/piko/issues/1145))
-* **Twitter:** Partial support to 11.91.xx
+### [Piko v3.5.0](https://github.com/crimera/piko/releases/tag/v3.5.0)
+* **Instagram:** Check if `More options on profile` is patched before adding the button
+* **Instagram:** Correction to make post time work ([#1338](https://github.com/crimera/piko/issues/1338))
+* **Instagram:** Fix audio extraction logic
+* **Instagram:** Fix crash on clicking mentions
+* **Instagram:** Fix crashing on profile issue
+* **Instagram:** Fix current media index on more options on post
+* **Instagram:** fix downloading dp into sub folder
+* **Instagram:** Fix ImmutablePandoVideoVersion error while downloading some videos
 
 ### [hoo-dles v1.36.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.36.0)
 * **RP Hypertrophy:** Add `Enable Premium` patch

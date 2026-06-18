@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-17_
+_Last checked: 2026-06-18_
 
 ### [Morphe v1.31.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.31.0)
 * **Reddit - Hide Ask button:** Update patch to support experimental app targets ([#1623](https://github.com/MorpheApp/morphe-patches/issues/1623))

@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-18_
+_Last checked: 2026-06-19_
 
 ### [Morphe v1.31.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.31.0)
 * **Reddit - Hide Ask button:** Update patch to support experimental app targets ([#1623](https://github.com/MorpheApp/morphe-patches/issues/1623))
@@ -141,15 +141,13 @@ _Last checked: 2026-06-18_
 * Enable **all** TikTok patches by default on **43.6.2** and **43.8.3**.
 * Keep **Settings** + **Enable Open Debug** as **43.6.2-only** (not compatible with 43.8.3).
 
-### [Piko v3.5.0](https://github.com/crimera/piko/releases/tag/v3.5.0)
-* **Instagram:** Check if `More options on profile` is patched before adding the button
-* **Instagram:** Correction to make post time work ([#1338](https://github.com/crimera/piko/issues/1338))
-* **Instagram:** Fix audio extraction logic
-* **Instagram:** Fix crash on clicking mentions
-* **Instagram:** Fix crashing on profile issue
-* **Instagram:** Fix current media index on more options on post
-* **Instagram:** fix downloading dp into sub folder
-* **Instagram:** Fix ImmutablePandoVideoVersion error while downloading some videos
+### [Piko v3.6.0](https://github.com/crimera/piko/releases/tag/v3.6.0)
+* **Twitter:** Fix links handling on modern share sheet
+* **Twitter:** Added `Block redirecting to X Lite` patch
+* **Twitter:** Added `Crash logs`
+* **Twitter:** Add `11.99.0-release.1` to supported versions list (Requires Piko-Shim) ([#1367](https://github.com/crimera/piko/issues/1367))
+* **Instagram-Translations:** Added Bengali translation  ([#1352](https://github.com/crimera/piko/issues/1352))
+* **Twitter:** Adjust `Handle custom twitter links` stringsOption and booleanOption
 
 ### [hoo-dles v1.36.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.36.0)
 * **RP Hypertrophy:** Add `Enable Premium` patch

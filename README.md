@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-22_
+_Last checked: 2026-06-23_
 
 ### [Morphe v1.31.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.31.0)
 * **Reddit - Hide Ask button:** Update patch to support experimental app targets ([#1623](https://github.com/MorpheApp/morphe-patches/issues/1623))
@@ -149,8 +149,11 @@ _Last checked: 2026-06-22_
 * **Instagram-Translations:** Added Bengali translation  ([#1352](https://github.com/crimera/piko/issues/1352))
 * **Twitter:** Adjust `Handle custom twitter links` stringsOption and booleanOption
 
-### [hoo-dles v1.36.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.36.0)
-* **RP Hypertrophy:** Add `Enable Premium` patch
+### [hoo-dles v1.36.1](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.36.1)
+* **Duolingo:** Update support for v6.83.4 and fix video calls for MAX
+* **IbisPaint X:** Update to support v14.0.4
+* **Pandora:** Update icon color
+* **Xodo:** Update patch to support v10.15.0
 
 <!-- PATCH-UPDATES-END -->
 

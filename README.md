@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-27_
+_Last checked: 2026-06-28_
 
 ### [Morphe v1.32.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.32.0)
 * **YouTube - Bypass link redirects:** Resolve patch not working on community posts and video descriptions ([#1755](https://github.com/MorpheApp/morphe-patches/issues/1755))
@@ -141,17 +141,18 @@ _Last checked: 2026-06-27_
 * Enable **all** TikTok patches by default on **43.6.2** and **43.8.3**.
 * Keep **Settings** + **Enable Open Debug** as **43.6.2-only** (not compatible with 43.8.3).
 
-### [Piko v3.6.0](https://github.com/crimera/piko/releases/tag/v3.6.0)
-* **Twitter:** Fix links handling on modern share sheet
-* **Twitter:** Added `Block redirecting to X Lite` patch
-* **Twitter:** Added `Crash logs`
-* **Twitter:** Add `11.99.0-release.1` to supported versions list (Requires Piko-Shim) ([#1367](https://github.com/crimera/piko/issues/1367))
-* **Instagram-Translations:** Added Bengali translation  ([#1352](https://github.com/crimera/piko/issues/1352))
-* **Twitter:** Adjust `Handle custom twitter links` stringsOption and booleanOption
+### [Piko v3.7.0](https://github.com/crimera/piko/releases/tag/v3.7.0)
+* **Instagram:** Fix `Allow user network certificate` being shown on Settings even without including
+* **Instagram:** Fix `Change like animation` enum class injection issue
+* **Instagram:** Fix `Disable typing status` on v435
+* **Instagram:** Fix `User profile action bar` logic
+* **Instagram:** Fix button press key check
+* **Instagram:** Fix button press key check (again)
+* **Instagram:** Fix ghost eye icon position on DM action bar
+* **Instagram:** Fix inverse issue of `Hide reshare button`
 
-### [hoo-dles v1.37.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.37.0)
-* **Windy:** Update patch to support v50.1.1
-* **Google News:** Add `Enable custom tabs` patch
+### [hoo-dles v1.38.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.38.0)
+* **Goodreads:** Add `Disable ads` patch
 
 <!-- PATCH-UPDATES-END -->
 

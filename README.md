@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-28_
+_Last checked: 2026-06-29_
 
 ### [Morphe v1.32.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.32.0)
 * **YouTube - Bypass link redirects:** Resolve patch not working on community posts and video descriptions ([#1755](https://github.com/MorpheApp/morphe-patches/issues/1755))
@@ -151,8 +151,8 @@ _Last checked: 2026-06-28_
 * **Instagram:** Fix ghost eye icon position on DM action bar
 * **Instagram:** Fix inverse issue of `Hide reshare button`
 
-### [hoo-dles v1.38.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.38.0)
-* **Goodreads:** Add `Disable ads` patch
+### [hoo-dles v1.38.1](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.38.1)
+* **Duolingo:** Update patches to support v6.85.7
 
 <!-- PATCH-UPDATES-END -->
 

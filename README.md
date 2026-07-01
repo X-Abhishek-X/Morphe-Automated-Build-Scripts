@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-06-30_
+_Last checked: 2026-07-01_
 
 ### [Morphe v1.32.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.32.0)
 * **YouTube - Bypass link redirects:** Resolve patch not working on community posts and video descriptions ([#1755](https://github.com/MorpheApp/morphe-patches/issues/1755))

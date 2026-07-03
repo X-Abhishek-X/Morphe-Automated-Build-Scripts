@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-02_
+_Last checked: 2026-07-03_
 
-### [Morphe v1.32.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.32.0)
-* **YouTube - Bypass link redirects:** Resolve patch not working on community posts and video descriptions ([#1755](https://github.com/MorpheApp/morphe-patches/issues/1755))
-* **YouTube - Change form factor:** Prevent app crash when using tablet mode in `onResume` state ([#1803](https://github.com/MorpheApp/morphe-patches/issues/1803))
-* **YouTube - Disable player popup panels:** Patch doesn't work in some circumstances
-* **YouTube - Hide layout components:** Resolve "Hide horizontal shelves" hiding other components ([#930](https://github.com/MorpheApp/morphe-patches/issues/930))
-* **YouTube - Sanitize sharing links:** Live links are not sanitized
-* **YouTube - Navigation bar:** Prevent navigation bar animation when swiping to dismiss miniplayer ([#1800](https://github.com/MorpheApp/morphe-patches/issues/1800))
-* **YouTube - Override YouTube Music buttons:** Target app opens when clicking on 'YouTube Music' button inside explore menu ([#1707](https://github.com/MorpheApp/morphe-patches/issues/1707))
-* **YouTube - Reload video:** App exits after pressing back button ([#1740](https://github.com/MorpheApp/morphe-patches/issues/1740))
+### [Morphe v1.33.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.33.0)
+* **Change package name:** Add incompatible apps, update all permissions and providers ([#1847](https://github.com/MorpheApp/morphe-patches/issues/1847))
+* **Reddit - Hide communities shelf:** Communities shelf not being hidden on experimental versions ([#1828](https://github.com/MorpheApp/morphe-patches/issues/1828))
+* **Reddit - Hide Trending shelves:** Hide 'Trending communities' shelf in search suggestions ([#1785](https://github.com/MorpheApp/morphe-patches/issues/1785))
+* **Reddit - Hide Trending shelves:** Hide 'Trending on Reddit' shelf ([#1849](https://github.com/MorpheApp/morphe-patches/issues/1849))
+* **YouTube - Disable player popup panels:** patch doesn't work for some users ([#1821](https://github.com/MorpheApp/morphe-patches/issues/1821))
+* **YouTube - Return YouTube Dislike:** Unnecessary RYD API requests in playlist ([#1815](https://github.com/MorpheApp/morphe-patches/issues/1815))
+* **YouTube - SponsorBlock:** Send correct user agent when submitting segments ([#1903](https://github.com/MorpheApp/morphe-patches/issues/1903))
+* **YouTube - System share sheet:** Support older app versions
 
 ### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login

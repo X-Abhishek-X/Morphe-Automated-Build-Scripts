@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-06_
+_Last checked: 2026-07-07_
 
 ### [Morphe v1.33.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.33.0)
 * **Change package name:** Add incompatible apps, update all permissions and providers ([#1847](https://github.com/MorpheApp/morphe-patches/issues/1847))
@@ -151,8 +151,9 @@ _Last checked: 2026-07-06_
 * **Instagram:** Fix ghost eye icon position on DM action bar
 * **Instagram:** Fix inverse issue of `Hide reshare button`
 
-### [hoo-dles v1.38.1](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.38.1)
-* **Duolingo:** Update patches to support v6.85.7
+### [hoo-dles v1.38.2](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.38.2)
+* **CamScanner:** Fix crash on first scan after app installation
+* Update signature spoofing code
 
 <!-- PATCH-UPDATES-END -->
 

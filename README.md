@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-12_
+_Last checked: 2026-07-13_
 
 ### [Morphe v1.34.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.34.0)
 * **GmsCore support:** Use custom provider package name when `Change package name` is used

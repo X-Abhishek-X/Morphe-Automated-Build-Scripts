@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-15_
+_Last checked: 2026-07-16_
 
-### [Morphe v1.34.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.34.0)
-* **GmsCore support:** Use custom provider package name when `Change package name` is used
-* **Reddit - Settings:** Morphe language does not change after restarting ([#1950](https://github.com/MorpheApp/morphe-patches/issues/1950))
-* **Spoof video streams:** Change default client to 'TV'
-* **YouTube - Add to queue:** Allows tablet patches for versions 21.xx
-* **YouTube - Miniplayer/Disable automatic reposition:** Support vertical position lock
-* **YouTube - Return YouTube Dislike:** Remove RYD Shorts due to YT removing Shorts dislike and RYD API no longer providing reliable Shorts dislikes data ([#1924](https://github.com/MorpheApp/morphe-patches/issues/1924))
-* **YouTube - Voice over translation:** Keep the user's original audio volume ratio after rewinding ([#1939](https://github.com/MorpheApp/morphe-patches/issues/1939))
-* **YouTube - Hide layout components:** Add "Hide filter bar in comments" and "Sanitize highlighted search links" settings ([#1935](https://github.com/MorpheApp/morphe-patches/issues/1935))
+### [Morphe v1.35.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.35.0)
+* **Network proxy:** Support HTTPS proxies for auxiliary requests ([#2022](https://github.com/MorpheApp/morphe-patches/issues/2022))
+* **Spoof video streams:** Check setting value instead of availability for JavaScript toggles
+* **YouTube - Copy video link:** Copied video link is always shortened ([#1993](https://github.com/MorpheApp/morphe-patches/issues/1993))
+* **YouTube - FlyoutUtils:** Error message when opening Shorts flyout menu
+* **YouTube - Hide ads:** Hide shopping links in transcripts ([#2025](https://github.com/MorpheApp/morphe-patches/issues/2025))
+* **YouTube - Hide layout components:** Comment box being hidden on `20.21.37`
+* **YouTube - Open system share sheet:** Support channelID & commentID fetching ([#1975](https://github.com/MorpheApp/morphe-patches/issues/1975))
+* **YouTube - Playback speed:** Support new native playback speed menu ([#1957](https://github.com/MorpheApp/morphe-patches/issues/1957))
 
 ### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login
@@ -151,9 +151,11 @@ _Last checked: 2026-07-15_
 * **Instagram:** Fix ghost eye icon position on DM action bar
 * **Instagram:** Fix inverse issue of `Hide reshare button`
 
-### [hoo-dles v1.38.2](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.38.2)
-* **CamScanner:** Fix crash on first scan after app installation
-* Update signature spoofing code
+### [hoo-dles v1.39.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.39.0)
+* **SuperChinese:** Allow starting pre-downloaded lessons after VIP lapse
+* **Duolingo:** Update patches to support v6.86.5
+* **IbisPaint X:** Update patch to support v14.0.6 and be more resilient to new versions
+* **SuperChinese:** Add `Unlock all lessons` and `Disable telemetry` patches
 
 <!-- PATCH-UPDATES-END -->
 

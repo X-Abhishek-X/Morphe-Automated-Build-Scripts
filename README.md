@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-16_
+_Last checked: 2026-07-17_
 
 ### [Morphe v1.35.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.35.0)
 * **Network proxy:** Support HTTPS proxies for auxiliary requests ([#2022](https://github.com/MorpheApp/morphe-patches/issues/2022))
-* **Spoof video streams:** Check setting value instead of availability for JavaScript toggles
 * **YouTube - Copy video link:** Copied video link is always shortened ([#1993](https://github.com/MorpheApp/morphe-patches/issues/1993))
-* **YouTube - FlyoutUtils:** Error message when opening Shorts flyout menu
 * **YouTube - Hide ads:** Hide shopping links in transcripts ([#2025](https://github.com/MorpheApp/morphe-patches/issues/2025))
-* **YouTube - Hide layout components:** Comment box being hidden on `20.21.37`
-* **YouTube - Open system share sheet:** Support channelID & commentID fetching ([#1975](https://github.com/MorpheApp/morphe-patches/issues/1975))
 * **YouTube - Playback speed:** Support new native playback speed menu ([#1957](https://github.com/MorpheApp/morphe-patches/issues/1957))
+* **YouTube Music - Downloads:** Hide Premium dialog on external download ([#2009](https://github.com/MorpheApp/morphe-patches/issues/2009))
+* **YouTube - Hide layout components:** Add "AI channel filter" settings ([#1972](https://github.com/MorpheApp/morphe-patches/issues/1972))
+* **YouTube - Hide layout components:** Add "Hide gift animation and cards" and "Hide gift button" settings ([#1991](https://github.com/MorpheApp/morphe-patches/issues/1991))
+* **YouTube - Hide layout components:** Add "Hide video thumbnail" setting ([#2043](https://github.com/MorpheApp/morphe-patches/issues/2043))
 
 ### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login

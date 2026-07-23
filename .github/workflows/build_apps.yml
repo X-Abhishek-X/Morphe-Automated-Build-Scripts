@@ -337,13 +337,6 @@ jobs:
               continue
             fi
 
-            DETECTED_ARCH=$(aapt dump badging "$APK_FILE" 2>/dev/null \
-              | grep "native-code" \
-              | grep -oP "'\K[^']+" \
-              | head -1 || echo "universal")
-            ARCH_LABEL=${DETECTED_ARCH:-universal}
-            echo "  Detected arch: $ARCH_LABEL"
-
             PATCH_FILE=""
             case "$SRC" in
               morphe)       PATCH_FILE="$MMPP"  ;;
@@ -361,21 +354,59 @@ jobs:
               EXTRA_FLAGS+=(--enable "Enable DCIM folders backup control")
             fi
 
-            OUT="dist/${KEY}-morphe-v${VER}-${ARCH_LABEL}-${TODAY}.apk"
-            echo "  Patching -> $OUT (using patches from source: $SRC)"
+            TMP_OUT="dist/.tmp_${KEY}.apk"
+            rm -f "$TMP_OUT"
+            echo "  Patching -> $TMP_OUT (using patches from source: $SRC)"
             if java -jar "$CLI" patch \
                 --continue-on-error \
                 --keystore=morphe.keystore \
                 -p "$PATCH_FILE" \
                 "${EXTRA_FLAGS[@]}" \
-                -o "$OUT" \
+                -o "$TMP_OUT" \
                 "$APK_FILE"; then
-              echo "  Built: $OUT"
-              printf "| %s | \`%s\` | %s | ✅ built |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
+
+              # Ground-truth ABI check on the actual patched output. Source-site
+              # "universal" labels (APKPure/Uptodown) often just mean "arch not
+              # declared", not "contains every arch" — trusting that label shipped
+              # an armeabi-v7a-only cricbuzz build as "universal" that then failed
+              # INSTALL_FAILED_NO_MATCHING_ABIS on real 64-bit-only devices.
+              # Check the zip directly; don't rely on aapt (may not even be
+              # installed on the runner) or on what the mirror site claims.
+              BUNDLED_ABIS=$(unzip -l "$TMP_OUT" 2>/dev/null \
+                | grep -oE "lib/[a-zA-Z0-9_-]+/" \
+                | sed -E 's#lib/##; s#/##' \
+                | sort -u)
+
+              if [ -z "$BUNDLED_ABIS" ]; then
+                FINAL_ARCH="universal"
+                ARCH_OK=1
+              elif [ "$TARGET_ARCH" = "universal" ]; then
+                # explicit "any arch is fine" request — label with what's actually there
+                FINAL_ARCH=$(echo "$BUNDLED_ABIS" | tr '\n' '+' | sed 's/+$//')
+                ARCH_OK=1
+              elif echo "$BUNDLED_ABIS" | grep -qx "$TARGET_ARCH"; then
+                FINAL_ARCH="$TARGET_ARCH"
+                ARCH_OK=1
+              else
+                FINAL_ARCH=""
+                ARCH_OK=0
+              fi
+
+              if [ "$ARCH_OK" = "1" ]; then
+                OUT="dist/${KEY}-morphe-v${VER}-${FINAL_ARCH}-${TODAY}.apk"
+                mv "$TMP_OUT" "$OUT"
+                echo "  Built: $OUT (bundled native libs: ${BUNDLED_ABIS:-none / pure-Java})"
+                printf "| %s | \`%s\` | %s | ✅ built |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
+              else
+                BAD_ABIS=$(echo "$BUNDLED_ABIS" | tr '\n' ',' | sed 's/,$//')
+                echo "::warning::$KEY v${VER} wanted ${TARGET_ARCH} but source APK only bundled [${BAD_ABIS}] — refusing to publish a wrong-ABI build"
+                printf "| %s | \`%s\` | %s | ❌ ABI mismatch (wanted %s, got %s) |\n" "$KEY" "$VER" "$APK_SOURCE" "$TARGET_ARCH" "$BAD_ABIS" >> "$SUMMARY_FILE"
+                rm -f "$TMP_OUT"
+              fi
             else
               echo "::warning::Patch failed for $KEY v${VER}"
               printf "| %s | \`%s\` | %s | ❌ patch failed |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
-              rm -f "$OUT"
+              rm -f "$TMP_OUT"
             fi
 
             rm -f "$APK_FILE"
@@ -481,7 +512,10 @@ jobs:
           trigger_line = "Scheduled auto-build" if trigger == "schedule" else f"Manual build ({manual})"
           built_keys = {a["key"].replace("_", "-") for a in apps}
           pat = re.compile(
-            r"^(.+?)-morphe-v(.+?)-(arm64-v8a|armeabi-v7a|universal|x86_64|x86)-\d{4}\.\d{2}\.\d{2}\.apk$"
+            r"^(.+?)-morphe-v(.+?)-"
+            r"((?:(?:arm64-v8a|armeabi-v7a|x86_64|x86)"
+            r"(?:\+(?:arm64-v8a|armeabi-v7a|x86_64|x86))*)|universal)"
+            r"-\d{4}\.\d{2}\.\d{2}\.apk$"
           )
 
           rows = []

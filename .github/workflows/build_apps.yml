@@ -81,6 +81,11 @@ on:
           - arm64-v8a
           - armeabi-v7a
           - universal
+      force_all:
+        description: "Rebuild every app in one job regardless of version diff (only with app=all — ignore concurrent per-app dispatches, they race on the shared release)"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   # ─────────────────────────────────────────────────────────────
@@ -127,6 +132,7 @@ jobs:
           MANUAL_APP:       ${{ github.event.inputs.app || 'all' }}
           MANUAL_VERSION:   ${{ github.event.inputs.version_override || '' }}
           TARGET_ARCH:      ${{ github.event.inputs.arch || 'arm64-v8a' }}
+          FORCE_ALL:        ${{ github.event.inputs.force_all || 'false' }}
         run: python scripts/check_updates.py
 
       - name: Apps queued for build
@@ -179,6 +185,7 @@ jobs:
           MANUAL_APP:   ${{ github.event.inputs.app || 'all' }}
           MANUAL_VERSION: ${{ github.event.inputs.version_override || '' }}
           TARGET_ARCH:  ${{ github.event.inputs.arch || 'arm64-v8a' }}
+          FORCE_ALL:    ${{ github.event.inputs.force_all || 'false' }}
         run: python scripts/check_updates.py
 
       - name: Decode keystore

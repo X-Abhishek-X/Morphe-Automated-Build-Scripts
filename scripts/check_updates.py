@@ -228,6 +228,7 @@ def main():
     manual_app  = os.environ.get("MANUAL_APP",  "all").strip()
     manual_ver  = os.environ.get("MANUAL_VERSION", "").strip()
     target_arch = os.environ.get("TARGET_ARCH", "arm64-v8a").strip()
+    force_all   = os.environ.get("FORCE_ALL", "").strip().lower() in ("1", "true", "yes")
 
     # ── Fetch all releases ─────────────────────────────────────
     cli_rel     = get_latest_release(REPO_CLI)
@@ -359,7 +360,7 @@ def main():
             "hoodles":     last.get("hoodles_tag")      != hoodles_tag,
         }[info["source"]]
 
-        needs = bool(latest) and (last.get(key) != latest or patch_changed)
+        needs = bool(latest) and (force_all or last.get(key) != latest or patch_changed)
         if needs:
             apps_to_build.append({
                 "key":     key,
@@ -369,7 +370,8 @@ def main():
                 "version": latest,
                 "source":  info["source"],
             })
-            print(f"  OK {key} -> {latest} (rebuild)")
+            reason = "forced" if force_all else "rebuild"
+            print(f"  OK {key} -> {latest} ({reason})")
         else:
             print(f"  -- {key} -> {latest or 'no versions'}")
 

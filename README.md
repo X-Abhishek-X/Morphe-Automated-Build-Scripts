@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-24_
+_Last checked: 2026-07-25_
 
 ### [Morphe v1.36.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.36.0)
 * **YouTube - Hide filter bar:** Related videos filter bar is not correctly hidden
@@ -141,15 +141,15 @@ _Last checked: 2026-07-24_
 * Enable **all** TikTok patches by default on **43.6.2** and **43.8.3**.
 * Keep **Settings** + **Enable Open Debug** as **43.6.2-only** (not compatible with 43.8.3).
 
-### [Piko v3.7.0](https://github.com/crimera/piko/releases/tag/v3.7.0)
-* **Instagram:** Fix `Allow user network certificate` being shown on Settings even without including
-* **Instagram:** Fix `Change like animation` enum class injection issue
-* **Instagram:** Fix `Disable typing status` on v435
-* **Instagram:** Fix `User profile action bar` logic
-* **Instagram:** Fix button press key check
-* **Instagram:** Fix button press key check (again)
-* **Instagram:** Fix ghost eye icon position on DM action bar
-* **Instagram:** Fix inverse issue of `Hide reshare button`
+### [Piko v3.8.0](https://github.com/crimera/piko/releases/tag/v3.8.0)
+* **Instagram:** Fix app crash on comment media download([#1568](https://github.com/crimera/piko/issues/1568))
+* **Instagram:** Fix chat action bar function name
+* **Instagram:** Fix opening links
+* **Instagram:** Fix Piko settings color issues
+* **Instagram:** match piko settings background to amoled patch ([#1543](https://github.com/crimera/piko/issues/1543))
+* **Instagram:** Match piko settings highlight to theme ([#1548](https://github.com/crimera/piko/issues/1548))
+* **Instagram:** Match story mention dialog to Instagram theme ([#1554](https://github.com/crimera/piko/issues/1554))
+* **instagram:** preserve settings fragment on recreation ([#1546](https://github.com/crimera/piko/issues/1546))
 
 ### [hoo-dles v1.39.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.39.0)
 * **SuperChinese:** Allow starting pre-downloaded lessons after VIP lapse

@@ -474,7 +474,6 @@ jobs:
       - name: Carry over unchanged APKs from previous release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPS_JSON:    ${{ needs.check-versions.outputs.apps_to_build }}
         run: |
           PREV_TAG=$(gh release list --json tagName,isDraft \
             -q '.[] | select(.isDraft == false) | .tagName' \
@@ -486,20 +485,19 @@ jobs:
           fi
           echo "Carrying over from: $PREV_TAG"
 
-          BUILT_KEYS=$(echo "$APPS_JSON" | python3 -c "
-          import json, sys
-          apps = json.load(sys.stdin)
-          print('\n'.join(a['key'].replace('_','-') for a in apps))
-          ")
-
+          # Decide from reality, not intent: whether an app was *attempted*
+          # this run says nothing about whether it *produced a file*. Using
+          # "was it queued" to skip carry-over silently dropped every failed
+          # app's still-good previous release asset the moment force_all
+          # queued the whole catalog at once (26 real successes replaced a
+          # release that used to have ~40 assets — the other ~14 apps went
+          # from "stale but present" to "gone"). Check dist/ directly.
           gh release view "$PREV_TAG" --json assets -q '.assets[].name' | while read fname; do
             [[ "$fname" == "SHA256SUMS.txt" ]] && continue
             [[ "$fname" == *.apk ]] || continue
-            KEY=$(echo "$fname" | sed 's/-morphe-.*//' | tr '_' '-')
-            if echo "$BUILT_KEYS" | grep -qx "$KEY"; then
-              echo "  ⏭  $fname (newly built — skip)"
-            elif [ -f "dist/$fname" ]; then
-              echo "  ✅ $fname (already in dist)"
+            PREFIX=$(echo "$fname" | sed -E 's/-morphe-.*//')
+            if compgen -G "dist/${PREFIX}-morphe-*.apk" > /dev/null; then
+              echo "  ✅ $fname (fresh build already in dist)"
             else
               echo "  ↩  Carrying over: $fname"
               gh release download "$PREV_TAG" -p "$fname" -D dist/ 2>/dev/null \

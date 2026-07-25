@@ -395,8 +395,29 @@ jobs:
               if [ "$ARCH_OK" = "1" ]; then
                 OUT="dist/${KEY}-morphe-v${VER}-${FINAL_ARCH}-${TODAY}.apk"
                 mv "$TMP_OUT" "$OUT"
-                echo "  Built: $OUT (bundled native libs: ${BUNDLED_ABIS:-none / pure-Java})"
-                printf "| %s | \`%s\` | %s | ✅ built |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
+
+                # A build "succeeding" only means the CLI exited 0 — it says
+                # nothing about whether the result actually installs. Verify
+                # the CLI's own re-signing produced a valid, installable
+                # signature, and that the manifest still parses. Either
+                # failing here reproduces "package appears to be invalid" on
+                # a real device with zero visibility from the build log alone.
+                POST_OK=1
+                if ! apksigner verify "$OUT" &>/dev/null; then
+                  echo "::warning::$KEY v${VER} — final signed APK failed apksigner verify"
+                  POST_OK=0
+                elif ! aapt dump badging "$OUT" &>/dev/null; then
+                  echo "::warning::$KEY v${VER} — final APK manifest failed to parse (aapt dump badging)"
+                  POST_OK=0
+                fi
+
+                if [ "$POST_OK" = "1" ]; then
+                  echo "  Built: $OUT (bundled native libs: ${BUNDLED_ABIS:-none / pure-Java})"
+                  printf "| %s | \`%s\` | %s | ✅ built |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
+                else
+                  printf "| %s | \`%s\` | %s | ❌ post-build verify failed |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
+                  rm -f "$OUT"
+                fi
               else
                 BAD_ABIS=$(echo "$BUNDLED_ABIS" | tr '\n' ',' | sed 's/,$//')
                 echo "::warning::$KEY v${VER} wanted ${TARGET_ARCH} but source APK only bundled [${BAD_ABIS}] — refusing to publish a wrong-ABI build"

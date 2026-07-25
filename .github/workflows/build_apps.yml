@@ -331,11 +331,15 @@ jobs:
               echo "  Original signature OK"
               rm -f "$XAPK_EXTRACTED"
               CERT_FP=$(apksigner verify --print-certs "$VERIFY_FILE" 2>/dev/null | grep "Signer #1 certificate SHA-256 digest" | awk '{print $NF}')
-              CERT_PKG="$PKG" CERT_KEY="$KEY" CERT_FP="$CERT_FP" python3 scripts/cert_pin.py
+              CERT_PKG="$PKG" CERT_KEY="$KEY" CERT_FP="$CERT_FP" CERT_SOURCE="$APK_SOURCE" python3 scripts/cert_pin.py
               CERT_EXIT=$?
               if [ "$CERT_EXIT" = "42" ]; then
                 rm -f "$APK_FILE"
                 printf "| %s | \`%s\` | %s | ❌ cert mismatch |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
+                continue
+              elif [ "$CERT_EXIT" = "43" ]; then
+                rm -f "$APK_FILE"
+                printf "| %s | \`%s\` | %s | ❌ new app, needs APKMirror/Uptodown first |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
                 continue
               fi
             else
@@ -379,9 +383,13 @@ jobs:
               # INSTALL_FAILED_NO_MATCHING_ABIS on real 64-bit-only devices.
               # Check the zip directly; don't rely on aapt (may not even be
               # installed on the runner) or on what the mirror site claims.
+              # Only real Android ABI directory names — lib/ can contain other
+              # subfolders too (camscanner ships lib/katex_fonts/, which is
+              # not an architecture and was false-positiving as one).
               BUNDLED_ABIS=$(unzip -l "$TMP_OUT" 2>/dev/null \
                 | grep -oE "lib/[a-zA-Z0-9_-]+/" \
                 | sed -E 's#lib/##; s#/##' \
+                | grep -E '^(arm64-v8a|armeabi-v7a|armeabi|x86_64|x86|mips64|mips)$' \
                 | sort -u)
 
               if [ -z "$BUNDLED_ABIS" ]; then

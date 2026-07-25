@@ -459,9 +459,19 @@ jobs:
         run: |
           BUILT=$(ls dist/*.apk 2>/dev/null | wc -l)
           EXPECTED=$(echo "$APPS_JSON" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))")
-          echo "Expected: $EXPECTED apps  |  Built: $BUILT APKs"
-          if [ "$BUILT" = "0" ] && [ "$EXPECTED" != "0" ]; then
-            echo "::error::Build silently failed — $EXPECTED apps queued, 0 APKs produced."
+          SUMMARY_ROWS=$(tail -n +3 build_summary.md 2>/dev/null | grep -c '^|' || true)
+          echo "Expected: $EXPECTED apps  |  Built: $BUILT APKs  |  Logged outcomes: $SUMMARY_ROWS"
+          # 0 built is not itself alarming — an ABI mismatch, a cert-pin
+          # refusal, "no source found" are all correct, expected outcomes
+          # that get properly logged per app. Every one of those manual
+          # single-app test dispatches was reporting as a hard job failure
+          # (red X, failure email) even when it worked exactly as designed.
+          # Only alarm when apps are queued but *didn't even get a logged
+          # outcome* — that's the actual signature of something crashing
+          # before per-app handling ever ran (e.g. the CLI itself failing
+          # to launch), not "nothing needed publishing today."
+          if [ "$EXPECTED" != "0" ] && [ "$SUMMARY_ROWS" -lt "$EXPECTED" ]; then
+            echo "::error::Build silently failed — $EXPECTED apps queued, only $SUMMARY_ROWS got a logged outcome (built or otherwise). Something crashed before per-app handling."
             exit 1
           fi
 

@@ -115,17 +115,15 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-25_
+_Last checked: 2026-07-26_
 
-### [Morphe v1.36.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.36.0)
-* **YouTube - Hide filter bar:** Related videos filter bar is not correctly hidden
-* **YouTube - Hide layout components:** Hide all the thumbnails when using "Hide search term thumbnails" ([#2108](https://github.com/MorpheApp/morphe-patches/issues/2108))
-* **YouTube - Hide layout components:** Hide new type of community post
-* **YouTube - Hide Shorts components:** Hide new type of labels ([#2069](https://github.com/MorpheApp/morphe-patches/issues/2069))
-* **YouTube - Playback speed:** Playback speed is remembered even if the user does not change it manually ([#2134](https://github.com/MorpheApp/morphe-patches/issues/2134))
-* **YouTube - Remember video quality:** Default video quality may not be applied ([#2144](https://github.com/MorpheApp/morphe-patches/issues/2144))
-* **YouTube - Spoof video streams:** Updated visionOS spoof user agent to support AV1
-* **YouTube - System share sheet:** Share sheet doesn't works in Shorts
+### [Morphe v1.37.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.37.0)
+* **YouTube - Copy video link:** Use correct timestamp query delimiter when link shortener is disabled ([#2172](https://github.com/MorpheApp/morphe-patches/issues/2172))
+* **YouTube - Playback speed:** "Use normal speed for music" does not work when default playback speed is "Auto" ([#2171](https://github.com/MorpheApp/morphe-patches/issues/2171))
+* **YouTube - Playback speed:** Playback speed button sometimes does not update ([#2206](https://github.com/MorpheApp/morphe-patches/issues/2206))
+* **YouTube - Remember video quality:** Added new buffering quality flag override
+* **Spoof video streams:** Default client maintenance ([#2208](https://github.com/MorpheApp/morphe-patches/issues/2208))
+* **YouTube - Seekbar:** Add "Enable seekbar thumbnails" setting ([#2182](https://github.com/MorpheApp/morphe-patches/issues/2182))
 
 ### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login

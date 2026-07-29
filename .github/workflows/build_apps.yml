@@ -345,6 +345,7 @@ jobs:
             else
               echo "  ERROR: APK signature invalid for $KEY — possible tampered APK from mirror. Skipping."
               rm -f "$APK_FILE" "$XAPK_EXTRACTED"
+              printf "| %s | \`%s\` | %s | ❌ invalid signature (bad download or tampered mirror) |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"
               continue
             fi
 

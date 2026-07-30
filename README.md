@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-29_
+_Last checked: 2026-07-30_
 
 ### [Morphe v1.37.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.37.0)
 * **YouTube - Copy video link:** Use correct timestamp query delimiter when link shortener is disabled ([#2172](https://github.com/MorpheApp/morphe-patches/issues/2172))

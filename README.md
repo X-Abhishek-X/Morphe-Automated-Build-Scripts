@@ -115,15 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-07-31_
+_Last checked: 2026-08-01_
 
-### [Morphe v1.37.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.37.0)
-* **YouTube - Copy video link:** Use correct timestamp query delimiter when link shortener is disabled ([#2172](https://github.com/MorpheApp/morphe-patches/issues/2172))
-* **YouTube - Playback speed:** "Use normal speed for music" does not work when default playback speed is "Auto" ([#2171](https://github.com/MorpheApp/morphe-patches/issues/2171))
-* **YouTube - Playback speed:** Playback speed button sometimes does not update ([#2206](https://github.com/MorpheApp/morphe-patches/issues/2206))
-* **YouTube - Remember video quality:** Added new buffering quality flag override
-* **Spoof video streams:** Default client maintenance ([#2208](https://github.com/MorpheApp/morphe-patches/issues/2208))
-* **YouTube - Seekbar:** Add "Enable seekbar thumbnails" setting ([#2182](https://github.com/MorpheApp/morphe-patches/issues/2182))
+### [Morphe v1.38.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.38.0)
+* **Settings:** Hidden category title is included when copying a setting breadcrumb
+* **YouTube - Seekbar thumbnail:** Always show timestamp and chapter name
+* **YouTube - Swipe controls:** Evaluate swipe zone before recycling MotionEvent ([#2238](https://github.com/MorpheApp/morphe-patches/issues/2238))
+* **YouTube - Swipe controls:** Resolve memory leaks in swipe controls ([#2268](https://github.com/MorpheApp/morphe-patches/issues/2268))
+* **YouTube Music - Bypass certificate checks:** Resolve Android Auto crash ([#2239](https://github.com/MorpheApp/morphe-patches/issues/2239))
+* Add `Change installer source` universal patch ([#2257](https://github.com/MorpheApp/morphe-patches/issues/2257))
+* **YouTube - Hide layout components:** Add "Hide 'Get Premium' button" setting ([#2275](https://github.com/MorpheApp/morphe-patches/issues/2275))
+* **YouTube - Hide layout components:** Add "Hide explore menu components" setting ([#2159](https://github.com/MorpheApp/morphe-patches/issues/2159))
 
 ### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
 * avoid forcing Photos frictionless login

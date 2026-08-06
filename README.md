@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-05_
+_Last checked: 2026-08-06_
 
 ### [Morphe v1.38.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.38.0)
 * **Settings:** Hidden category title is included when copying a setting breadcrumb
@@ -127,19 +127,25 @@ _Last checked: 2026-08-05_
 * **YouTube - Hide layout components:** Add "Hide 'Get Premium' button" setting ([#2275](https://github.com/MorpheApp/morphe-patches/issues/2275))
 * **YouTube - Hide layout components:** Add "Hide explore menu components" setting ([#2159](https://github.com/MorpheApp/morphe-patches/issues/2159))
 
-### [De-ReVanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
-* avoid forcing Photos frictionless login
-* release v1.0.4 (Photos account persistence + TikTok defaults)
-* stabilize Google Photos GmsCore support
-* Enable **all** TikTok patches by default on **43.6.2** and **43.8.3**.
-* Keep **Settings** + **Enable Open Debug** as **43.6.2-only** (not compatible with 43.8.3).
+### [De-ReVanced v1.1.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.1.0)
+* constrain versionCode range and tighten AiFabComponent fingerprint
+* fix inbox ads patch errors in newer versions
+* **google-photos:** restore account persistence patch on 7.87
+* remove trailing comma in resourcePatch
+* add patch to open links externally always
+* add patch to spoof app version
+* Amazon Music - add Rename shared permissions patch
+* extend hide facebook button to hide facebook navigation from multiple places
 
-### [De-Vanced v1.0.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.0.4)
-* avoid forcing Photos frictionless login
-* release v1.0.4 (Photos account persistence + TikTok defaults)
-* stabilize Google Photos GmsCore support
-* Enable **all** TikTok patches by default on **43.6.2** and **43.8.3**.
-* Keep **Settings** + **Enable Open Debug** as **43.6.2-only** (not compatible with 43.8.3).
+### [De-Vanced v1.1.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.1.0)
+* constrain versionCode range and tighten AiFabComponent fingerprint
+* fix inbox ads patch errors in newer versions
+* **google-photos:** restore account persistence patch on 7.87
+* remove trailing comma in resourcePatch
+* add patch to open links externally always
+* add patch to spoof app version
+* Amazon Music - add Rename shared permissions patch
+* extend hide facebook button to hide facebook navigation from multiple places
 
 ### [Piko v3.8.0](https://github.com/crimera/piko/releases/tag/v3.8.0)
 * **Instagram:** Fix app crash on comment media download([#1568](https://github.com/crimera/piko/issues/1568))

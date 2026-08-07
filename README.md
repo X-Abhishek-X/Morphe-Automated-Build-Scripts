@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-06_
+_Last checked: 2026-08-07_
 
 ### [Morphe v1.38.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.38.0)
 * **Settings:** Hidden category title is included when copying a setting breadcrumb
@@ -157,11 +157,14 @@ _Last checked: 2026-08-06_
 * **Instagram:** Match story mention dialog to Instagram theme ([#1554](https://github.com/crimera/piko/issues/1554))
 * **instagram:** preserve settings fragment on recreation ([#1546](https://github.com/crimera/piko/issues/1546))
 
-### [hoo-dles v1.39.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.39.0)
-* **SuperChinese:** Allow starting pre-downloaded lessons after VIP lapse
-* **Duolingo:** Update patches to support v6.86.5
-* **IbisPaint X:** Update patch to support v14.0.6 and be more resilient to new versions
-* **SuperChinese:** Add `Unlock all lessons` and `Disable telemetry` patches
+### [hoo-dles v1.40.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.40.0)
+* **Adguard:** Fix UI issue on license status page
+* **Adguard:** Update patch to support v4.13.0
+* **MacroFactor:** Bump version and spoof installer source
+* Temporarily remove Teuida patches until MicroG RE update
+* **Github:** Update patch to support v1.267
+* **Lightroom:** Add `Bypass login` and `Unlock premium features` patches
+* **Ling:** Add `Enable Pro` patch
 
 <!-- PATCH-UPDATES-END -->
 

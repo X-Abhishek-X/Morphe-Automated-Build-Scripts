@@ -115,17 +115,10 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-08_
+_Last checked: 2026-08-09_
 
-### [Morphe v1.38.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.38.0)
-* **Settings:** Hidden category title is included when copying a setting breadcrumb
-* **YouTube - Seekbar thumbnail:** Always show timestamp and chapter name
-* **YouTube - Swipe controls:** Evaluate swipe zone before recycling MotionEvent ([#2238](https://github.com/MorpheApp/morphe-patches/issues/2238))
-* **YouTube - Swipe controls:** Resolve memory leaks in swipe controls ([#2268](https://github.com/MorpheApp/morphe-patches/issues/2268))
-* **YouTube Music - Bypass certificate checks:** Resolve Android Auto crash ([#2239](https://github.com/MorpheApp/morphe-patches/issues/2239))
-* Add `Change installer source` universal patch ([#2257](https://github.com/MorpheApp/morphe-patches/issues/2257))
-* **YouTube - Hide layout components:** Add "Hide 'Get Premium' button" setting ([#2275](https://github.com/MorpheApp/morphe-patches/issues/2275))
-* **YouTube - Hide layout components:** Add "Hide explore menu components" setting ([#2159](https://github.com/MorpheApp/morphe-patches/issues/2159))
+### [Morphe v1.39.1](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.39.1)
+* **YouTube - Add to queue:** Flyout menu not available in fullscreen
 
 ### [De-ReVanced v1.1.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.1.0)
 * constrain versionCode range and tighten AiFabComponent fingerprint

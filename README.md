@@ -115,30 +115,16 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-12_
+_Last checked: 2026-08-13_
 
 ### [Morphe v1.39.1](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.39.1)
 * **YouTube - Add to queue:** Flyout menu not available in fullscreen
 
-### [De-ReVanced v1.1.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.1.0)
-* constrain versionCode range and tighten AiFabComponent fingerprint
-* fix inbox ads patch errors in newer versions
-* **google-photos:** restore account persistence patch on 7.87
-* remove trailing comma in resourcePatch
-* add patch to open links externally always
-* add patch to spoof app version
-* Amazon Music - add Rename shared permissions patch
-* extend hide facebook button to hide facebook navigation from multiple places
+### [De-ReVanced v1.2.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.1)
+* **Messenger:** Change recommended app version to `573.0.0.44.88`
 
-### [De-Vanced v1.1.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.1.0)
-* constrain versionCode range and tighten AiFabComponent fingerprint
-* fix inbox ads patch errors in newer versions
-* **google-photos:** restore account persistence patch on 7.87
-* remove trailing comma in resourcePatch
-* add patch to open links externally always
-* add patch to spoof app version
-* Amazon Music - add Rename shared permissions patch
-* extend hide facebook button to hide facebook navigation from multiple places
+### [De-Vanced v1.2.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.1)
+* **Messenger:** Change recommended app version to `573.0.0.44.88`
 
 ### [Piko v3.8.0](https://github.com/crimera/piko/releases/tag/v3.8.0)
 * **Instagram:** Fix app crash on comment media download([#1568](https://github.com/crimera/piko/issues/1568))

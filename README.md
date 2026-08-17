@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-16_
+_Last checked: 2026-08-17_
 
 ### [Morphe v1.39.1](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.39.1)
 * **YouTube - Add to queue:** Flyout menu not available in fullscreen

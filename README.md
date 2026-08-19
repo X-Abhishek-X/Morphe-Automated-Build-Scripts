@@ -115,16 +115,16 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-18_
+_Last checked: 2026-08-19_
 
 ### [Morphe v1.39.1](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.39.1)
 * **YouTube - Add to queue:** Flyout menu not available in fullscreen
 
-### [De-ReVanced v1.2.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.1)
-* **Messenger:** Change recommended app version to `573.0.0.44.88`
+### [De-ReVanced v1.2.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.2)
+* **Strava:** Add app recommendation of the latest fully working app version
 
-### [De-Vanced v1.2.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.1)
-* **Messenger:** Change recommended app version to `573.0.0.44.88`
+### [De-Vanced v1.2.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.2)
+* **Strava:** Add app recommendation of the latest fully working app version
 
 ### [Piko v3.8.0](https://github.com/crimera/piko/releases/tag/v3.8.0)
 * **Instagram:** Fix app crash on comment media download([#1568](https://github.com/crimera/piko/issues/1568))

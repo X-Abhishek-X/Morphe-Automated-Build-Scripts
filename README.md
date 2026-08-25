@@ -115,10 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-24_
+_Last checked: 2026-08-25_
 
-### [Morphe v1.39.1](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.39.1)
-* **YouTube - Add to queue:** Flyout menu not available in fullscreen
+### [Morphe v1.40.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.40.0)
+* **Add to queue:** Error message is shown when adding to queue from certain channels
+* **Disable Play Store updates:** Change manifest version code but preserve existing internal version code checks ([#2470](https://github.com/MorpheApp/morphe-patches/issues/2470))
+* **Network proxy:** Avoid platform HTTPS fallback ([#2510](https://github.com/MorpheApp/morphe-patches/issues/2510))
+* **Reddit:** Add legacy app target of `2024.02.0` to allow logging in then upgrading the patched installation ([#2473](https://github.com/MorpheApp/morphe-patches/issues/2473))
+* **Reddit:** If Google sign-in is attempted then show a popup to use email/password to login
+* **Reddit:** Improve login compatibility ([#2423](https://github.com/MorpheApp/morphe-patches/issues/2423))
+* **YouTube - Add to queue:** "Overridde 'Play next in queue' button" not working  ([#2539](https://github.com/MorpheApp/morphe-patches/issues/2539))
+* **YouTube - Captions:** Auto captions do not show when video is unmuted ([#2436](https://github.com/MorpheApp/morphe-patches/issues/2436))
 
 ### [De-ReVanced v1.2.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.2)
 * **Strava:** Add app recommendation of the latest fully working app version

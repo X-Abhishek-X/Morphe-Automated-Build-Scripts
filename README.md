@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-25_
+_Last checked: 2026-08-26_
 
 ### [Morphe v1.40.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.40.0)
 * **Add to queue:** Error message is shown when adding to queue from certain channels

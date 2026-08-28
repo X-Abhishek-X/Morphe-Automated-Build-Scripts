@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-27_
+_Last checked: 2026-08-28_
 
 ### [Morphe v1.40.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.40.0)
 * **Add to queue:** Error message is shown when adding to queue from certain channels
@@ -143,12 +143,14 @@ _Last checked: 2026-08-27_
 * **Instagram:** Match story mention dialog to Instagram theme ([#1554](https://github.com/crimera/piko/issues/1554))
 * **instagram:** preserve settings fragment on recreation ([#1546](https://github.com/crimera/piko/issues/1546))
 
-### [hoo-dles v1.41.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.41.0)
-* **Duolingo:** Force max energy
-* **Duolingo:** Update patches to support `6.92.5`
-* **MyFitnessPal:** Update patches to support `26.31.0`
-* **Smart Launcher:** Update patches to support `6.6 build 016`
-* **Windy:** Update patches to support `51.0.1`
+### [hoo-dles v1.42.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.42.0)
+* **Bunpo:** Bump version to `3.21.0` and fix runtime crash for older Android versions
+* **Bunpo:** Add `Enable Platinum` patch
+* **Fotmob:** Update patch to support `236.17398.20260827`
+* **Lightroom:** Update patches to support `11.5.01`
+* **Lingodeer:** Add `Enable Premium` patch
+* **Niagara Launcher:** Update patch to support `1.16.23`
+* **Soundcloud:** Update patches to support `2026.08.26-release`
 
 <!-- PATCH-UPDATES-END -->
 

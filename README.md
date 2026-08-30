@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-29_
+_Last checked: 2026-08-30_
 
 ### [Morphe v1.40.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.40.0)
 * **Add to queue:** Error message is shown when adding to queue from certain channels
@@ -143,14 +143,11 @@ _Last checked: 2026-08-29_
 * **Instagram:** Match story mention dialog to Instagram theme ([#1554](https://github.com/crimera/piko/issues/1554))
 * **instagram:** preserve settings fragment on recreation ([#1546](https://github.com/crimera/piko/issues/1546))
 
-### [hoo-dles v1.42.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.42.0)
-* **Bunpo:** Bump version to `3.21.0` and fix runtime crash for older Android versions
-* **Bunpo:** Add `Enable Platinum` patch
-* **Fotmob:** Update patch to support `236.17398.20260827`
-* **Lightroom:** Update patches to support `11.5.01`
-* **Lingodeer:** Add `Enable Premium` patch
-* **Niagara Launcher:** Update patch to support `1.16.23`
-* **Soundcloud:** Update patches to support `2026.08.26-release`
+### [hoo-dles v1.43.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.43.0)
+* **AdGuard:** Add version code for correct APK discovery
+* **Niagara:** Bump supported version to `1.16.24` and fix patch failure
+* **Showly:** Fix news feed not loading
+* **Bend:** Add `Enable Premium` patch
 
 <!-- PATCH-UPDATES-END -->
 

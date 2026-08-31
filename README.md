@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-30_
+_Last checked: 2026-08-31_
 
 ### [Morphe v1.40.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.40.0)
 * **Add to queue:** Error message is shown when adding to queue from certain channels
@@ -127,21 +127,33 @@ _Last checked: 2026-08-30_
 * **YouTube - Add to queue:** "Overridde 'Play next in queue' button" not working  ([#2539](https://github.com/MorpheApp/morphe-patches/issues/2539))
 * **YouTube - Captions:** Auto captions do not show when video is unmuted ([#2436](https://github.com/MorpheApp/morphe-patches/issues/2436))
 
-### [De-ReVanced v1.2.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.2)
-* **Strava:** Add app recommendation of the latest fully working app version
+### [De-ReVanced v1.3.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.0)
+* **Google Photos:** Clone app-owned permissions
+* **Google Photos:** Handle GmsCore avatar auth consent ([#118](https://github.com/RookieEnough/De-Vanced/issues/118))
+* **Google Photos:** Improve OneGoogle avatar support with GmsCore ([#114](https://github.com/RookieEnough/De-Vanced/issues/114))
+* **Pixiv:** Add `Remove popular search time limit` patch ([#108](https://github.com/RookieEnough/De-Vanced/issues/108))
+* **Strava:** Add `Add activity export` patch ([#117](https://github.com/RookieEnough/De-Vanced/issues/117))
+* **Strava:** Add route export patch for GPX and TCX files ([#112](https://github.com/RookieEnough/De-Vanced/issues/112))
+* **Strava:** Add support for `477.14` ([#113](https://github.com/RookieEnough/De-Vanced/issues/113))
 
-### [De-Vanced v1.2.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.2.2)
-* **Strava:** Add app recommendation of the latest fully working app version
+### [De-Vanced v1.3.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.0)
+* **Google Photos:** Clone app-owned permissions
+* **Google Photos:** Handle GmsCore avatar auth consent ([#118](https://github.com/RookieEnough/De-Vanced/issues/118))
+* **Google Photos:** Improve OneGoogle avatar support with GmsCore ([#114](https://github.com/RookieEnough/De-Vanced/issues/114))
+* **Pixiv:** Add `Remove popular search time limit` patch ([#108](https://github.com/RookieEnough/De-Vanced/issues/108))
+* **Strava:** Add `Add activity export` patch ([#117](https://github.com/RookieEnough/De-Vanced/issues/117))
+* **Strava:** Add route export patch for GPX and TCX files ([#112](https://github.com/RookieEnough/De-Vanced/issues/112))
+* **Strava:** Add support for `477.14` ([#113](https://github.com/RookieEnough/De-Vanced/issues/113))
 
-### [Piko v3.8.0](https://github.com/crimera/piko/releases/tag/v3.8.0)
-* **Instagram:** Fix app crash on comment media download([#1568](https://github.com/crimera/piko/issues/1568))
-* **Instagram:** Fix chat action bar function name
-* **Instagram:** Fix opening links
-* **Instagram:** Fix Piko settings color issues
-* **Instagram:** match piko settings background to amoled patch ([#1543](https://github.com/crimera/piko/issues/1543))
-* **Instagram:** Match piko settings highlight to theme ([#1548](https://github.com/crimera/piko/issues/1548))
-* **Instagram:** Match story mention dialog to Instagram theme ([#1554](https://github.com/crimera/piko/issues/1554))
-* **instagram:** preserve settings fragment on recreation ([#1546](https://github.com/crimera/piko/issues/1546))
+### [Piko v3.9.0](https://github.com/crimera/piko/releases/tag/v3.9.0)
+* **Bring back Twitter:** restore omitted Twitter 9.98 terminology
+* **instagram:** add dialog entity dependency for media downloads
+* **Instagram:** block permission onboarding screens ([#1686](https://github.com/crimera/piko/issues/1686))
+* **Instagram:** Check and add external downloader options in settings
+* **Instagram:** Correct shared link sanitization ([#1698](https://github.com/crimera/piko/issues/1698))
+* **Instagram:** don't record an unsend we never captured ([#1728](https://github.com/crimera/piko/issues/1728))
+* **Instagram:** Fix default flag state while extracting recommended flags map
+* **Instagram:** Fix more profile options ([#1708](https://github.com/crimera/piko/issues/1708))
 
 ### [hoo-dles v1.43.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.43.0)
 * **AdGuard:** Add version code for correct APK discovery

@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-08-31_
+_Last checked: 2026-09-01_
 
 ### [Morphe v1.40.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.40.0)
 * **Add to queue:** Error message is shown when adding to queue from certain channels
@@ -127,23 +127,11 @@ _Last checked: 2026-08-31_
 * **YouTube - Add to queue:** "Overridde 'Play next in queue' button" not working  ([#2539](https://github.com/MorpheApp/morphe-patches/issues/2539))
 * **YouTube - Captions:** Auto captions do not show when video is unmuted ([#2436](https://github.com/MorpheApp/morphe-patches/issues/2436))
 
-### [De-ReVanced v1.3.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.0)
-* **Google Photos:** Clone app-owned permissions
-* **Google Photos:** Handle GmsCore avatar auth consent ([#118](https://github.com/RookieEnough/De-Vanced/issues/118))
-* **Google Photos:** Improve OneGoogle avatar support with GmsCore ([#114](https://github.com/RookieEnough/De-Vanced/issues/114))
-* **Pixiv:** Add `Remove popular search time limit` patch ([#108](https://github.com/RookieEnough/De-Vanced/issues/108))
-* **Strava:** Add `Add activity export` patch ([#117](https://github.com/RookieEnough/De-Vanced/issues/117))
-* **Strava:** Add route export patch for GPX and TCX files ([#112](https://github.com/RookieEnough/De-Vanced/issues/112))
-* **Strava:** Add support for `477.14` ([#113](https://github.com/RookieEnough/De-Vanced/issues/113))
+### [De-ReVanced v1.3.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.1)
+* **Google Photos:** Fix avatar OAuth scope, JSON parser, and error logging
 
-### [De-Vanced v1.3.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.0)
-* **Google Photos:** Clone app-owned permissions
-* **Google Photos:** Handle GmsCore avatar auth consent ([#118](https://github.com/RookieEnough/De-Vanced/issues/118))
-* **Google Photos:** Improve OneGoogle avatar support with GmsCore ([#114](https://github.com/RookieEnough/De-Vanced/issues/114))
-* **Pixiv:** Add `Remove popular search time limit` patch ([#108](https://github.com/RookieEnough/De-Vanced/issues/108))
-* **Strava:** Add `Add activity export` patch ([#117](https://github.com/RookieEnough/De-Vanced/issues/117))
-* **Strava:** Add route export patch for GPX and TCX files ([#112](https://github.com/RookieEnough/De-Vanced/issues/112))
-* **Strava:** Add support for `477.14` ([#113](https://github.com/RookieEnough/De-Vanced/issues/113))
+### [De-Vanced v1.3.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.1)
+* **Google Photos:** Fix avatar OAuth scope, JSON parser, and error logging
 
 ### [Piko v3.9.0](https://github.com/crimera/piko/releases/tag/v3.9.0)
 * **Bring back Twitter:** restore omitted Twitter 9.98 terminology

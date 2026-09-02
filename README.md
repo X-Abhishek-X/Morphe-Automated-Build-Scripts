@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-01_
+_Last checked: 2026-09-02_
 
-### [Morphe v1.40.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.40.0)
-* **Add to queue:** Error message is shown when adding to queue from certain channels
-* **Disable Play Store updates:** Change manifest version code but preserve existing internal version code checks ([#2470](https://github.com/MorpheApp/morphe-patches/issues/2470))
-* **Network proxy:** Avoid platform HTTPS fallback ([#2510](https://github.com/MorpheApp/morphe-patches/issues/2510))
-* **Reddit:** Add legacy app target of `2024.02.0` to allow logging in then upgrading the patched installation ([#2473](https://github.com/MorpheApp/morphe-patches/issues/2473))
-* **Reddit:** If Google sign-in is attempted then show a popup to use email/password to login
-* **Reddit:** Improve login compatibility ([#2423](https://github.com/MorpheApp/morphe-patches/issues/2423))
-* **YouTube - Add to queue:** "Overridde 'Play next in queue' button" not working  ([#2539](https://github.com/MorpheApp/morphe-patches/issues/2539))
-* **YouTube - Captions:** Auto captions do not show when video is unmuted ([#2436](https://github.com/MorpheApp/morphe-patches/issues/2436))
+### [Morphe v1.41.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.41.0)
+* **Reddit:** Preserve font weights with system and custom fonts ([#2643](https://github.com/MorpheApp/morphe-patches/issues/2643))
+* **Settings:** Keep search results in sync with preferences and highlight every match ([#2712](https://github.com/MorpheApp/morphe-patches/issues/2712))
+* **Settings:** Resolve OOM crashes and prevent duplicate dialogs
+* **Theme:** Add new color tokens and Litho hooks
+* **YouTube - Add to queue:** Flyout menu is too wide and loses the item changes on rotation
+* **YouTube - Advanced quality menu:** The menu is not show in some circumstances
+* **YouTube - Change form factor:** Prevent tablet layout causing app to crash ([#2600](https://github.com/MorpheApp/morphe-patches/issues/2600))
+* **YouTube - Hide ads:** Prevent unintended navigation button swap ([#2659](https://github.com/MorpheApp/morphe-patches/issues/2659))
 
 ### [De-ReVanced v1.3.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.1)
 * **Google Photos:** Fix avatar OAuth scope, JSON parser, and error logging

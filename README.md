@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-05_
+_Last checked: 2026-09-06_
 
 ### [Morphe v1.41.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.41.0)
 * **Reddit:** Preserve font weights with system and custom fonts ([#2643](https://github.com/MorpheApp/morphe-patches/issues/2643))
@@ -127,11 +127,11 @@ _Last checked: 2026-09-05_
 * **YouTube - Change form factor:** Prevent tablet layout causing app to crash ([#2600](https://github.com/MorpheApp/morphe-patches/issues/2600))
 * **YouTube - Hide ads:** Prevent unintended navigation button swap ([#2659](https://github.com/MorpheApp/morphe-patches/issues/2659))
 
-### [De-ReVanced v1.3.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.1)
-* **Google Photos:** Fix avatar OAuth scope, JSON parser, and error logging
+### [De-ReVanced v1.3.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.2)
+* **Strava - Add route export:** Patch additional methods
 
-### [De-Vanced v1.3.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.1)
-* **Google Photos:** Fix avatar OAuth scope, JSON parser, and error logging
+### [De-Vanced v1.3.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.2)
+* **Strava - Add route export:** Patch additional methods
 
 ### [Piko v3.9.0](https://github.com/crimera/piko/releases/tag/v3.9.0)
 * **Bring back Twitter:** restore omitted Twitter 9.98 terminology

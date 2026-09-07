@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-06_
+_Last checked: 2026-09-07_
 
 ### [Morphe v1.41.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.41.0)
 * **Reddit:** Preserve font weights with system and custom fonts ([#2643](https://github.com/MorpheApp/morphe-patches/issues/2643))
@@ -143,11 +143,10 @@ _Last checked: 2026-09-06_
 * **Instagram:** Fix default flag state while extracting recommended flags map
 * **Instagram:** Fix more profile options ([#1708](https://github.com/crimera/piko/issues/1708))
 
-### [hoo-dles v1.43.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.43.0)
-* **AdGuard:** Add version code for correct APK discovery
-* **Niagara:** Bump supported version to `1.16.24` and fix patch failure
-* **Showly:** Fix news feed not loading
-* **Bend:** Add `Enable Premium` patch
+### [hoo-dles v1.44.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.44.0)
+* Add universal `MicroG integration` patch
+* Add universal `Spoof SIgnature` patch
+* **ASL Bloom:** Add `Enable Premium` patch
 
 <!-- PATCH-UPDATES-END -->
 

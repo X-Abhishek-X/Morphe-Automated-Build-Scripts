@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-09_
+_Last checked: 2026-09-10_
 
-### [Morphe v1.41.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.41.0)
-* **Reddit:** Preserve font weights with system and custom fonts ([#2643](https://github.com/MorpheApp/morphe-patches/issues/2643))
-* **Settings:** Keep search results in sync with preferences and highlight every match ([#2712](https://github.com/MorpheApp/morphe-patches/issues/2712))
-* **Settings:** Resolve OOM crashes and prevent duplicate dialogs
-* **Theme:** Add new color tokens and Litho hooks
-* **YouTube - Add to queue:** Flyout menu is too wide and loses the item changes on rotation
-* **YouTube - Advanced quality menu:** The menu is not show in some circumstances
-* **YouTube - Change form factor:** Prevent tablet layout causing app to crash ([#2600](https://github.com/MorpheApp/morphe-patches/issues/2600))
-* **YouTube - Hide ads:** Prevent unintended navigation button swap ([#2659](https://github.com/MorpheApp/morphe-patches/issues/2659))
+### [Morphe v1.42.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.42.0)
+* **GmsCore support:** Prompt to update outdated MicroG ([#2787](https://github.com/MorpheApp/morphe-patches/issues/2787))
+* **YouTube - Channel whitelists:** Hide injected flyout menu buttons from other unrelated menu's  ([#2808](https://github.com/MorpheApp/morphe-patches/issues/2808))
+* **YouTube - Channel whitelists:** Whitelists buttons are visible in some flyouts ([#2802](https://github.com/MorpheApp/morphe-patches/issues/2802))
+* **YouTube - Hide layout components:** App may crash when 'You may like' section is hidden ([#2852](https://github.com/MorpheApp/morphe-patches/issues/2852))
+* **YouTube - Hide layout components:** Hide guidelines in live chat
+* **YouTube - Hide layout components:** Hide new type of community posts
+* **YouTube - Hide layout components:** Resolve empty channel tabs when using "Hide channel tab filter" ([#2747](https://github.com/MorpheApp/morphe-patches/issues/2747))
+* **YouTube - Hide player overlay buttons:** Apply the control buttons background opacity to the player time bar ([#2805](https://github.com/MorpheApp/morphe-patches/issues/2805))
 
 ### [De-ReVanced v1.3.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.2)
 * **Strava - Add route export:** Patch additional methods

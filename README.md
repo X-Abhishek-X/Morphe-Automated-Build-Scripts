@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-10_
+_Last checked: 2026-09-11_
 
 ### [Morphe v1.42.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.42.0)
 * **GmsCore support:** Prompt to update outdated MicroG ([#2787](https://github.com/MorpheApp/morphe-patches/issues/2787))
@@ -127,11 +127,11 @@ _Last checked: 2026-09-10_
 * **YouTube - Hide layout components:** Resolve empty channel tabs when using "Hide channel tab filter" ([#2747](https://github.com/MorpheApp/morphe-patches/issues/2747))
 * **YouTube - Hide player overlay buttons:** Apply the control buttons background opacity to the player time bar ([#2805](https://github.com/MorpheApp/morphe-patches/issues/2805))
 
-### [De-ReVanced v1.3.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.2)
-* **Strava - Add route export:** Patch additional methods
+### [De-ReVanced v1.3.3](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.3)
+* **Google Photos:** Add version recommendation
 
-### [De-Vanced v1.3.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.2)
-* **Strava - Add route export:** Patch additional methods
+### [De-Vanced v1.3.3](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.3.3)
+* **Google Photos:** Add version recommendation
 
 ### [Piko v3.9.0](https://github.com/crimera/piko/releases/tag/v3.9.0)
 * **Bring back Twitter:** restore omitted Twitter 9.98 terminology

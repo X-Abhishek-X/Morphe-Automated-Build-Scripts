@@ -331,8 +331,12 @@ jobs:
               echo "  Original signature OK"
               rm -f "$XAPK_EXTRACTED"
               CERT_FP=$(apksigner verify --print-certs "$VERIFY_FILE" 2>/dev/null | grep "Signer #1 certificate SHA-256 digest" | awk '{print $NF}')
-              CERT_PKG="$PKG" CERT_KEY="$KEY" CERT_FP="$CERT_FP" CERT_SOURCE="$APK_SOURCE" python3 scripts/cert_pin.py
-              CERT_EXIT=$?
+              # set -e is active for this step; a bare non-zero exit from cert_pin.py
+              # (42 mismatch / 43 new-app-APKPure-only) would abort the whole build
+              # before CERT_EXIT is read, killing every app after this one. The `|| CERT_EXIT=$?`
+              # keeps the exit code capturable so the branches below skip just this app.
+              CERT_EXIT=0
+              CERT_PKG="$PKG" CERT_KEY="$KEY" CERT_FP="$CERT_FP" CERT_SOURCE="$APK_SOURCE" python3 scripts/cert_pin.py || CERT_EXIT=$?
               if [ "$CERT_EXIT" = "42" ]; then
                 rm -f "$APK_FILE"
                 printf "| %s | \`%s\` | %s | ❌ cert mismatch |\n" "$KEY" "$VER" "$APK_SOURCE" >> "$SUMMARY_FILE"

@@ -370,6 +370,15 @@ jobs:
               EXTRA_FLAGS+=(--enable "Enable DCIM folders backup control")
             fi
 
+            # Strip native libs for architectures the target device can't use
+            # (keeps only $TARGET_ARCH, e.g. arm64-v8a — drops armeabi-v7a/x86/x86_64).
+            # Matches the Morphe manager's "strip libs" option: big size cut, safe on
+            # 64-bit-only devices. Skipped when a universal build is explicitly requested.
+            STRIP_FLAGS=()
+            if [ "$TARGET_ARCH" != "universal" ]; then
+              STRIP_FLAGS+=(--striplibs="$TARGET_ARCH")
+            fi
+
             TMP_OUT="dist/.tmp_${KEY}.apk"
             rm -f "$TMP_OUT"
             echo "  Patching -> $TMP_OUT (using patches from source: $SRC)"
@@ -378,6 +387,7 @@ jobs:
                 --keystore=morphe.keystore \
                 -p "$PATCH_FILE" \
                 "${EXTRA_FLAGS[@]}" \
+                "${STRIP_FLAGS[@]}" \
                 -o "$TMP_OUT" \
                 "$APK_FILE"; then
 

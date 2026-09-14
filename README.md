@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-13_
+_Last checked: 2026-09-14_
 
-### [Morphe v1.42.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.42.0)
-* **GmsCore support:** Prompt to update outdated MicroG ([#2787](https://github.com/MorpheApp/morphe-patches/issues/2787))
-* **YouTube - Channel whitelists:** Hide injected flyout menu buttons from other unrelated menu's  ([#2808](https://github.com/MorpheApp/morphe-patches/issues/2808))
-* **YouTube - Channel whitelists:** Whitelists buttons are visible in some flyouts ([#2802](https://github.com/MorpheApp/morphe-patches/issues/2802))
-* **YouTube - Hide layout components:** App may crash when 'You may like' section is hidden ([#2852](https://github.com/MorpheApp/morphe-patches/issues/2852))
-* **YouTube - Hide layout components:** Hide guidelines in live chat
-* **YouTube - Hide layout components:** Hide new type of community posts
-* **YouTube - Hide layout components:** Resolve empty channel tabs when using "Hide channel tab filter" ([#2747](https://github.com/MorpheApp/morphe-patches/issues/2747))
-* **YouTube - Hide player overlay buttons:** Apply the control buttons background opacity to the player time bar ([#2805](https://github.com/MorpheApp/morphe-patches/issues/2805))
+### [Morphe v1.43.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.43.0)
+* **Theme:** Use the nearest palette color when the app is not given an overlay manager ([#2926](https://github.com/MorpheApp/morphe-patches/issues/2926))
+* **YouTube - Change header:** Apply custom header logo to explore menu ([#2910](https://github.com/MorpheApp/morphe-patches/issues/2910))
+* **YouTube - Disable fullscreen gestures:** Restore pinch-to-zoom past fill on `21.36`+ ([#2876](https://github.com/MorpheApp/morphe-patches/issues/2876))
+* **YouTube - Fullscreen video scale:** Restore UI after leaving fullscreen on tablet/foldable landscape ([#2874](https://github.com/MorpheApp/morphe-patches/issues/2874))
+* **YouTube - Hide layout components:** Fix UI padding in comment replies and incognito search ([#2891](https://github.com/MorpheApp/morphe-patches/issues/2891))
+* **YouTube - Loop video:** Respect sleep timer end of video state ([#2890](https://github.com/MorpheApp/morphe-patches/issues/2890))
+* **YouTube - Navigation bar:** Keep the app edge to edge when the translucent navigation bar is disabled
+* **YouTube - Video quality:** Prevent infinite loading when opening videos from Shorts ([#2871](https://github.com/MorpheApp/morphe-patches/issues/2871))
 
 ### [De-ReVanced v1.4.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.4.0)
 * **Pixv:** Add limited support for `6.196.0`

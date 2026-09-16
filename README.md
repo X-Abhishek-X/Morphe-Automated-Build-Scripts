@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-15_
+_Last checked: 2026-09-16_
 
 ### [Morphe v1.43.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.43.0)
 * **Theme:** Use the nearest palette color when the app is not given an overlay manager ([#2926](https://github.com/MorpheApp/morphe-patches/issues/2926))

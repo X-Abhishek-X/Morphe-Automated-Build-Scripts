@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-16_
+_Last checked: 2026-09-17_
 
 ### [Morphe v1.43.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.43.0)
 * **Theme:** Use the nearest palette color when the app is not given an overlay manager ([#2926](https://github.com/MorpheApp/morphe-patches/issues/2926))
@@ -145,7 +145,7 @@ _Last checked: 2026-09-16_
 
 ### [hoo-dles v1.44.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.44.0)
 * Add universal `MicroG integration` patch
-* Add universal `Spoof SIgnature` patch
+* Add universal `Spoof Signature` patch
 * **ASL Bloom:** Add `Enable Premium` patch
 
 <!-- PATCH-UPDATES-END -->

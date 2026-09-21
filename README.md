@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-20_
+_Last checked: 2026-09-21_
 
 ### [Morphe v1.43.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.43.0)
 * **Theme:** Use the nearest palette color when the app is not given an overlay manager ([#2926](https://github.com/MorpheApp/morphe-patches/issues/2926))
@@ -127,13 +127,11 @@ _Last checked: 2026-09-20_
 * **YouTube - Navigation bar:** Keep the app edge to edge when the translucent navigation bar is disabled
 * **YouTube - Video quality:** Prevent infinite loading when opening videos from Shorts ([#2871](https://github.com/MorpheApp/morphe-patches/issues/2871))
 
-### [De-ReVanced v1.4.3](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.4.3)
-* **Pixiv:** Support `6.196.0` in `Remove popular search time limit`, rework `Hide ads` gate ([#139](https://github.com/RookieEnough/De-Vanced/issues/139))
-* Rename `Change package name` to `Clone app`
+### [De-ReVanced v1.4.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.4.4)
+* **Peacock TV:** Restore `Hide ads` patch
 
-### [De-Vanced v1.4.3](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.4.3)
-* **Pixiv:** Support `6.196.0` in `Remove popular search time limit`, rework `Hide ads` gate ([#139](https://github.com/RookieEnough/De-Vanced/issues/139))
-* Rename `Change package name` to `Clone app`
+### [De-Vanced v1.4.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.4.4)
+* **Peacock TV:** Restore `Hide ads` patch
 
 ### [Piko v3.9.0](https://github.com/crimera/piko/releases/tag/v3.9.0)
 * **Bring back Twitter:** restore omitted Twitter 9.98 terminology

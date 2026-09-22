@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-21_
+_Last checked: 2026-09-22_
 
-### [Morphe v1.43.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.43.0)
-* **Theme:** Use the nearest palette color when the app is not given an overlay manager ([#2926](https://github.com/MorpheApp/morphe-patches/issues/2926))
-* **YouTube - Change header:** Apply custom header logo to explore menu ([#2910](https://github.com/MorpheApp/morphe-patches/issues/2910))
-* **YouTube - Disable fullscreen gestures:** Restore pinch-to-zoom past fill on `21.36`+ ([#2876](https://github.com/MorpheApp/morphe-patches/issues/2876))
-* **YouTube - Fullscreen video scale:** Restore UI after leaving fullscreen on tablet/foldable landscape ([#2874](https://github.com/MorpheApp/morphe-patches/issues/2874))
-* **YouTube - Hide layout components:** Fix UI padding in comment replies and incognito search ([#2891](https://github.com/MorpheApp/morphe-patches/issues/2891))
-* **YouTube - Loop video:** Respect sleep timer end of video state ([#2890](https://github.com/MorpheApp/morphe-patches/issues/2890))
-* **YouTube - Navigation bar:** Keep the app edge to edge when the translucent navigation bar is disabled
-* **YouTube - Video quality:** Prevent infinite loading when opening videos from Shorts ([#2871](https://github.com/MorpheApp/morphe-patches/issues/2871))
+### [Morphe v1.44.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.44.0)
+* **Reddit - App icon:** Support changing icon on cloned installs
+* **YouTube - Channel search:** Search is scoped to a channel after leaving its page ([#2997](https://github.com/MorpheApp/morphe-patches/issues/2997))
+* **YouTube - Comments:** Hide new comments carousel ([#3110](https://github.com/MorpheApp/morphe-patches/issues/3110))
+* **YouTube - GmsCore support:** "Play Protect certification" screen is shown on startup ([#2977](https://github.com/MorpheApp/morphe-patches/issues/2977))
+* **YouTube - Hide ads:** Hide new product cards ([#3103](https://github.com/MorpheApp/morphe-patches/issues/3103))
+* **YouTube - Hide layout components:** Hide Auto-dubbed label in feed ([#3101](https://github.com/MorpheApp/morphe-patches/issues/3101))
+* **YouTube - Hide layout components:** Hide Community button in search ([#3112](https://github.com/MorpheApp/morphe-patches/issues/3112))
+* **YouTube - Hide layout components:** Hide movie shelf in search results ([#2933](https://github.com/MorpheApp/morphe-patches/issues/2933))
 
 ### [De-ReVanced v1.4.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.4.4)
 * **Peacock TV:** Restore `Hide ads` patch

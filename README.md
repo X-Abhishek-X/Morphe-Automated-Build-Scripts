@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-09-30_
+_Last checked: 2026-10-01_
 
 ### [Morphe v1.44.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.44.0)
 * **Reddit - App icon:** Support changing icon on cloned installs
@@ -143,15 +143,15 @@ _Last checked: 2026-09-30_
 * **Instagram:** Fix default flag state while extracting recommended flags map
 * **Instagram:** Fix more profile options ([#1708](https://github.com/crimera/piko/issues/1708))
 
-### [hoo-dles v1.45.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.45.0)
-* Change `Signature spoof` to patch call sites instead of modifying PackageManager directly (support SDK 37+)
-* **Lightroom:** Remove `Bypass login` patch
-* **MicroG:** Fix support for Busuu
-* **Prime Video:** Fix `Rename shared permissions` patch for latest
-* **Bend:** Update support for `7.8.0`
-* **Bunpo:** Update support for `3.23.1`
-* **Duolingo:** Add `Unlimited RampUp time` patch
-* **Lightroom:** Update support for `11.5.31`
+### [hoo-dles v1.46.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.46.0)
+* **`Hide app icon`:** Allow app to be launched from app info settings
+* **Duolingo:** Update support for `Enable debug mode` patch
+* **FotMob:** Force FotMob+ toolbar logo
+* **Lyfta:** Display premium UI elements as well as unlock features
+* **SuperChinese:** Fix signature spoofing for native binary
+* **FotMob:** Update support for `237.17536.20260911`
+* **Lyfta:** Update support for `1.599`
+* **Superchinese:** Add `Block launch upsell` patch
 
 <!-- PATCH-UPDATES-END -->
 

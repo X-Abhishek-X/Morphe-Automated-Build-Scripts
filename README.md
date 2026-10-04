@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-03_
+_Last checked: 2026-10-04_
 
 ### [Morphe v1.45.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.45.0)
 * **GmsCore support:** Omit empty intent data ([#3170](https://github.com/MorpheApp/morphe-patches/issues/3170))
@@ -127,21 +127,11 @@ _Last checked: 2026-10-03_
 * **YouTube - Hide layout components:** Restore preview comment simplebox matcher ([#3130](https://github.com/MorpheApp/morphe-patches/issues/3130))
 * **YouTube - Hide player flyout menu components:** Hide the Audio Track item in the Shorts flyout menu ([#3297](https://github.com/MorpheApp/morphe-patches/issues/3297))
 
-### [De-ReVanced v1.5.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.0)
-* add missing junit to version catalog
-* **facebook:** match static flag instead of exact access flags in KeepAskedStartTab fingerprint
-* **facebook:** normalize downloads to H.264/AAC-LC in single pass, closes [#154](https://github.com/RookieEnough/De-Vanced/issues/154)
-* **facebook:** prefer H.264 video and AAC audio in download variant selection, closes [#154](https://github.com/RookieEnough/De-Vanced/issues/154)
-* **facebook:** prevent AMOLED theme recursion crash in Messenger DMs
-* **Facebook:** add full 580 patch set
+### [De-ReVanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
+* **Amazon Music:** Resolve app crash on startup
 
-### [De-Vanced v1.5.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.0)
-* add missing junit to version catalog
-* **facebook:** match static flag instead of exact access flags in KeepAskedStartTab fingerprint
-* **facebook:** normalize downloads to H.264/AAC-LC in single pass, closes [#154](https://github.com/RookieEnough/De-Vanced/issues/154)
-* **facebook:** prefer H.264 video and AAC audio in download variant selection, closes [#154](https://github.com/RookieEnough/De-Vanced/issues/154)
-* **facebook:** prevent AMOLED theme recursion crash in Messenger DMs
-* **Facebook:** add full 580 patch set
+### [De-Vanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
+* **Amazon Music:** Resolve app crash on startup
 
 ### [Piko v3.9.0](https://github.com/crimera/piko/releases/tag/v3.9.0)
 * **Bring back Twitter:** restore omitted Twitter 9.98 terminology

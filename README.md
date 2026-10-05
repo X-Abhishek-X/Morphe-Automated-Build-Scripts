@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-04_
+_Last checked: 2026-10-05_
 
 ### [Morphe v1.45.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.45.0)
 * **GmsCore support:** Omit empty intent data ([#3170](https://github.com/MorpheApp/morphe-patches/issues/3170))
@@ -143,15 +143,10 @@ _Last checked: 2026-10-04_
 * **Instagram:** Fix default flag state while extracting recommended flags map
 * **Instagram:** Fix more profile options ([#1708](https://github.com/crimera/piko/issues/1708))
 
-### [hoo-dles v1.46.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.46.0)
-* **`Hide app icon`:** Allow app to be launched from app info settings
-* **Duolingo:** Update support for `Enable debug mode` patch
-* **FotMob:** Force FotMob+ toolbar logo
-* **Lyfta:** Display premium UI elements as well as unlock features
-* **SuperChinese:** Fix signature spoofing for native binary
-* **FotMob:** Update support for `237.17536.20260911`
-* **Lyfta:** Update support for `1.599`
-* **Superchinese:** Add `Block launch upsell` patch
+### [hoo-dles v1.47.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.47.0)
+* **Ling:** Update to `8.9.0`
+* **ProtonVPN:** Update patches to support `5.20.57.0`
+* Update `Universal MicroG` support for FotMob
 
 <!-- PATCH-UPDATES-END -->
 

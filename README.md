@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-05_
+_Last checked: 2026-10-06_
 
-### [Morphe v1.45.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.45.0)
-* **GmsCore support:** Omit empty intent data ([#3170](https://github.com/MorpheApp/morphe-patches/issues/3170))
-* Reduce heap use from ConversionContext dumps and JS player cache ([#3120](https://github.com/MorpheApp/morphe-patches/issues/3120))
-* **YouTube  - Voice over translation:** Add missing accessibility labels and Voice over translation button state ([#3203](https://github.com/MorpheApp/morphe-patches/issues/3203))
-* **YouTube - Captions:** Make "Always show" override a manual caption-off ([#3421](https://github.com/MorpheApp/morphe-patches/issues/3421))
-* **YouTube - Custom branding:** Do not ask which app to use for app shortcut actions ([#3204](https://github.com/MorpheApp/morphe-patches/issues/3204))
-* **YouTube - Hide layout components:** Open the correct channel tab when channel tabs are hidden ([#3200](https://github.com/MorpheApp/morphe-patches/issues/3200))
-* **YouTube - Hide layout components:** Restore preview comment simplebox matcher ([#3130](https://github.com/MorpheApp/morphe-patches/issues/3130))
-* **YouTube - Hide player flyout menu components:** Hide the Audio Track item in the Shorts flyout menu ([#3297](https://github.com/MorpheApp/morphe-patches/issues/3297))
+### [Morphe v1.46.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.46.0)
+* **Clone app:** Change update permission and update provider to default on
+* **YouTube - DeArrow:** Always use high quality still images without checking if still exists
+* **YouTube - DeArrow:** "DeArrow & original thumbnails" sometimes shows still images when no crowdsourced thumbnails exist ([#3531](https://github.com/MorpheApp/morphe-patches/issues/3531))
+* **YouTube - Hide Layout components:** Add more navigation tabs to back button or gesture filtering rule ([#3546](https://github.com/MorpheApp/morphe-patches/issues/3546))
+* **YouTube - Hide layout components:** Allow filtering in miniplayer mode
+* **YouTube - Hide layout components:** Hide new type of attributes section in video description ([#3532](https://github.com/MorpheApp/morphe-patches/issues/3532))
+* **YouTube - Hide layout components:** Hide the chapter title next to the timestamp ([#3475](https://github.com/MorpheApp/morphe-patches/issues/3475))
+* **YouTube - Hide layout components:** Some filters don't work after switching to the "You" tab and using the Back button or gesture ([#3542](https://github.com/MorpheApp/morphe-patches/issues/3542))
 
 ### [De-ReVanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
 * **Amazon Music:** Resolve app crash on startup

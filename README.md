@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-10_
+_Last checked: 2026-10-11_
 
 ### [Morphe v1.46.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.46.0)
 * **Clone app:** Change update permission and update provider to default on
@@ -133,15 +133,15 @@ _Last checked: 2026-10-10_
 ### [De-Vanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
 * **Amazon Music:** Resolve app crash on startup
 
-### [Piko v3.9.0](https://github.com/crimera/piko/releases/tag/v3.9.0)
-* **Bring back Twitter:** restore omitted Twitter 9.98 terminology
-* **instagram:** add dialog entity dependency for media downloads
-* **Instagram:** block permission onboarding screens ([#1686](https://github.com/crimera/piko/issues/1686))
-* **Instagram:** Check and add external downloader options in settings
-* **Instagram:** Correct shared link sanitization ([#1698](https://github.com/crimera/piko/issues/1698))
-* **Instagram:** don't record an unsend we never captured ([#1728](https://github.com/crimera/piko/issues/1728))
-* **Instagram:** Fix default flag state while extracting recommended flags map
-* **Instagram:** Fix more profile options ([#1708](https://github.com/crimera/piko/issues/1708))
+### [Piko v3.10.0](https://github.com/crimera/piko/releases/tag/v3.10.0)
+* **ci:** Import Crowdin translations onto the latest dev ([#1890](https://github.com/crimera/piko/issues/1890))
+* **github:** use existing enhancement label and add missing twitter label
+* **Instagram:** add auto-scroll persistence flag to recommended flags ([#1957](https://github.com/crimera/piko/issues/1957)), closes [#1746](https://github.com/crimera/piko/issues/1746)
+* **Instagram:** Add missing entity dependencies ([#1833](https://github.com/crimera/piko/issues/1833))
+* **Instagram:** Align Instants settings and saved viewer styling ([#2017](https://github.com/crimera/piko/issues/2017))
+* **Instagram:** Allow screenshots in protected DM windows
+* **Instagram:** Correct patch status mappings
+* **Instagram:** Correct the names of the HDR and auto-scroll recommended flags ([#2078](https://github.com/crimera/piko/issues/2078))
 
 ### [hoo-dles v1.47.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.47.0)
 * **Ling:** Update to `8.9.0`

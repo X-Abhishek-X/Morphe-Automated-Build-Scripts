@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-11_
+_Last checked: 2026-10-12_
 
-### [Morphe v1.46.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.46.0)
-* **Clone app:** Change update permission and update provider to default on
-* **YouTube - DeArrow:** Always use high quality still images without checking if still exists
-* **YouTube - DeArrow:** "DeArrow & original thumbnails" sometimes shows still images when no crowdsourced thumbnails exist ([#3531](https://github.com/MorpheApp/morphe-patches/issues/3531))
-* **YouTube - Hide Layout components:** Add more navigation tabs to back button or gesture filtering rule ([#3546](https://github.com/MorpheApp/morphe-patches/issues/3546))
-* **YouTube - Hide layout components:** Allow filtering in miniplayer mode
-* **YouTube - Hide layout components:** Hide new type of attributes section in video description ([#3532](https://github.com/MorpheApp/morphe-patches/issues/3532))
-* **YouTube - Hide layout components:** Hide the chapter title next to the timestamp ([#3475](https://github.com/MorpheApp/morphe-patches/issues/3475))
-* **YouTube - Hide layout components:** Some filters don't work after switching to the "You" tab and using the Back button or gesture ([#3542](https://github.com/MorpheApp/morphe-patches/issues/3542))
+### [Morphe v1.47.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.47.0)
+* **Custom branding:** Use the branded notification icon for playback notifications of mounted installs
+* **Settings:** Search hint and tips ignore the Morphe language override
+* **Spoof video streams:** PoToken generation can stall and show "Failed to generate PoToken" ([#3663](https://github.com/MorpheApp/morphe-patches/issues/3663))
+* **Spoof video streams:** Widgets may not play correctly ([#3656](https://github.com/MorpheApp/morphe-patches/issues/3656))
+* **YouTube - Background playback:** Respect server value of automatic pause and resume flags
+* **YouTube - Channel search:** Searching again from same channel page may not show channel results
+* **YouTube - Force AVC:** Removed VP9 formats with enabled setting
+* **YouTube - Hide layout components:** Hide new type of video labels ([#3641](https://github.com/MorpheApp/morphe-patches/issues/3641))
 
 ### [De-ReVanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
 * **Amazon Music:** Resolve app crash on startup

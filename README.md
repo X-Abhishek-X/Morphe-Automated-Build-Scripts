@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-22_
+_Last checked: 2026-10-23_
 
-### [Morphe v1.47.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.47.0)
-* **Custom branding:** Use the branded notification icon for playback notifications of mounted installs
-* **Settings:** Search hint and tips ignore the Morphe language override
-* **Spoof video streams:** PoToken generation can stall and show "Failed to generate PoToken" ([#3663](https://github.com/MorpheApp/morphe-patches/issues/3663))
-* **Spoof video streams:** Widgets may not play correctly ([#3656](https://github.com/MorpheApp/morphe-patches/issues/3656))
-* **YouTube - Background playback:** Respect server value of automatic pause and resume flags
-* **YouTube - Channel search:** Searching again from same channel page may not show channel results
-* **YouTube - Force AVC:** Removed VP9 formats with enabled setting
-* **YouTube - Hide layout components:** Hide new type of video labels ([#3641](https://github.com/MorpheApp/morphe-patches/issues/3641))
+### [Morphe v1.48.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.48.0)
+* **Downloads:** Allow using in-app downloads with player overlay external download button
+* Export only filtered logs and stream file exports efficiently ([#3746](https://github.com/MorpheApp/morphe-patches/issues/3746))
+* Temporarily revert patches-library update to fix app startup crash
+* **YouTube - Add to queue:** Fix Premium-style queue bugs ([#3752](https://github.com/MorpheApp/morphe-patches/issues/3752))
+* **YouTube - Ambient mode:** Force Ambient mode when the server turns it off
+* **YouTube - Captions:** Restore all translation menu getter routes ([#3818](https://github.com/MorpheApp/morphe-patches/issues/3818))
+* **YouTube - Captions:** Restore translations from original caption sources ([#3794](https://github.com/MorpheApp/morphe-patches/issues/3794))
+* **YouTube - Captions:** Show auto-translated captions of styled caption tracks ([#3837](https://github.com/MorpheApp/morphe-patches/issues/3837))
 
 ### [De-ReVanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
 * **Amazon Music:** Resolve app crash on startup

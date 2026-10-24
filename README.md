@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-23_
+_Last checked: 2026-10-24_
 
 ### [Morphe v1.48.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.48.0)
 * **Downloads:** Allow using in-app downloads with player overlay external download button
@@ -127,11 +127,11 @@ _Last checked: 2026-10-23_
 * **YouTube - Captions:** Restore translations from original caption sources ([#3794](https://github.com/MorpheApp/morphe-patches/issues/3794))
 * **YouTube - Captions:** Show auto-translated captions of styled caption tracks ([#3837](https://github.com/MorpheApp/morphe-patches/issues/3837))
 
-### [De-ReVanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
-* **Amazon Music:** Resolve app crash on startup
+### [De-ReVanced v1.6.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.0)
+* Restore Disney+ patches
 
-### [De-Vanced v1.5.1](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.5.1)
-* **Amazon Music:** Resolve app crash on startup
+### [De-Vanced v1.6.0](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.0)
+* Restore Disney+ patches
 
 ### [Piko v3.10.0](https://github.com/crimera/piko/releases/tag/v3.10.0)
 * **ci:** Import Crowdin translations onto the latest dev ([#1890](https://github.com/crimera/piko/issues/1890))

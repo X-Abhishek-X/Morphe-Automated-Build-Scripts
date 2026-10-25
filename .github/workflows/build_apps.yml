@@ -169,6 +169,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -q requests beautifulsoup4 'curl_cffi>=0.7'
+          sudo apt-get update -q
           sudo apt-get install -y -q aapt apksigner
 
       - name: Install apkeep (APKPure fallback downloader)

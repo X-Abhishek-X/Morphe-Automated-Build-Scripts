@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-27_
+_Last checked: 2026-10-28_
 
 ### [Morphe v1.48.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.48.0)
 * **Downloads:** Allow using in-app downloads with player overlay external download button

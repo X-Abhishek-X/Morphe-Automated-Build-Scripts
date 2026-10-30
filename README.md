@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-10-29_
+_Last checked: 2026-10-30_
 
-### [Morphe v1.48.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.48.0)
-* **Downloads:** Allow using in-app downloads with player overlay external download button
-* Export only filtered logs and stream file exports efficiently ([#3746](https://github.com/MorpheApp/morphe-patches/issues/3746))
-* Temporarily revert patches-library update to fix app startup crash
-* **YouTube - Add to queue:** Fix Premium-style queue bugs ([#3752](https://github.com/MorpheApp/morphe-patches/issues/3752))
-* **YouTube - Ambient mode:** Force Ambient mode when the server turns it off
-* **YouTube - Captions:** Restore all translation menu getter routes ([#3818](https://github.com/MorpheApp/morphe-patches/issues/3818))
-* **YouTube - Captions:** Restore translations from original caption sources ([#3794](https://github.com/MorpheApp/morphe-patches/issues/3794))
-* **YouTube - Captions:** Show auto-translated captions of styled caption tracks ([#3837](https://github.com/MorpheApp/morphe-patches/issues/3837))
+### [Morphe v2.0.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.0.0)
+* Patches now use Morphe Patcher 2.0.0
+* **YouTube - Add to queue:** Add "Native queue" setting ([#3953](https://github.com/MorpheApp/morphe-patches/issues/3953))
+* **YouTube - Channel search:** Search the posts of the channel ([#4078](https://github.com/MorpheApp/morphe-patches/issues/4078))
+* **YouTube - Custom branding:** Add experimental YouTube launcher icons ([#4114](https://github.com/MorpheApp/morphe-patches/issues/4114))
+* **YouTube - Downloads:** Add "Quick download on tap" setting ([#3883](https://github.com/MorpheApp/morphe-patches/issues/3883))
+* **YouTube - Downloads:** Add download item to the Shorts menu ([#4099](https://github.com/MorpheApp/morphe-patches/issues/4099))
+* **YouTube - Downloads:** Add playlist downloads for accounts without Premium
+* **YouTube - Hide layout components:** Add "Hide 'Unavailable videos are hidden' banner" setting ([#4134](https://github.com/MorpheApp/morphe-patches/issues/4134))
 
 ### [De-ReVanced v1.6.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.2)
 * **Amazon Music:** Use correct version constrain

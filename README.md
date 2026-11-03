@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-02_
+_Last checked: 2026-11-03_
 
 ### [Morphe v2.0.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.0.0)
 * Patches now use Morphe Patcher 2.0.0
@@ -127,11 +127,15 @@ _Last checked: 2026-11-02_
 * **YouTube - Downloads:** Add playlist downloads for accounts without Premium
 * **YouTube - Hide layout components:** Add "Hide 'Unavailable videos are hidden' banner" setting ([#4134](https://github.com/MorpheApp/morphe-patches/issues/4134))
 
-### [De-ReVanced v1.6.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.2)
-* **Amazon Music:** Use correct version constrain
+### [De-ReVanced v1.6.3](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.3)
+* **Microsoft Lens:** Prevent native JVM invalidation ([#174](https://github.com/RookieEnough/De-Vanced/issues/174))
+* **Pixiv:** support 6.202.1 ([#171](https://github.com/RookieEnough/De-Vanced/issues/171))
+* Remove old Twitch patches that are now available at multiple other sources
 
-### [De-Vanced v1.6.2](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.2)
-* **Amazon Music:** Use correct version constrain
+### [De-Vanced v1.6.3](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.3)
+* **Microsoft Lens:** Prevent native JVM invalidation ([#174](https://github.com/RookieEnough/De-Vanced/issues/174))
+* **Pixiv:** support 6.202.1 ([#171](https://github.com/RookieEnough/De-Vanced/issues/171))
+* Remove old Twitch patches that are now available at multiple other sources
 
 ### [Piko v3.10.0](https://github.com/crimera/piko/releases/tag/v3.10.0)
 * **ci:** Import Crowdin translations onto the latest dev ([#1890](https://github.com/crimera/piko/issues/1890))

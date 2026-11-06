@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-05_
+_Last checked: 2026-11-06_
 
-### [Morphe v2.0.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.0.0)
-* Patches now use Morphe Patcher 2.0.0
-* **YouTube - Add to queue:** Add "Native queue" setting ([#3953](https://github.com/MorpheApp/morphe-patches/issues/3953))
-* **YouTube - Channel search:** Search the posts of the channel ([#4078](https://github.com/MorpheApp/morphe-patches/issues/4078))
-* **YouTube - Custom branding:** Add experimental YouTube launcher icons ([#4114](https://github.com/MorpheApp/morphe-patches/issues/4114))
-* **YouTube - Downloads:** Add "Quick download on tap" setting ([#3883](https://github.com/MorpheApp/morphe-patches/issues/3883))
-* **YouTube - Downloads:** Add download item to the Shorts menu ([#4099](https://github.com/MorpheApp/morphe-patches/issues/4099))
-* **YouTube - Downloads:** Add playlist downloads for accounts without Premium
-* **YouTube - Hide layout components:** Add "Hide 'Unavailable videos are hidden' banner" setting ([#4134](https://github.com/MorpheApp/morphe-patches/issues/4134))
+### [Morphe v2.1.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.1.0)
+* **Debugging:** Block/force offline feature flags ([#4416](https://github.com/MorpheApp/morphe-patches/issues/4416))
+* **GmsCore support:** Support video/audio casting to other devices (Requires latest MicroG-RE) ([#3899](https://github.com/MorpheApp/morphe-patches/issues/3899))
+* **YouTube - Captions:** Add bilingual captions with synchronized blocks ([#4213](https://github.com/MorpheApp/morphe-patches/issues/4213))
+* **YouTube - Captions:** Prefer uploaded bilingual subtitles ([#4376](https://github.com/MorpheApp/morphe-patches/issues/4376))
+* **YouTube - Copy text:** Add option to select text of descriptions and posts ([#4317](https://github.com/MorpheApp/morphe-patches/issues/4317))
+* **YouTube - Downloads:** Export in-app videos to device storage ([#4211](https://github.com/MorpheApp/morphe-patches/issues/4211))
+* **YouTube - Feed card layout:** Add "Default" to "Feed card layout", which keeps the layout that the server sends
+* **YouTube - Feed video actions:** Watch later button shows a check mark if the video is saved, and removes the video when tapped
 
 ### [De-ReVanced v1.6.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.4)
 * **Messenger:** Add support for `586.0.0.55.92` ([#177](https://github.com/RookieEnough/De-Vanced/issues/177))

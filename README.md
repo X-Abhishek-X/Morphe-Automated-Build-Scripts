@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-07_
+_Last checked: 2026-11-08_
 
 ### [Morphe v2.1.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.1.0)
 * **Debugging:** Block/force offline feature flags ([#4416](https://github.com/MorpheApp/morphe-patches/issues/4416))

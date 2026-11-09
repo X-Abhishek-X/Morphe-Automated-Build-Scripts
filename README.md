@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-08_
+_Last checked: 2026-11-09_
 
 ### [Morphe v2.1.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.1.0)
 * **Debugging:** Block/force offline feature flags ([#4416](https://github.com/MorpheApp/morphe-patches/issues/4416))
@@ -135,15 +135,15 @@ _Last checked: 2026-11-08_
 * **Messenger:** Add support for `586.0.0.55.92` ([#177](https://github.com/RookieEnough/De-Vanced/issues/177))
 * **Strava:** Fix `Overwrite media upload parameters` patch
 
-### [Piko v3.10.0](https://github.com/crimera/piko/releases/tag/v3.10.0)
-* **ci:** Import Crowdin translations onto the latest dev ([#1890](https://github.com/crimera/piko/issues/1890))
-* **github:** use existing enhancement label and add missing twitter label
-* **Instagram:** add auto-scroll persistence flag to recommended flags ([#1957](https://github.com/crimera/piko/issues/1957)), closes [#1746](https://github.com/crimera/piko/issues/1746)
-* **Instagram:** Add missing entity dependencies ([#1833](https://github.com/crimera/piko/issues/1833))
-* **Instagram:** Align Instants settings and saved viewer styling ([#2017](https://github.com/crimera/piko/issues/2017))
-* **Instagram:** Allow screenshots in protected DM windows
-* **Instagram:** Correct patch status mappings
-* **Instagram:** Correct the names of the HDR and auto-scroll recommended flags ([#2078](https://github.com/crimera/piko/issues/2078))
+### [Piko v3.11.0](https://github.com/crimera/piko/releases/tag/v3.11.0)
+* **ci:** Normalize Gradle Windows wrapper line endings
+* **Instagram - Disable analytics:** App data bloats when it is enabled ([#2243](https://github.com/crimera/piko/issues/2243))
+* **Instagram:** Add `obrf`, `vrfl`, `rpxt` to link sanitization list ([#2118](https://github.com/crimera/piko/issues/2118))
+* **Instagram:** Align recommended flag labels with their toggle states
+* **Instagram:** Allow Clone to run without Add settings
+* **Instagram:** Change the video placeholder icon
+* **Instagram:** Correct restart policies and clear disabled media captions
+* **Instagram:** Correct saved video labels and copied media links
 
 ### [hoo-dles v1.47.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.47.0)
 * **Ling:** Update to `8.9.0`

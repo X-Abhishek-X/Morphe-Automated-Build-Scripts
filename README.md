@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-09_
+_Last checked: 2026-11-10_
 
-### [Morphe v2.1.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.1.0)
-* **Debugging:** Block/force offline feature flags ([#4416](https://github.com/MorpheApp/morphe-patches/issues/4416))
-* **GmsCore support:** Support video/audio casting to other devices (Requires latest MicroG-RE) ([#3899](https://github.com/MorpheApp/morphe-patches/issues/3899))
-* **YouTube - Captions:** Add bilingual captions with synchronized blocks ([#4213](https://github.com/MorpheApp/morphe-patches/issues/4213))
-* **YouTube - Captions:** Prefer uploaded bilingual subtitles ([#4376](https://github.com/MorpheApp/morphe-patches/issues/4376))
-* **YouTube - Copy text:** Add option to select text of descriptions and posts ([#4317](https://github.com/MorpheApp/morphe-patches/issues/4317))
-* **YouTube - Downloads:** Export in-app videos to device storage ([#4211](https://github.com/MorpheApp/morphe-patches/issues/4211))
-* **YouTube - Feed card layout:** Add "Default" to "Feed card layout", which keeps the layout that the server sends
-* **YouTube - Feed video actions:** Watch later button shows a check mark if the video is saved, and removes the video when tapped
+### [Morphe v2.2.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.2.0)
+* Add "Show in-app notification for patch updates" setting ([#4178](https://github.com/MorpheApp/morphe-patches/issues/4178))
+* **Debugging:** Add verbose debug logging setting ([#4547](https://github.com/MorpheApp/morphe-patches/issues/4547))
+* **Reddit:** Add `High quality avatars` patch ([#4477](https://github.com/MorpheApp/morphe-patches/issues/4477))
+* **YouTube - Add to queue:** Enhance native playlist support ([#4404](https://github.com/MorpheApp/morphe-patches/issues/4404))
+* **YouTube - Ambient mode:** Add "Enhanced Ambient mode" setting ([#4576](https://github.com/MorpheApp/morphe-patches/issues/4576))
+* **YouTube - Disable continue watching prompt:** Replace the setting with "'Continue watching?' prompt", with a mode that always shows the autoplay countdown at the end of the video
+* **YouTube - Keyword content filter:** Filter videos/comments with more precision, simplify keyword declaration, fix certain keywords incorrectly hiding all videos ([#4530](https://github.com/MorpheApp/morphe-patches/issues/4530))
+* **YouTube - Niconico comments:** Add "Show in portrait" and "Separate settings for portrait" settings ([#4515](https://github.com/MorpheApp/morphe-patches/issues/4515))
 
 ### [De-ReVanced v1.6.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.4)
 * **Messenger:** Add support for `586.0.0.55.92` ([#177](https://github.com/RookieEnough/De-Vanced/issues/177))
@@ -135,15 +135,10 @@ _Last checked: 2026-11-09_
 * **Messenger:** Add support for `586.0.0.55.92` ([#177](https://github.com/RookieEnough/De-Vanced/issues/177))
 * **Strava:** Fix `Overwrite media upload parameters` patch
 
-### [Piko v3.11.0](https://github.com/crimera/piko/releases/tag/v3.11.0)
-* **ci:** Normalize Gradle Windows wrapper line endings
-* **Instagram - Disable analytics:** App data bloats when it is enabled ([#2243](https://github.com/crimera/piko/issues/2243))
-* **Instagram:** Add `obrf`, `vrfl`, `rpxt` to link sanitization list ([#2118](https://github.com/crimera/piko/issues/2118))
-* **Instagram:** Align recommended flag labels with their toggle states
-* **Instagram:** Allow Clone to run without Add settings
-* **Instagram:** Change the video placeholder icon
-* **Instagram:** Correct restart policies and clear disabled media captions
-* **Instagram:** Correct saved video labels and copied media links
+### [Piko v3.11.1](https://github.com/crimera/piko/releases/tag/v3.11.1)
+* **Instagram:** Replace Change version code patch with `Disable Play Store updates` ([#2278](https://github.com/crimera/piko/issues/2278))
+* **Instagram:** Spoof patched app signature to match original app ([#2281](https://github.com/crimera/piko/issues/2281))
+* **Instagram:** Remove `Disable analytics`, `Unlock employee options`, `Allow user network certificate`, `Disable telemetry`, `Unlock Plus benefits` patches
 
 ### [hoo-dles v1.47.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.47.0)
 * **Ling:** Update to `8.9.0`

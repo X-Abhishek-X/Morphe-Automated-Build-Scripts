@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-15_
+_Last checked: 2026-11-16_
 
-### [Morphe v2.2.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.2.0)
-* Add "Show in-app notification for patch updates" setting ([#4178](https://github.com/MorpheApp/morphe-patches/issues/4178))
-* **Debugging:** Add verbose debug logging setting ([#4547](https://github.com/MorpheApp/morphe-patches/issues/4547))
-* **Reddit:** Add `High quality avatars` patch ([#4477](https://github.com/MorpheApp/morphe-patches/issues/4477))
-* **YouTube - Add to queue:** Enhance native playlist support ([#4404](https://github.com/MorpheApp/morphe-patches/issues/4404))
-* **YouTube - Ambient mode:** Add "Enhanced Ambient mode" setting ([#4576](https://github.com/MorpheApp/morphe-patches/issues/4576))
-* **YouTube - Disable continue watching prompt:** Replace the setting with "'Continue watching?' prompt", with a mode that always shows the autoplay countdown at the end of the video
-* **YouTube - Keyword content filter:** Filter videos/comments with more precision, simplify keyword declaration, fix certain keywords incorrectly hiding all videos ([#4530](https://github.com/MorpheApp/morphe-patches/issues/4530))
-* **YouTube - Niconico comments:** Add "Show in portrait" and "Separate settings for portrait" settings ([#4515](https://github.com/MorpheApp/morphe-patches/issues/4515))
+### [Morphe v2.3.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.3.0)
+* **Reddit:** Add Morphe settings row without replacing 'Privacy policy' on `2026.30+` ([#4806](https://github.com/MorpheApp/morphe-patches/issues/4806))
+* **Reddit:** Modernize Morphe settings UI and dialog styling for `2026.25+` ([#4803](https://github.com/MorpheApp/morphe-patches/issues/4803))
+* **YouTube - Add to queue:** Add queue actions to video thumbnails ([#4822](https://github.com/MorpheApp/morphe-patches/issues/4822))
+* **YouTube - Add to queue:** Add queue flyout item to feed Shorts cards, add queue flyout item only if no existing flyout queue exists ([#4686](https://github.com/MorpheApp/morphe-patches/issues/4686))
+* **YouTube - Ambient mode:** Add "Dim while scrolling" and "Dim duration" settings to Enhanced Ambient mode ([#4677](https://github.com/MorpheApp/morphe-patches/issues/4677))
+* **YouTube - Ambient mode:** Add "Light smoothing" and "Light blur" settings to Enhanced Ambient mode ([#4862](https://github.com/MorpheApp/morphe-patches/issues/4862))
+* **YouTube - Ambient mode:** Add "Light strength" setting to Enhanced Ambient mode ([#4839](https://github.com/MorpheApp/morphe-patches/issues/4839))
+* **YouTube - Ambient mode:** Show the light of Enhanced Ambient mode behind the comments and other panels ([#4860](https://github.com/MorpheApp/morphe-patches/issues/4860))
 
 ### [De-ReVanced v1.6.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.4)
 * **Messenger:** Add support for `586.0.0.55.92` ([#177](https://github.com/RookieEnough/De-Vanced/issues/177))

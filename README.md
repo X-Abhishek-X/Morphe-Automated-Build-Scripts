@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-18_
+_Last checked: 2026-11-19_
 
 ### [Morphe v2.3.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.3.0)
 * **Reddit:** Add Morphe settings row without replacing 'Privacy policy' on `2026.30+` ([#4806](https://github.com/MorpheApp/morphe-patches/issues/4806))
@@ -140,10 +140,8 @@ _Last checked: 2026-11-18_
 * **Instagram:** Spoof patched app signature to match original app ([#2281](https://github.com/crimera/piko/issues/2281))
 * **Instagram:** Remove `Disable analytics`, `Unlock employee options`, `Allow user network certificate`, `Disable telemetry`, `Unlock Plus benefits` patches
 
-### [hoo-dles v1.47.0](https://github.com/hoo-dles/morphe-patches/releases/tag/v1.47.0)
-* **Ling:** Update to `8.9.0`
-* **ProtonVPN:** Update patches to support `5.20.57.0`
-* Update `Universal MicroG` support for FotMob
+### hoo-dles
+_Could not fetch release info._
 
 <!-- PATCH-UPDATES-END -->
 

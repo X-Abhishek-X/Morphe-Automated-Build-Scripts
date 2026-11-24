@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-23_
+_Last checked: 2026-11-24_
 
 ### [Morphe v2.3.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.3.0)
 * **Reddit:** Add Morphe settings row without replacing 'Privacy policy' on `2026.30+` ([#4806](https://github.com/MorpheApp/morphe-patches/issues/4806))

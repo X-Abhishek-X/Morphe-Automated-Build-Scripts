@@ -115,17 +115,17 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-25_
+_Last checked: 2026-11-26_
 
-### [Morphe v2.3.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.3.0)
-* **Reddit:** Add Morphe settings row without replacing 'Privacy policy' on `2026.30+` ([#4806](https://github.com/MorpheApp/morphe-patches/issues/4806))
-* **Reddit:** Modernize Morphe settings UI and dialog styling for `2026.25+` ([#4803](https://github.com/MorpheApp/morphe-patches/issues/4803))
-* **YouTube - Add to queue:** Add queue actions to video thumbnails ([#4822](https://github.com/MorpheApp/morphe-patches/issues/4822))
-* **YouTube - Add to queue:** Add queue flyout item to feed Shorts cards, add queue flyout item only if no existing flyout queue exists ([#4686](https://github.com/MorpheApp/morphe-patches/issues/4686))
-* **YouTube - Ambient mode:** Add "Dim while scrolling" and "Dim duration" settings to Enhanced Ambient mode ([#4677](https://github.com/MorpheApp/morphe-patches/issues/4677))
-* **YouTube - Ambient mode:** Add "Light smoothing" and "Light blur" settings to Enhanced Ambient mode ([#4862](https://github.com/MorpheApp/morphe-patches/issues/4862))
-* **YouTube - Ambient mode:** Add "Light strength" setting to Enhanced Ambient mode ([#4839](https://github.com/MorpheApp/morphe-patches/issues/4839))
-* **YouTube - Ambient mode:** Show the light of Enhanced Ambient mode behind the comments and other panels ([#4860](https://github.com/MorpheApp/morphe-patches/issues/4860))
+### [Morphe v2.4.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.4.0)
+* **Disable DRC audio:** Disable the DRC version of the audio, and add "Disable loudness normalization" setting ([#5131](https://github.com/MorpheApp/morphe-patches/issues/5131))
+* **GmsCore support:** Universal GNP / Chime push notification registration support ([#5145](https://github.com/MorpheApp/morphe-patches/issues/5145))
+* List contributors for all time, 6 months, 3 months
+* **Reddit - Copy text:** Make post titles selectable and keep collapsing comments ([#5237](https://github.com/MorpheApp/morphe-patches/issues/5237))
+* **Reddit - Customize post layout:** Add option to hide the view count ([#5286](https://github.com/MorpheApp/morphe-patches/issues/5286))
+* **Reddit - Glass navigation bar:** Add "Bar position" and "Show labels" settings ([#5339](https://github.com/MorpheApp/morphe-patches/issues/5339))
+* **Reddit - Glass navigation bar:** Add Frosted glass style ([#5282](https://github.com/MorpheApp/morphe-patches/issues/5282))
+* **Reddit - Hide post buttons:** "Hide Award button" also hides the Award button of comments
 
 ### [De-ReVanced v1.6.4](https://github.com/RookieEnough/De-Vanced/releases/tag/v1.6.4)
 * **Messenger:** Add support for `586.0.0.55.92` ([#177](https://github.com/RookieEnough/De-Vanced/issues/177))

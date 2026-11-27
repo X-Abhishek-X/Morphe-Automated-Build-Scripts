@@ -115,7 +115,7 @@ All three spoof Google services internally. [ReVanced GmsCore](https://github.co
 ## Recent patch updates
 
 <!-- PATCH-UPDATES-START -->
-_Last checked: 2026-11-26_
+_Last checked: 2026-11-27_
 
 ### [Morphe v2.4.0](https://github.com/MorpheApp/morphe-patches/releases/tag/v2.4.0)
 * **Disable DRC audio:** Disable the DRC version of the audio, and add "Disable loudness normalization" setting ([#5131](https://github.com/MorpheApp/morphe-patches/issues/5131))
